@@ -120,7 +120,10 @@ cd ~/workspace/<主题名>
 #    见 README「生图 Provider 配置」：~/.config/pic-flow/providers.json 或 PICFLOW_IMAGE_* 环境变量）
 python3 scripts/gen_all.py            # 断点续跑；单个: python3 scripts/genlib.py <name> <size> <prompt>
 
-# 3. 白底→透明+裁边（dark 风格深底素材跳过此步，整图贴用）
+# 3. 素材标准化（兜底，非必做转换）：生图请求本就带 background=transparent，
+#    正规上游直接回透明 PNG（此步自动跳过转换、只做裁边）；仅当上游不认该参数
+#    回了白底图，才在这里做 白底→alpha 兜底转换。
+#    dark 风格深底素材整个跳过此步，整图贴用
 python3 scripts/make_transparent.py assets/*.png
 
 # 4. 排版 + LLM 识图校准（核心循环，每块至少一轮）
@@ -202,11 +205,14 @@ layout 内写 `"theme"` 可覆盖。新增风格 = 新增一个 styles/*.json，
 
 ## 常见坑
 
+- **透明背景是生图时直接要的，不是事后抠图**：generate() 请求自带
+  `background=transparent + output_format=png`，正规上游直接回透明 PNG；
+  部分中转忽略该参数回白底 RGB——`make_transparent.py` 只为这种情况兜底
+  （文件已有 alpha 会自动 `[skip]`，仅统一裁边）。dark 深底素材整步跳过、整图贴用。
 - 生图上游是**用户自配的**（skill 不内置 Key）：未配置时 gen 脚本会打印配置引导。
   帮用户配置 = 把 `pipeline/providers.example.json` 拷到
   `~/.config/pic-flow/providers.json` 填入用户自己的 base/key，或设
-  `PICFLOW_IMAGE_BASE`/`PICFLOW_IMAGE_KEY` 环境变量。多上游按序容错、断点续跑；
-  白底 RGB 产物正常，make_transparent 统一转透明（dark 深底素材除外）。
+  `PICFLOW_IMAGE_BASE`/`PICFLOW_IMAGE_KEY` 环境变量。多上游按序容错、断点续跑。
 - piechart 图例在圆右侧 cx+r+40 起，注意与相邻元素留距。
 - table 单元格不放长句（拆两行请加行）；barchart 的 max 不给会自动取最大值。
 - 素材裁边后比例变了：单边约束 + anchor；拼接前逐块终验、拼接后看 550px 预览。
