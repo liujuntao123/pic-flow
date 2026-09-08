@@ -7,7 +7,7 @@ Usage: new_project.py <project_dir> [--title "主题名"]
                        [--layout story-flow|event-flow|info-feed|kanban]
 
 Creates: assets/ blocks/ layout/ output/ scripts/ + fonts symlink
-         + CONTENT.md (内容模板) + style.json (风格包)
+         + CONTENT.md (内容模板) + style.json (风格包) + storyboard.json (整图分镜)
          + layout/block1.json (布局骨架) + assets.json 模板。
 """
 import argparse
@@ -59,6 +59,9 @@ def main():
         shutil.copytree(SKILL_DIR / "fonts", fonts_dst)
 
     shutil.copy2(LIB / "templates" / f"{args.template}.md", root / "CONTENT.md")
+    storyboard = LIB / "templates" / "storyboard.json"
+    if storyboard.exists():
+        shutil.copy2(storyboard, root / "storyboard.json")
     shutil.copy2(LIB / "styles" / f"{args.style}.json", root / "style.json")
     skeleton = json.loads((LIB / "layouts" / f"{args.layout}.json").read_text())
     skeleton.pop("_doc", None)

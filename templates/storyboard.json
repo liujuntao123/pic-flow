@@ -1,0 +1,10 @@
+{
+  "_doc": "整图分镜：写任何 layout/blockN.json 之前先填本文件。role 取值 hook|context|buildup|climax|consequence|meaning|ending；density 取值 low|medium|high；focal 取值 left|right|center|full_bleed。rules：相邻两块的 focal/density 至少一项不同；climax 落在 55%~70% 进度；全图连续居中构图不超过 2 块；最终 6~9 块。notes 写视觉任务：读者这一眼记住什么。具体动作与意象由内容推导，不要套用其他项目的例子。",
+  "title": "",
+  "blocks": [
+    {"id": "block1", "role": "hook", "density": "low", "focal": "full_bleed", "notes": "视觉任务："},
+    {"id": "block2", "role": "context", "density": "medium", "focal": "left", "notes": ""},
+    {"id": "block3", "role": "climax", "density": "high", "focal": "right", "notes": ""},
+    {"id": "block4", "role": "ending", "density": "low", "focal": "center", "notes": ""}
+  ]
+}
