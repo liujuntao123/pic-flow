@@ -38,7 +38,8 @@ pic-flow 把活拆成三步：
 ## 安装
 
 把它克隆进你正在用的 agent 的技能目录（任选其一）。运行环境需要
-Python 3.8+、Pillow、numpy；生图功能另需能访问 OpenAI Images 兼容接口（见下文）。
+Python 3.8+、Pillow、numpy；**生图功能需配置你自己的 OpenAI Images 兼容
+Provider**（见下文「生图 Provider 配置」，skill 不内置任何 Key），不生图可跳过。
 
 **Claude Code**（个人技能装到 `~/.claude/skills/`，或放项目的 `.claude/skills/` 仅对该项目生效）
 
@@ -112,11 +113,42 @@ python3 scripts/stitch.py output/out.jpg blocks/final1.png blocks/final2.png
 校准循环：看 `stage1.png`（自带 100px 网格坐标与元素包围盒）→ 改 `layout/block1.json`
 → 复渲，直到无碰撞、不断行、关系正确。
 
-### 生图上游配置
+### 生图 Provider 配置（用户自备）
 
-`pipeline/genlib.py` 的 `PROVIDERS` 内置了一条 OpenAI Images 兼容上游链（按序重试，
-模型 `gpt-image-2`）。自托管时把 `base` / `key` 换成你自己的中转或官方 API 即可；
-不生图也能用——排版、图表、拼接全部离线可用，素材自备。
+skill **不内置任何 API Key**。生图需要一个 OpenAI Images 兼容接口
+（`POST {base}/images/generations`，官方 API 或任意中转均可），两种配法任选其一。
+配置只存在你机器上，不会进仓库：
+
+**方式一：环境变量（单个上游）**
+
+```bash
+export PICFLOW_IMAGE_BASE="https://api.openai.com/v1"
+export PICFLOW_IMAGE_KEY="sk-..."
+# 可选：export PICFLOW_IMAGE_MODEL="gpt-image-2"
+```
+
+**方式二：配置文件（推荐，多个上游按序容错）**
+
+```bash
+mkdir -p ~/.config/pic-flow
+cp pipeline/providers.example.json ~/.config/pic-flow/providers.json
+$EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
+```
+
+```json
+{
+  "model": "gpt-image-2",
+  "providers": [
+    { "name": "main",   "base": "https://api.openai.com/v1",       "key": "sk-...", "fmt": "b64_json" },
+    { "name": "backup", "base": "https://你的中转.example.com/v1", "key": "sk-...", "fmt": "url" }
+  ]
+}
+```
+
+`fmt` 可省略（默认 `b64_json`）；部分中转只认 `"url"` 回包时改为 `"url"`。
+模型默认 `gpt-image-2`，可用 `PICFLOW_IMAGE_MODEL` 或配置里的 `"model"` 覆盖。
+未配置就跑生图脚本时，会打印上述配置引导。不生图也能用——排版、图表、
+拼接全部离线可用，素材自备。
 
 ## 更多示例
 

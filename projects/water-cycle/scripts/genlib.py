@@ -1,26 +1,97 @@
 #!/usr/bin/env python3
-"""Image-generation provider chain (per global AGENTS.md convention).
+"""Image-generation provider chain, user-configured (no keys ship with the skill).
 
-All providers are OpenAI-Images-compatible. Try in order until one returns
-an image. Downloads url responses immediately (links expire).
+All providers must be OpenAI-Images-compatible: POST {base}/images/generations.
+Providers are tried in order until one returns an image; url responses are
+downloaded immediately (links expire).
+
+Configure via (first match wins):
+
+1. Environment variables (single provider):
+   PICFLOW_IMAGE_BASE   e.g. https://api.openai.com/v1
+   PICFLOW_IMAGE_KEY    your API key
+   PICFLOW_IMAGE_MODEL  optional, default gpt-image-2
+   PICFLOW_IMAGE_FMT    optional, "b64_json" (default) or "url"
+
+2. Config file ~/.config/pic-flow/providers.json (failover chain):
+   {
+     "model": "gpt-image-2",
+     "providers": [
+       {"name": "main",   "base": "https://api.openai.com/v1",
+        "key": "sk-...", "fmt": "b64_json"},
+       {"name": "backup", "base": "https://relay.example.com/v1",
+        "key": "sk-...", "fmt": "url"}
+     ]
+   }
+   "fmt" may be omitted (defaults to "b64_json"). See
+   pipeline/providers.example.json for a starting point.
+
+If neither is configured, scripts exit with setup instructions.
 """
 import base64
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
 
-PROVIDERS = [
-    {"name": "upstream2", "base": "https://image.REDACTED_HOST/v1",
-     "key": "REDACTED_KEY", "fmt": "url"},
-    {"name": "upstream3", "base": "https://REDACTED_HOST/v1",
-     "key": "REDACTED_KEY", "fmt": "b64_json"},
-    {"name": "upstream1", "base": "https://chat2api.REDACTED_HOST/v1",
-     "key": "REDACTED_KEY", "fmt": "b64_json"},
-]
-MODEL = "gpt-image-2"
+DEFAULT_MODEL = "gpt-image-2"
 FALLBACK_SIZE = "1024x1024"
+CONFIG_PATHS = tuple(p for p in (
+    Path(os.environ["PICFLOW_CONFIG"]) if os.environ.get("PICFLOW_CONFIG") else None,
+    Path.home() / ".config" / "pic-flow" / "providers.json",
+    Path.home() / ".pic-flow" / "providers.json",
+) if p)
+
+SETUP_HINT = """\
+[error] pic-flow 生图 Provider 未配置。任选一种方式配置（配置在你机器上，不会进仓库）：
+
+1) 环境变量（单个上游）：
+   export PICFLOW_IMAGE_BASE="https://api.openai.com/v1"
+   export PICFLOW_IMAGE_KEY="sk-..."
+   # 可选：export PICFLOW_IMAGE_MODEL="gpt-image-2"
+
+2) 配置文件（推荐，可配多个上游按序容错）：
+   mkdir -p ~/.config/pic-flow
+   cp pipeline/providers.example.json ~/.config/pic-flow/providers.json
+   # 然后编辑，填入你自己的 base（OpenAI Images 兼容接口）与 key
+
+配置好重跑即可；不生图（素材自备）可跳过生图步骤。
+详见 README「生图 Provider 配置」。
+"""
+
+_providers = None
+_model = None
+
+
+def _load_config():
+    """Resolve providers + model once; exit with instructions if unconfigured."""
+    global _providers, _model
+    if _providers is not None:
+        return
+    providers, model = [], None
+    base, key = os.environ.get("PICFLOW_IMAGE_BASE"), os.environ.get("PICFLOW_IMAGE_KEY")
+    if base and key:
+        providers = [{"name": "env", "base": base.rstrip("/"), "key": key,
+                      "fmt": os.environ.get("PICFLOW_IMAGE_FMT", "b64_json")}]
+    else:
+        for path in CONFIG_PATHS:
+            if not path.is_file():
+                continue
+            cfg = json.loads(path.read_text())
+            if isinstance(cfg, list):
+                providers, model = cfg, None
+            else:
+                providers, model = cfg.get("providers", []), cfg.get("model")
+            break
+    providers = [dict(p, name=p.get("name") or f"upstream{i + 1}",
+                      fmt=p.get("fmt", "b64_json"))
+                 for i, p in enumerate(providers) if p.get("base") and p.get("key")]
+    if not providers:
+        sys.exit(SETUP_HINT)
+    _providers = providers
+    _model = os.environ.get("PICFLOW_IMAGE_MODEL") or model or DEFAULT_MODEL
 
 
 def _http_json(url, payload, key, timeout=300):
@@ -46,14 +117,15 @@ STYLE_SUFFIX = (
 
 def generate(prompt, size, out_path, transparent=True, log=print):
     """Generate one image; write bytes to out_path. Returns True on success."""
+    _load_config()
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     last_err = None
-    for p in PROVIDERS:
+    for p in _providers:
         bg_modes = ["transparent", None] if transparent else [None]
         for bg in bg_modes:
             for sz in dict.fromkeys([size, FALLBACK_SIZE]):
-                payload = {"model": MODEL, "prompt": prompt, "n": 1,
+                payload = {"model": _model, "prompt": prompt, "n": 1,
                            "size": sz, "response_format": p["fmt"]}
                 if bg:
                     payload["background"] = bg

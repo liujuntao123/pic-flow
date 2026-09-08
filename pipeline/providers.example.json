@@ -1,0 +1,7 @@
+{
+  "model": "gpt-image-2",
+  "providers": [
+    { "name": "main",   "base": "https://api.openai.com/v1",       "key": "sk-你的key", "fmt": "b64_json" },
+    { "name": "backup", "base": "https://你的中转.example.com/v1", "key": "sk-你的key", "fmt": "url" }
+  ]
+}

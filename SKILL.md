@@ -116,7 +116,8 @@ cd ~/workspace/<主题名>
 #    再按 CONTENT.md 骨架表写 assets.json 与 layout/blockN.json
 #    （不同块可从 layouts/ 拷不同骨架；chart 类块直接内嵌 barchart/piechart/table）
 
-# 2. 生图（画风由 style.json 的 asset_suffix 控制；上游链见 ~/.dsh/AGENTS.md）
+# 2. 生图（画风由 style.json 的 asset_suffix 控制；上游=用户自配 Provider，
+#    见 README「生图 Provider 配置」：~/.config/pic-flow/providers.json 或 PICFLOW_IMAGE_* 环境变量）
 python3 scripts/gen_all.py            # 断点续跑；单个: python3 scripts/genlib.py <name> <size> <prompt>
 
 # 3. 白底→透明+裁边（dark 风格深底素材跳过此步，整图贴用）
@@ -201,7 +202,11 @@ layout 内写 `"theme"` 可覆盖。新增风格 = 新增一个 styles/*.json，
 
 ## 常见坑
 
-- 上游切换自动处理；白底 RGB 产物正常，make_transparent 统一转透明（dark 深底素材除外）。
+- 生图上游是**用户自配的**（skill 不内置 Key）：未配置时 gen 脚本会打印配置引导。
+  帮用户配置 = 把 `pipeline/providers.example.json` 拷到
+  `~/.config/pic-flow/providers.json` 填入用户自己的 base/key，或设
+  `PICFLOW_IMAGE_BASE`/`PICFLOW_IMAGE_KEY` 环境变量。多上游按序容错、断点续跑；
+  白底 RGB 产物正常，make_transparent 统一转透明（dark 深底素材除外）。
 - piechart 图例在圆右侧 cx+r+40 起，注意与相邻元素留距。
 - table 单元格不放长句（拆两行请加行）；barchart 的 max 不给会自动取最大值。
 - 素材裁边后比例变了：单边约束 + anchor；拼接前逐块终验、拼接后看 550px 预览。
