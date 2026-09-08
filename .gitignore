@@ -3,3 +3,6 @@ __pycache__/
 .DS_Store
 projects/*/blocks/
 projects/*/fonts
+projects/*/assets/
+projects/*/output/
+projects/*/layout_backup_preclean/

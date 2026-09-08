@@ -116,6 +116,18 @@ python3 scripts/stitch.py output/out.jpg blocks/final1.png blocks/final2.png
 校准循环：看 `stage1.png`（自带 100px 网格坐标与元素包围盒）→ 改 `layout/block1.json`
 → 复渲，直到无碰撞、不断行、关系正确。
 
+**项目目录与产物位置**：每个项目自包含在一个目录里，产物路径固定——
+
+| 路径 | 性质 | 内容 |
+|---|---|---|
+| `output/` | **产物（成品）** | 拼接后的长图 JPG + 550px 宽预览，唯一需要保留/发布的产物 |
+| `blocks/` | 产物（中间） | 每块渲染图：`stage*` 调试画布、`final*` 正式块 |
+| `assets/` | 产物（中间） | AI 生成的透明背景素材，`gen_all.py` 可断点续跑再生 |
+| `storyboard.json`、`assets.json`、`layout/blockN.json`、`style.json`、`CONTENT.md` | **源文件** | 分镜、素材清单、排版描述、风格包、内容骨架——真正值得入 git 的部分 |
+
+脚手架会在项目里生成 `.gitignore`，默认排除 `assets/ blocks/ output/`（均可由脚本再生）；
+仓库自带示例成品在 `examples/`，`projects/` 只保留源文件。
+
 ### 生图 Provider 配置（用户自备）
 
 skill **不内置任何 API Key**。生图需要一个 OpenAI Images 兼容接口
