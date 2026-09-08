@@ -1,0 +1,36 @@
+{
+  "name": "vector-flat",
+  "_doc": "矢量扁平：现代几何扁平插画，高饱和现代配色，无衬线黑体（思源黑体）。适合科技/产品/方法论主题。",
+  "bg": "#F7FAFC",
+  "text": "#2D3748",
+  "hl_color": "#3182CE",
+  "quote_color": "#38A169",
+  "warn_color": "#E53E3E",
+  "bubble": {
+    "style": "fill",
+    "bg": "#EBF4FF",
+    "color": "#2A4E7E",
+    "pad": [
+      20,
+      28
+    ],
+    "radius": 14
+  },
+  "fonts": {
+    "body": [
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
+    ],
+    "title": [
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
+    ],
+    "brush": [
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
+    ]
+  },
+  "asset_suffix": "。风格：现代扁平矢量插画，简洁几何形状拼合，高饱和度双色系配色，无描边或极细描边，轻微长投影。纯白色背景，画面中绝对不要出现任何文字、字母、数字、边框、水印。",
+  "card_fill": "#FFFFFF",
+  "card_border": "#E2E8F0"
+}

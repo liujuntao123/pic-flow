@@ -1,0 +1,19 @@
+{
+  "width": 1080,
+  "height": 1500,
+  "elements": [
+    {"type": "text", "content": "一、什么是水循环？", "x": 540, "y": 90, "size": 58, "bold": true, "align": "center", "font": "title", "color": "#2B6CB0"},
+    {"type": "text", "content": "所谓水循环，就是水在『海洋—大气—陆地』三个仓库之间，周而复始地搬家。搬家的路线首尾相连，所以叫循环。", "x": 540, "y": 210, "size": 42, "align": "center", "max_width": 900},
+    {"type": "card", "x": 70, "y": 430, "width": 940, "height": 280, "radius": 20, "border": 2},
+    {"type": "text", "content": "① 永不停歇", "x": 130, "y": 465, "size": 40, "bold": true, "align": "left", "max_width": 820, "font": "title", "color": "#2B6CB0"},
+    {"type": "text", "content": "只要太阳还在烧、地球还有引力，这场循环就没有终点站。你今天喝的水，很可能路过过恐龙的领土。", "x": 130, "y": 530, "size": 34, "align": "left", "max_width": 820},
+    {"type": "card", "x": 70, "y": 750, "width": 940, "height": 280, "radius": 20, "border": 2},
+    {"type": "text", "content": "② 驱动者是太阳", "x": 130, "y": 785, "size": 40, "bold": true, "align": "left", "max_width": 820, "font": "title", "color": "#2B6CB0"},
+    {"type": "text", "content": "整个循环的动力几乎全部来自太阳能：晒热海面→水汽上升→推动大气流动。地球本质上是一台【太阳能水泵】。", "x": 130, "y": 850, "size": 34, "align": "left", "max_width": 820},
+    {"type": "card", "x": 70, "y": 1070, "width": 940, "height": 280, "radius": 20, "border": 2},
+    {"type": "text", "content": "③ 三态自由切换", "x": 130, "y": 1105, "size": 40, "bold": true, "align": "left", "max_width": 820, "font": "title", "color": "#2B6CB0"},
+    {"type": "text", "content": "液态（海、河、雨）↔ 气态（水汽）↔ 固态（冰、雪、雹），全程变装出场，但一个水分子都不会丢。", "x": 130, "y": 1170, "size": 34, "align": "left", "max_width": 820},
+    {"type": "asset", "file": "water_drop_mascot.png", "x": 950, "y": 1310, "height": 300, "rotate": 5},
+    {"type": "text", "content": "记住了吗？", "x": 810, "y": 1420, "size": 30, "bold": true, "align": "center", "max_width": 220, "rotate": 5, "font": "title", "box": {"style": "pill", "bg": "#EBF4FF", "color": "#2B6CB0", "pad": [12, 20]}}
+  ]
+}

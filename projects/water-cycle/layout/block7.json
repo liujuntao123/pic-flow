@@ -1,0 +1,125 @@
+{
+  "width": 1080,
+  "height": 1350,
+  "elements": [
+    {
+      "type": "text",
+      "content": "六、一张口诀记住水循环",
+      "x": 540,
+      "y": 90,
+      "size": 58,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "color": "#2B6CB0"
+    },
+    {
+      "type": "card",
+      "x": 140,
+      "y": 230,
+      "width": 800,
+      "height": 420,
+      "radius": 24,
+      "border": 2
+    },
+    {
+      "type": "text",
+      "content": "【蒸发】升上天，",
+      "x": 540,
+      "y": 258,
+      "size": 52,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "【凝结】抱成云，",
+      "x": 540,
+      "y": 353,
+      "size": 52,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "【降水】落地面，",
+      "x": 540,
+      "y": 448,
+      "size": 52,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "【径流】再归海。",
+      "x": 540,
+      "y": 543,
+      "size": 52,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "太阳一开工，全球的水就打卡上班。",
+      "x": 540,
+      "y": 675,
+      "size": 30,
+      "align": "center",
+      "color": "#7A8CA3"
+    },
+    {
+      "type": "asset",
+      "file": "water_drop_mascot.png",
+      "x": 195,
+      "y": 915,
+      "height": 330,
+      "rotate": -4
+    },
+    {
+      "type": "text",
+      "content": "下次淋雨，想想这滴水的上一站在哪？",
+      "x": 675,
+      "y": 830,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "max_width": 560,
+      "font": "title",
+      "color": "#2B6CB0"
+    },
+    {
+      "type": "text",
+      "content": "可能是昨天的海风，也可能是恐龙时代的雨——水循环，就是地球上最古老的快递系统。",
+      "x": 560,
+      "y": 970,
+      "size": 33,
+      "align": "left",
+      "max_width": 450
+    },
+    {
+      "type": "text",
+      "content": "转发这张图，让更多人看懂一场雨",
+      "x": 540,
+      "y": 1230,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "max_width": 860,
+      "font": "title",
+      "box": {
+        "style": "marker",
+        "bg": "#EBF4FF",
+        "color": "#2B6CB0",
+        "pad": [
+          22,
+          30
+        ],
+        "radius": 14
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "guochao",
+  "_doc": "国潮古风：宣纸米色底 + 朱砂/黛蓝/鎏金 + 毛笔书法标题。历史、非遗、传统节日题材绝配。标题字体是马善政毛笔楷书，正文霞鹜文楷自带古典味。",
+  "bg": "#F5EFE0",
+  "text": "#3B2F2A",
+  "hl_color": "#B03A2E",
+  "quote_color": "#2C5F7C",
+  "warn_color": "#8C1F28",
+  "bubble": {
+    "style": "outline",
+    "fill": "#F5EFE0",
+    "border_color": "#B03A2E",
+    "border": 3,
+    "color": "#5A2320",
+    "pad": [
+      20,
+      28
+    ],
+    "radius": 8
+  },
+  "fonts": {
+    "body": [
+      "fonts/LXGWWenKai-Regular.ttf",
+      "fonts/LXGWWenKai-Medium.ttf"
+    ],
+    "title": [
+      "fonts/MaShanZheng-Regular.ttf",
+      "fonts/MaShanZheng-Regular.ttf"
+    ],
+    "brush": [
+      "fonts/MaShanZheng-Regular.ttf",
+      "fonts/MaShanZheng-Regular.ttf"
+    ]
+  },
+  "asset_suffix": "。风格：国潮新中式插画，中国传统绘画元素，朱砂红黛蓝鎏金配色，祥云水墨纹样点缀，工笔与扁平装饰结合。米白色宣纸质感背景，画面中绝对不要出现任何文字、字幕、边框、水印。",
+  "card_fill": "#FBF6E9",
+  "card_border": "#D8CDB4"
+}

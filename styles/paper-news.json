@@ -1,0 +1,38 @@
+{
+  "name": "paper-news",
+  "_doc": "简报纸质：报纸版面感——米白底、黑色细框、宋体标题、分栏排版。适合 news 资讯速看、一周汇总、公告解读。资讯本就少插画，配合 table/rule 食用最佳。",
+  "bg": "#F7F5F0",
+  "text": "#26241F",
+  "hl_color": "#8C1F28",
+  "quote_color": "#1A4B8C",
+  "warn_color": "#B3261E",
+  "bubble": {
+    "style": "outline",
+    "fill": "#F7F5F0",
+    "border_color": "#26241F",
+    "border": 2,
+    "color": "#26241F",
+    "pad": [
+      18,
+      26
+    ],
+    "radius": 4
+  },
+  "fonts": {
+    "body": [
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
+    ],
+    "title": [
+      "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc"
+    ],
+    "brush": [
+      "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc"
+    ]
+  },
+  "asset_suffix": "。风格：黑白报纸版画插图，粗颗粒雕版线条，新闻纪实现实题材，构图克制。纯白色背景，画面中绝对不要出现任何文字、字母、边框、水印。",
+  "card_fill": "#FFFFFF",
+  "card_border": "#D8D4CB"
+}

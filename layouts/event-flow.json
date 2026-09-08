@@ -1,0 +1,25 @@
+{
+  "_doc": "事件流布局（时间线）：中轴竖线 + 节点圆点 + 年代胶囊 + 左右交替卡片。适合编年史、发展历程、剧情推进。复制节点组（chip+dot+card+text）向下扩展，每组占高约 320px。",
+  "width": 1080,
+  "height": 1800,
+  "elements": [
+    {"type": "text", "content": "标题：一文看懂这段历程", "x": 540, "y": 80, "size": 58, "bold": true, "align": "center", "font": "title"},
+    {"type": "rule", "vertical": true, "x": 540, "y1": 260, "y2": 1680, "color": "#D8D2C8", "thickness": 6},
+    {"type": "text", "content": "公元前 1600 年", "x": 500, "y": 270, "size": 30, "bold": true, "align": "right", "font": "title", "rotate": -3, "box": {"style": "pill", "bg": "#FFF1DC", "color": "#B25E00", "pad": [12, 20]}},
+    {"type": "card", "x": 512, "y": 300, "width": 56, "height": 56, "radius": 28, "fill": "#F6A83C", "border_color": "#FFFFFF", "border": 4},
+    {"type": "card", "x": 580, "y": 250, "width": 430, "height": 210, "radius": 18, "fill": "#FBF8F2", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "【事件标题】一句话说清这件事", "x": 610, "y": 280, "size": 38, "bold": true, "align": "left", "max_width": 370, "font": "title"},
+    {"type": "text", "content": "两行以内的细节补充，讲清楚来龙去脉与影响。", "x": 610, "y": 345, "size": 32, "align": "left", "max_width": 370},
+    {"type": "text", "content": "公元 208 年", "x": 580, "y": 640, "size": 30, "bold": true, "align": "left", "font": "title", "rotate": 3, "box": {"style": "pill", "bg": "#FFF1DC", "color": "#B25E00", "pad": [12, 20]}},
+    {"type": "card", "x": 512, "y": 670, "width": 56, "height": 56, "radius": 28, "fill": "#E8842B", "border_color": "#FFFFFF", "border": 4},
+    {"type": "card", "x": 70, "y": 620, "width": 430, "height": 210, "radius": 18, "fill": "#FBF8F2", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "〖转折事件〗结果性描述用红色强调", "x": 100, "y": 650, "size": 38, "bold": true, "align": "left", "max_width": 370, "font": "title"},
+    {"type": "text", "content": "时间线卡片内文字一律左对齐，主语可以省略。", "x": 100, "y": 715, "size": 32, "align": "left", "max_width": 370},
+    {"type": "asset", "file": "icon_a.png", "x": 820, "y": 1030, "height": 260, "rotate": -3},
+    {"type": "text", "content": "公元 1140 年", "x": 500, "y": 1090, "size": 30, "bold": true, "align": "right", "font": "title", "rotate": -3, "box": {"style": "pill", "bg": "#FFF1DC", "color": "#B25E00", "pad": [12, 20]}},
+    {"type": "card", "x": 512, "y": 1120, "width": 56, "height": 56, "radius": 28, "fill": "#F6A83C", "border_color": "#FFFFFF", "border": 4},
+    {"type": "card", "x": 580, "y": 1070, "width": 430, "height": 210, "radius": 18, "fill": "#FBF8F2", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "【后续影响】这里写深远影响", "x": 610, "y": 1100, "size": 38, "bold": true, "align": "left", "max_width": 370, "font": "title"},
+    {"type": "text", "content": "时间线最后一个节点收束主题，呼应标题。", "x": 610, "y": 1165, "size": 32, "align": "left", "max_width": 370}
+  ]
+}

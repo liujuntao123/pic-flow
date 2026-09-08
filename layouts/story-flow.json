@@ -1,0 +1,15 @@
+{
+  "_doc": "故事流布局（叙事块）：标题 + 叙述段落（三色高亮）+ 大小主从人物 + 歪斜对话气泡。适合历史故事、案例叙事、人物情节。排完务必走 --debug 识图校准。",
+  "width": 1080,
+  "height": 1500,
+  "elements": [
+    {"type": "text", "content": "一、这里写小节标题", "x": 540, "y": 90, "size": 58, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "第一段交代背景与局势，【关键词】橙色标注，控制在两行以内。", "x": 540, "y": 205, "size": 42, "align": "center", "max_width": 880},
+    {"type": "text", "content": "第二段推进冲突，引用原话用『这里是一句原话』，结尾可以甩一个短句，惨。", "x": 540, "y": 380, "size": 42, "align": "center", "max_width": 830},
+    {"type": "asset", "file": "char_a.png", "x": 330, "y": 830, "height": 560, "rotate": -3},
+    {"type": "asset", "file": "char_b.png", "x": 750, "y": 920, "height": 400, "rotate": 4},
+    {"type": "text", "content": "主角的台词！", "x": 170, "y": 550, "size": 36, "bold": true, "align": "center", "max_width": 280, "rotate": -6, "font": "title", "box": {"style": "fill", "tail": "br"}},
+    {"type": "text", "content": "配角的回怼", "x": 850, "y": 650, "size": 32, "bold": true, "align": "center", "max_width": 260, "rotate": 5, "font": "title", "box": {"style": "ink", "bg": "#2F2A26", "color": "#FFFFFF", "pad": [18, 26], "radius": 18}},
+    {"type": "text", "content": "收尾段交代后果，〖关键数字或结局〗用红色毛笔强调。", "x": 540, "y": 1230, "size": 42, "align": "center", "max_width": 880}
+  ]
+}

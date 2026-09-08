@@ -1,0 +1,31 @@
+{
+  "_doc": "流程图布局（Flow Steps）：步骤卡片 + 箭头串联 + 判定分支。适合决策树、审批流程、故障排查、游戏攻略分支。步骤组 = card+text + down 箭头；分支 = right 箭头 + 并列小卡。",
+  "width": 1080,
+  "height": 2100,
+  "elements": [
+    {"type": "text", "content": "标题：一图走通 XX 流程", "x": 540, "y": 80, "size": 58, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "先交代起点状态：你要办的事、你拿到的输入。", "x": 540, "y": 180, "size": 36, "align": "center", "max_width": 880},
+    {"type": "card", "x": 340, "y": 290, "width": 400, "height": 130, "radius": 20, "fill": "#FFF1DC", "border_color": "#F6A83C", "border": 3},
+    {"type": "text", "content": "① 起点：提交申请", "x": 540, "y": 335, "size": 40, "bold": true, "align": "center", "font": "title"},
+    {"type": "arrow", "x": 540, "y": 440, "length": 70, "direction": "down", "width": 10, "color": "#E8842B"},
+    {"type": "card", "x": 340, "y": 540, "width": 400, "height": 150, "radius": 20, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "② 材料初审", "x": 540, "y": 570, "size": 40, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "3 个工作日内", "x": 540, "y": 625, "size": 30, "align": "center"},
+    {"type": "arrow", "x": 540, "y": 710, "length": 70, "direction": "down", "width": 10, "color": "#E8842B"},
+    {"type": "card", "x": 340, "y": 810, "width": 400, "height": 150, "radius": 20, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "③ 判定：材料齐全吗？", "x": 540, "y": 865, "size": 38, "bold": true, "align": "center", "font": "title"},
+    {"type": "arrow", "x": 380, "y": 990, "length": 90, "direction": "left", "width": 10, "color": "#38A169"},
+    {"type": "arrow", "x": 700, "y": 990, "length": 90, "direction": "right", "width": 10, "color": "#E53E3E"},
+    {"type": "card", "x": 60, "y": 1090, "width": 400, "height": 170, "radius": 20, "fill": "#EAF7EF", "border_color": "#38A169", "border": 3},
+    {"type": "text", "content": "✅ 齐全 → 受理", "x": 260, "y": 1130, "size": 38, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "进入公示期，7 天后领证", "x": 260, "y": 1190, "size": 30, "align": "center"},
+    {"type": "card", "x": 620, "y": 1090, "width": 400, "height": 170, "radius": 20, "fill": "#FDECEA", "border_color": "#E53E3E", "border": 3},
+    {"type": "text", "content": "❌ 不齐 → 补件", "x": 820, "y": 1130, "size": 38, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "10 日内补齐重新提交", "x": 820, "y": 1190, "size": 30, "align": "center"},
+    {"type": "arrow", "x": 260, "y": 1290, "length": 70, "direction": "down", "width": 10, "color": "#38A169"},
+    {"type": "card", "x": 340, "y": 1390, "width": 400, "height": 130, "radius": 20, "fill": "#FFF1DC", "border_color": "#F6A83C", "border": 3},
+    {"type": "text", "content": "④ 终点：拿到结果", "x": 540, "y": 1435, "size": 40, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "避坑提示：最容易被驳回的原因是 XX，提交前自查一遍。", "x": 540, "y": 1650, "size": 36, "align": "center", "max_width": 880},
+    {"type": "text", "content": "超时未补件视为放弃申请", "x": 540, "y": 1820, "size": 34, "bold": true, "align": "center", "max_width": 860, "font": "title", "rotate": -2, "box": {"style": "marker", "bg": "#FFE9A8", "color": "#7A4A00", "pad": [22, 30], "radius": 14}}
+  ]
+}

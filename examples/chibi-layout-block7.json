@@ -1,0 +1,97 @@
+{
+  "width": 1080,
+  "height": 1500,
+  "elements": [
+    {
+      "type": "text",
+      "content": "六、曹操的至暗时刻",
+      "x": 540,
+      "y": 90,
+      "size": 58,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "曹操从华容道狼狈突围，道路泥泞，人马自相践踏，〖八十万大军〗只剩残兵败将。",
+      "x": 540,
+      "y": 205,
+      "size": 42,
+      "align": "center",
+      "max_width": 880
+    },
+    {
+      "type": "asset",
+      "file": "guanyu_release.png",
+      "x": 540,
+      "y": 770,
+      "height": 520,
+      "rotate": 2
+    },
+    {
+      "type": "text",
+      "content": "……罢了，走吧",
+      "x": 235,
+      "y": 400,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "max_width": 340,
+      "rotate": -6,
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "pad": [
+          20,
+          28
+        ],
+        "radius": 18,
+        "tail": "bl"
+      },
+      "font": "title",
+      "color": "#FFFFFF"
+    },
+    {
+      "type": "text",
+      "content": "云长，念在旧情……",
+      "x": 815,
+      "y": 415,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "max_width": 330,
+      "rotate": 5,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          20,
+          28
+        ],
+        "radius": 18,
+        "tail": "br"
+      },
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "关键时刻还是老面子管用：关羽念及旧恩，一咬牙，【放行】。",
+      "x": 540,
+      "y": 1130,
+      "size": 42,
+      "align": "center",
+      "max_width": 880
+    },
+    {
+      "type": "text",
+      "content": "曹操退回北方舔伤口，留曹仁守江陵，短时间内再无力南下。",
+      "x": 540,
+      "y": 1320,
+      "size": 42,
+      "align": "center",
+      "max_width": 890
+    }
+  ]
+}

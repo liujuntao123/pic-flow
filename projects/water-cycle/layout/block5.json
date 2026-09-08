@@ -1,0 +1,155 @@
+{
+  "width": 1080,
+  "height": 1550,
+  "elements": [
+    {
+      "type": "text",
+      "content": "四、容易被忽略的两个角色",
+      "x": 540,
+      "y": 90,
+      "size": 58,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "color": "#2B6CB0"
+    },
+    {
+      "type": "text",
+      "content": "课本常讲蒸发和降雨，但循环里有两位低调参与者，干着不成比例的活。",
+      "x": 540,
+      "y": 200,
+      "size": 32,
+      "align": "center",
+      "max_width": 1040
+    },
+    {
+      "type": "card",
+      "x": 60,
+      "y": 310,
+      "width": 960,
+      "height": 560,
+      "radius": 20,
+      "border": 2
+    },
+    {
+      "type": "text",
+      "content": "① 植物的蒸腾作用",
+      "x": 110,
+      "y": 330,
+      "size": 40,
+      "bold": true,
+      "align": "left",
+      "max_width": 500,
+      "font": "title",
+      "color": "#38A169"
+    },
+    {
+      "type": "text",
+      "content": "植物把根喝进去的水，从叶片气孔『呼』出去，变成水汽回到大气——相当于树木在头顶装了加湿器。",
+      "x": 110,
+      "y": 410,
+      "size": 33,
+      "align": "left",
+      "max_width": 540
+    },
+    {
+      "type": "text",
+      "content": "一棵成年大树晴天的蒸腾量可达上百升；一整片森林加起来，输水量堪比一座湖泊。亚马逊雨林一半的降雨，来自森林自己制造的水汽。",
+      "x": 110,
+      "y": 580,
+      "size": 33,
+      "align": "left",
+      "max_width": 540
+    },
+    {
+      "type": "asset",
+      "file": "plant_transpiration.png",
+      "x": 830,
+      "y": 570,
+      "height": 320,
+      "rotate": 2
+    },
+    {
+      "type": "text",
+      "content": "砍树 = 拆掉循环里的一台抽水机",
+      "x": 110,
+      "y": 800,
+      "size": 32,
+      "bold": true,
+      "align": "left",
+      "font": "title",
+      "color": "#38A169"
+    },
+    {
+      "type": "card",
+      "x": 60,
+      "y": 880,
+      "width": 960,
+      "height": 480,
+      "radius": 20,
+      "border": 2
+    },
+    {
+      "type": "text",
+      "content": "② 下渗与地下水",
+      "x": 110,
+      "y": 900,
+      "size": 40,
+      "bold": true,
+      "align": "left",
+      "max_width": 500,
+      "font": "title",
+      "color": "#2B6CB0"
+    },
+    {
+      "type": "text",
+      "content": "不是所有雨水都急着流走：一部分渗入土壤和岩石缝隙，成为【地下水】，以每天几米的速度缓慢移动。",
+      "x": 110,
+      "y": 980,
+      "size": 33,
+      "align": "left",
+      "max_width": 860
+    },
+    {
+      "type": "text",
+      "content": "地下水是地球上最大的【液态淡水】储备之一，很多河流在不下雨的月份，靠的就是地下水一点点渗出来续命。",
+      "x": 110,
+      "y": 1100,
+      "size": 33,
+      "align": "left",
+      "max_width": 860
+    },
+    {
+      "type": "text",
+      "content": "所以泉水和井水，其实是慢动作的雨",
+      "x": 110,
+      "y": 1230,
+      "size": 32,
+      "bold": true,
+      "align": "left",
+      "font": "title",
+      "color": "#2B6CB0"
+    },
+    {
+      "type": "text",
+      "content": "下渗虽然慢，却是循环里的『定期存款』：旱季就靠它续命。",
+      "x": 540,
+      "y": 1440,
+      "size": 34,
+      "bold": true,
+      "align": "center",
+      "max_width": 880,
+      "font": "title",
+      "box": {
+        "style": "marker",
+        "bg": "#E6FFFA",
+        "color": "#2C7A7B",
+        "pad": [
+          20,
+          28
+        ],
+        "radius": 12
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "_doc": "看板布局（分栏看板）：栏头胶囊 + 竖分隔 + 每栏堆叠小卡片。适合对比（敌我/优劣/前后）、分类归纳、多方案并列。栏宽约 300px，卡高按内容 200~320px。",
+  "width": 1080,
+  "height": 1700,
+  "elements": [
+    {"type": "text", "content": "标题：一图对比 A 与 B", "x": 540, "y": 80, "size": 58, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "『栏头决定读者第一眼分组，颜色要对比但要同饱和度』", "x": 540, "y": 180, "size": 34, "align": "center", "max_width": 880},
+    {"type": "text", "content": "阵营 A", "x": 220, "y": 270, "size": 40, "bold": true, "align": "center", "font": "title", "box": {"style": "pill", "bg": "#2F2A26", "color": "#FFFFFF", "pad": [14, 40]}},
+    {"type": "text", "content": "阵营 B", "x": 860, "y": 270, "size": 40, "bold": true, "align": "center", "font": "title", "box": {"style": "pill", "bg": "#F6A83C", "color": "#4A2800", "pad": [14, 40]}},
+    {"type": "rule", "vertical": true, "x": 540, "y1": 380, "y2": 1500, "color": "#E8E2D6", "thickness": 4},
+    {"type": "card", "x": 60, "y": 390, "width": 400, "height": 300, "radius": 18, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "A 的第一个优势", "x": 90, "y": 420, "size": 38, "bold": true, "align": "left", "max_width": 340, "font": "title"},
+    {"type": "text", "content": "两行说明，事实或数据支撑。", "x": 90, "y": 485, "size": 32, "align": "left", "max_width": 340},
+    {"type": "card", "x": 620, "y": 390, "width": 400, "height": 300, "radius": 18, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "B 的第一个优势", "x": 650, "y": 420, "size": 38, "bold": true, "align": "left", "max_width": 340, "font": "title"},
+    {"type": "text", "content": "与左栏同一维度对比，读者才能对上号。", "x": 650, "y": 485, "size": 32, "align": "left", "max_width": 340},
+    {"type": "card", "x": 60, "y": 740, "width": 400, "height": 300, "radius": 18, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "A 的短板", "x": 90, "y": 770, "size": 38, "bold": true, "align": "left", "max_width": 340, "font": "title"},
+    {"type": "text", "content": "短板描述，〖关键数字〗可加红。", "x": 90, "y": 835, "size": 32, "align": "left", "max_width": 340},
+    {"type": "card", "x": 620, "y": 740, "width": 400, "height": 300, "radius": 18, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "B 的短板", "x": 650, "y": 770, "size": 38, "bold": true, "align": "left", "max_width": 340, "font": "title"},
+    {"type": "text", "content": "两栏维度一一对应，结论自然浮出。", "x": 650, "y": 835, "size": 32, "align": "left", "max_width": 340},
+    {"type": "asset", "file": "char_a.png", "x": 220, "y": 1330, "height": 300, "rotate": -3},
+    {"type": "asset", "file": "char_b.png", "x": 860, "y": 1330, "height": 300, "rotate": 3},
+    {"type": "text", "content": "结论一句话：胜负手在于 XX", "x": 540, "y": 1580, "size": 40, "bold": true, "align": "center", "max_width": 860, "font": "title", "box": {"style": "marker", "bg": "#FFE9A8", "color": "#7A4A00", "pad": [22, 30], "radius": 14}}
+  ]
+}

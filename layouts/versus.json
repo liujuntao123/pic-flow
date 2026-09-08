@@ -1,0 +1,28 @@
+{
+  "_doc": "对比布局（Versus）：双方定妆胶囊 + table 逐维度打分 + 各自亮点卡 + 判定横幅。适合产品横评、方案二选一、政策对比。对比表维度一一对应，最后必须给判定。",
+  "width": 1080,
+  "height": 1900,
+  "elements": [
+    {"type": "text", "content": "标题：方案 A vs 方案 B", "x": 540, "y": 80, "size": 58, "bold": true, "align": "center", "font": "title"},
+    {"type": "text", "content": "一句话交代对比口径：同价位、同场景、同测试条件。", "x": 540, "y": 180, "size": 36, "align": "center", "max_width": 880},
+    {"type": "text", "content": "方案 A", "x": 300, "y": 270, "size": 40, "bold": true, "align": "center", "font": "title", "rotate": -3, "box": {"style": "pill", "bg": "#2F2A26", "color": "#FFFFFF", "pad": [14, 44]}},
+    {"type": "text", "content": "VS", "x": 540, "y": 300, "size": 52, "bold": true, "align": "center", "font": "title", "color": "#E8842B"},
+    {"type": "text", "content": "方案 B", "x": 780, "y": 270, "size": 40, "bold": true, "align": "center", "font": "title", "rotate": 3, "box": {"style": "pill", "bg": "#F6A83C", "color": "#4A2800", "pad": [14, 44]}},
+    {"type": "table", "x": 90, "y": 420, "col_widths": [220, 330, 330], "row_height": 88, "size": 34, "header": ["维度", "方案 A", "方案 B"],
+     "rows": [["价格", "$9/月", "$19/月"], ["上手难度", "低", "中"], ["性能上限", "中", "高"], ["生态", "大", "中"]],
+     "header_fill": "#2F2A26", "row_fill": "#FFFFFF", "alt_fill": "#F7F4EC", "aligns": ["center", "center", "center"]},
+    {"type": "text", "content": "逐维度点评", "x": 540, "y": 900, "size": 44, "bold": true, "align": "center", "font": "title"},
+    {"type": "card", "x": 60, "y": 990, "width": 450, "height": 280, "radius": 18, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "方案 A 的制胜点", "x": 90, "y": 1020, "size": 38, "bold": true, "align": "left", "max_width": 390, "font": "title"},
+    {"type": "text", "content": "价格只有一半，个人与小微团队闭眼选。", "x": 90, "y": 1085, "size": 32, "align": "left", "max_width": 390},
+    {"type": "text", "content": "本维度最佳", "x": 380, "y": 1180, "size": 26, "bold": true, "font": "brush", "color": "#C0392B", "rotate": -6, "box": {"style": "stamp", "border_color": "#C0392B", "pad": [10, 14], "radius": 10}},
+    {"type": "card", "x": 570, "y": 990, "width": 450, "height": 280, "radius": 18, "fill": "#FFFFFF", "border_color": "#E8E2D6", "border": 2},
+    {"type": "text", "content": "方案 B 的制胜点", "x": 600, "y": 1020, "size": 38, "bold": true, "align": "left", "max_width": 390, "font": "title"},
+    {"type": "text", "content": "性能上限高，规模上来后不用迁移。", "x": 600, "y": 1085, "size": 32, "align": "left", "max_width": 390},
+    {"type": "barchart", "x": 120, "y": 1340, "width": 840, "max": 10, "bar_height": 48, "gap": 30, "label_width": 240, "track": "#EDE8DE", "items": [
+      {"label": "综合得分 A", "value": 7.6, "text": "7.6", "color": "#2F2A26"},
+      {"label": "综合得分 B", "value": 8.4, "text": "8.4", "color": "#F6A83C"}
+    ]},
+    {"type": "text", "content": "判定：预算敏感选 A，面向规模化选 B——两者不是替代关系。", "x": 540, "y": 1620, "size": 38, "bold": true, "align": "center", "max_width": 900, "font": "title", "rotate": -2, "box": {"style": "marker", "bg": "#FFE9A8", "color": "#7A4A00", "pad": [24, 30], "radius": 14}}
+  ]
+}

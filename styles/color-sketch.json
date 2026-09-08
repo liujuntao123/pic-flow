@@ -1,0 +1,36 @@
+{
+  "name": "color-sketch",
+  "_doc": "彩色手绘：同款 Q 版线稿但明快水彩上色，暖纸感配色。字体同黑白手绘。",
+  "bg": "#FFFDF8",
+  "text": "#4A3B2A",
+  "hl_color": "#E2582B",
+  "quote_color": "#2B7A9E",
+  "warn_color": "#C43D3D",
+  "bubble": {
+    "style": "fill",
+    "bg": "#FFC94D",
+    "color": "#5A3A00",
+    "pad": [
+      20,
+      28
+    ],
+    "radius": 18
+  },
+  "fonts": {
+    "body": [
+      "fonts/LXGWWenKai-Regular.ttf",
+      "fonts/LXGWWenKai-Medium.ttf"
+    ],
+    "title": [
+      "fonts/ZCOOLKuaiLe-Regular.ttf",
+      "fonts/ZCOOLKuaiLe-Regular.ttf"
+    ],
+    "brush": [
+      "fonts/MaShanZheng-Regular.ttf",
+      "fonts/MaShanZheng-Regular.ttf"
+    ]
+  },
+  "asset_suffix": "。风格：彩色手绘漫画，明快水彩上色，暖色调丰富配色，粗线条勾边，Q版夸张比例，类似绘本插画。纯白色背景，无投影，画面中绝对不要出现任何文字、字幕、对话框、边框、水印。",
+  "card_fill": "#FFFFFF",
+  "card_border": "#EAD9C8"
+}

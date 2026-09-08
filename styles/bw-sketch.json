@@ -1,0 +1,36 @@
+{
+  "name": "bw-sketch",
+  "_doc": "黑白手绘（默认风格）：半小时漫画式黑白线稿 + 橙蓝红三色文字系统。字体：快乐体/文楷/毛笔。",
+  "bg": "#FFFFFF",
+  "text": "#333333",
+  "hl_color": "#E8842B",
+  "quote_color": "#2E7CB8",
+  "warn_color": "#D4483B",
+  "bubble": {
+    "style": "fill",
+    "bg": "#F6A83C",
+    "color": "#4A2800",
+    "pad": [
+      20,
+      28
+    ],
+    "radius": 18
+  },
+  "fonts": {
+    "body": [
+      "fonts/LXGWWenKai-Regular.ttf",
+      "fonts/LXGWWenKai-Medium.ttf"
+    ],
+    "title": [
+      "fonts/ZCOOLKuaiLe-Regular.ttf",
+      "fonts/ZCOOLKuaiLe-Regular.ttf"
+    ],
+    "brush": [
+      "fonts/MaShanZheng-Regular.ttf",
+      "fonts/MaShanZheng-Regular.ttf"
+    ]
+  },
+  "asset_suffix": "。风格：黑白幽默历史漫画，粗黑钢笔线条勾边，Q版夸张比例，简洁白色填充，少量灰色排线阴影，类似《半小时漫画中国史》的画风。纯白色背景，无投影，画面中绝对不要出现任何文字、字幕、对话框、边框、水印。",
+  "card_fill": "#FFFFFF",
+  "card_border": "#E5E0D8"
+}

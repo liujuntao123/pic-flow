@@ -1,0 +1,162 @@
+{
+  "width": 1080,
+  "height": 1750,
+  "elements": [
+    {
+      "type": "text",
+      "content": "五、循环的水，其实很金贵",
+      "x": 540,
+      "y": 90,
+      "size": 58,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "color": "#2B6CB0"
+    },
+    {
+      "type": "text",
+      "content": "水循环听起来取之不尽，但好用的淡水少得超出直觉。",
+      "x": 540,
+      "y": 215,
+      "size": 36,
+      "align": "center",
+      "max_width": 900
+    },
+    {
+      "type": "card",
+      "x": 70,
+      "y": 310,
+      "width": 450,
+      "height": 330,
+      "radius": 20,
+      "border": 2
+    },
+    {
+      "type": "text",
+      "content": "〖97.5%〗",
+      "x": 295,
+      "y": 350,
+      "size": 100,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "color": "#3182CE"
+    },
+    {
+      "type": "text",
+      "content": "是海水——又咸又苦，既不能喝也不能浇地。",
+      "x": 295,
+      "y": 500,
+      "size": 30,
+      "align": "center",
+      "max_width": 380
+    },
+    {
+      "type": "card",
+      "x": 560,
+      "y": 310,
+      "width": 450,
+      "height": 330,
+      "radius": 20,
+      "border": 2
+    },
+    {
+      "type": "text",
+      "content": "〖2.5%〗",
+      "x": 785,
+      "y": 350,
+      "size": 100,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "color": "#38A169"
+    },
+    {
+      "type": "text",
+      "content": "是淡水——但其中七成冻在冰川里，暂时取不出来。",
+      "x": 785,
+      "y": 500,
+      "size": 30,
+      "align": "center",
+      "max_width": 380
+    },
+    {
+      "type": "text",
+      "content": "那 2.5% 的淡水，都藏在哪里？",
+      "x": 540,
+      "y": 730,
+      "size": 44,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "color": "#2B6CB0"
+    },
+    {
+      "type": "piechart",
+      "cx": 300,
+      "cy": 1120,
+      "r": 190,
+      "hole": 0.55,
+      "label_size": 30,
+      "items": [
+        {
+          "label": "冰川冰盖",
+          "value": 68.7,
+          "text": "68.7%",
+          "color": "#3182CE"
+        },
+        {
+          "label": "地下水",
+          "value": 30.1,
+          "text": "30.1%",
+          "color": "#38A169"
+        },
+        {
+          "label": "河湖等地表水",
+          "value": 1.2,
+          "text": "1.2%",
+          "color": "#DD6B20"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "content": "河湖这些『看得见』的方便水源，只占全球水量不到〖0.01%〗。",
+      "x": 540,
+      "y": 1360,
+      "size": 34,
+      "align": "center",
+      "max_width": 880
+    },
+    {
+      "type": "text",
+      "content": "所以水循环不是锦上添花，它是地球唯一的【淡水补给机】：靠它，河湖才能不断被充值。",
+      "x": 540,
+      "y": 1490,
+      "size": 34,
+      "align": "center",
+      "max_width": 880
+    },
+    {
+      "type": "text",
+      "content": "结论：循环让水『取之不尽』，但好用的淡水需要整个循环系统加班运转。",
+      "x": 540,
+      "y": 1640,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "max_width": 900,
+      "font": "title",
+      "box": {
+        "style": "marker",
+        "bg": "#EBF4FF",
+        "color": "#2B6CB0",
+        "pad": [
+          22,
+          30
+        ],
+        "radius": 12
+      }
+    }
+  ]
+}
