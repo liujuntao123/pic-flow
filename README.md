@@ -125,8 +125,8 @@ python3 scripts/stitch.py output/out.jpg blocks/final1.png blocks/final2.png
 | `assets/` | 产物（中间） | AI 生成的透明背景素材，`gen_all.py` 可断点续跑再生 |
 | `storyboard.json`、`assets.json`、`layout/blockN.json`、`style.json`、`CONTENT.md` | **源文件** | 分镜、素材清单、排版描述、风格包、内容骨架——真正值得入 git 的部分 |
 
-脚手架会在项目里生成 `.gitignore`，默认排除 `assets/ blocks/ output/`（均可由脚本再生）；
-仓库自带示例成品在 `examples/`，`projects/` 只保留源文件。
+产物均可由脚本再生，是否入 git 由你自己的项目仓库决定；仓库自带示例成品在
+`examples/`，`projects/` 只保留源文件。
 
 ### 生图 Provider 配置（用户自备）
 

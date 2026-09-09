@@ -111,8 +111,8 @@ dark 风格注意：白底线稿与其冲突，素材用深底插画整图贴用
 #    项目自包含，产物位置固定（全部在项目目录内）：
 #      assets/  AI 生成素材      blocks/  渲染块（stage*=调试、final*=正式）
 #      output/  拼接成品长图     ← 唯一需要保留/发布的产物
-#    源文件（值得入 git）：storyboard.json、assets.json、layout/、style.json、CONTENT.md；
-#    产物（assets/ blocks/ output/）可由脚本再生，脚手架已写 .gitignore 默认排除
+#    源文件：storyboard.json、assets.json、layout/、style.json、CONTENT.md；
+#    产物（assets/ blocks/ output/）均可由脚本再生，是否入 git 由项目自己的仓库决定
 python3 <本skill目录>/pipeline/new_project.py ~/workspace/<主题名> \
     --title "主题名" --template story --style bw-sketch --layout story-flow
 cd ~/workspace/<主题名>

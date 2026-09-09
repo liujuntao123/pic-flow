@@ -8,10 +8,10 @@ Usage: new_project.py <project_dir> [--title "主题名"]
 
 Creates: assets/ blocks/ layout/ output/ scripts/ + fonts symlink
          + CONTENT.md (内容模板) + style.json (风格包) + storyboard.json (整图分镜)
-         + layout/block1.json (布局骨架) + assets.json 模板
-         + .gitignore（assets/ blocks/ output/ 产物默认不入 git）。
+         + layout/block1.json (布局骨架) + assets.json 模板。
 产物位置固定：assets/ 生成素材、blocks/ 渲染块、output/ 成品长图；
 源文件：storyboard.json、assets.json、layout/、style.json、CONTENT.md。
+产物是否入 git 由项目自己的仓库决定，脚手架不写 .gitignore。
 """
 import argparse
 import json
@@ -61,12 +61,6 @@ def main():
     except OSError:
         shutil.copytree(SKILL_DIR / "fonts", fonts_dst)
 
-    (root / ".gitignore").write_text(
-        "# pic-flow 产物（脚本可重新生成，默认不入 git；源文件是 layout/ assets.json 等）\n"
-        "/assets/\n/blocks/\n/output/\n/fonts\n"
-        "__pycache__/\n*.pyc\n.DS_Store\n",
-        encoding="utf-8")
-
     shutil.copy2(LIB / "templates" / f"{args.template}.md", root / "CONTENT.md")
     storyboard = LIB / "templates" / "storyboard.json"
     if storyboard.exists():
@@ -85,7 +79,7 @@ def main():
     print(f"[new_project] 已创建 {root}")
     print(f"  内容模板={args.template}  风格={args.style}  布局={args.layout}")
     print("  产物位置：assets/ 生成素材 · blocks/ 渲染块 · output/ 成品长图"
-          "（已写 .gitignore，产物默认不入 git）")
+          "（是否入 git 由你的项目仓库决定）")
     print("下一步：1) 按 CONTENT.md 写 assets.json 与 layout/*.json")
     print("        2) python3 scripts/gen_all.py  3) 按 skill 流程识图校准")
 
