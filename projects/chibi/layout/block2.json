@@ -1,0 +1,207 @@
+{
+  "width": 1080,
+  "height": 1440,
+  "bg": "#FFFFFF",
+  "theme": {
+    "name": "chibi",
+    "_doc": "赤壁之战v4连续漫画系统",
+    "bg": "#FFFFFF",
+    "text": "#222222",
+    "hl_color": "#E8842B",
+    "quote_color": "#236EA8",
+    "warn_color": "#D4483B",
+    "bubble": {
+      "style": "fill",
+      "bg": "#F6A83C",
+      "color": "#3A2000",
+      "pad": [
+        16,
+        22
+      ],
+      "radius": 14
+    },
+    "fonts": {
+      "body": [
+        "fonts/LXGWWenKai-Regular.ttf",
+        "fonts/LXGWWenKai-Medium.ttf"
+      ],
+      "title": [
+        "fonts/ZCOOLKuaiLe-Regular.ttf",
+        "fonts/ZCOOLKuaiLe-Regular.ttf"
+      ],
+      "brush": [
+        "fonts/MaShanZheng-Regular.ttf",
+        "fonts/MaShanZheng-Regular.ttf"
+      ]
+    },
+    "card_fill": "#FFFDF9",
+    "card_border": "#E5E0D8"
+  },
+  "elements": [
+    {
+      "type": "text",
+      "content": "01 / 战前狂飙",
+      "x": 72,
+      "y": 68,
+      "size": 34,
+      "align": "left",
+      "max_width": 300,
+      "font": "title",
+      "bold": true,
+      "color": "#D4483B"
+    },
+    {
+      "type": "text",
+      "content": "曹操一波平推，\n把南方诸侯逼上绝路",
+      "x": 72,
+      "y": 130,
+      "size": 60,
+      "align": "left",
+      "max_width": 700,
+      "font": "title",
+      "bold": true,
+      "color": "#222222"
+    },
+    {
+      "type": "text",
+      "content": "官渡统一北方，荆州降曹，曹操率号称〖八十万〗铁骑顺江席卷！\n长坂坡击溃刘备，退守夏口；天下大势已至退无可退的至暗时刻。",
+      "x": 72,
+      "y": 285,
+      "size": 34,
+      "align": "left",
+      "max_width": 936,
+      "line_height": 1.55,
+      "font": "body",
+      "bold": false,
+      "color": "#222222"
+    },
+    {
+      "type": "asset",
+      "file": "cao_cao_ride.png",
+      "x": 300,
+      "y": 760,
+      "height": 560,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "liu_bei_flee.png",
+      "x": 800,
+      "y": 780,
+      "height": 450,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "“全军压上，\n休放走了刘备！”",
+      "x": 230,
+      "y": 480,
+      "size": 32,
+      "align": "center",
+      "max_width": 260,
+      "font": "title",
+      "bold": true,
+      "color": "#3A2000",
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "pad": [
+          12,
+          18
+        ],
+        "radius": 14,
+        "tail": "bl"
+      },
+      "rotate": -5
+    },
+    {
+      "type": "text",
+      "content": "“风紧，扯呼！\n快撤往江夏！”",
+      "x": 825,
+      "y": 540,
+      "size": 30,
+      "align": "center",
+      "max_width": 240,
+      "font": "title",
+      "bold": true,
+      "color": "#236EA8",
+      "box": {
+        "style": "outline",
+        "border_color": "#236EA8",
+        "color": "#236EA8",
+        "pad": [
+          12,
+          18
+        ],
+        "radius": 14,
+        "tail": "br"
+      },
+      "rotate": 4
+    },
+    {
+      "type": "text",
+      "content": "〖800,000〗\n曹军号称 · 一波平推",
+      "x": 230,
+      "y": 1080,
+      "size": 32,
+      "align": "center",
+      "max_width": 300,
+      "font": "title",
+      "bold": true,
+      "color": "#D4483B"
+    },
+    {
+      "type": "arrow",
+      "x": 420,
+      "y": 1110,
+      "length": 230,
+      "direction": "right",
+      "color": "#D4483B",
+      "width": 8
+    },
+    {
+      "type": "text",
+      "content": "【残部数千】\n刘备连夜 · 败退江夏",
+      "x": 830,
+      "y": 1080,
+      "size": 32,
+      "align": "center",
+      "max_width": 300,
+      "font": "title",
+      "bold": true,
+      "color": "#236EA8"
+    },
+    {
+      "type": "text",
+      "content": "绝境逼出惊天转折：退无可退之时，唯一的生路在江东！",
+      "x": 540,
+      "y": 1235,
+      "size": 36,
+      "align": "center",
+      "max_width": 936,
+      "font": "body",
+      "bold": true,
+      "color": "#222222"
+    },
+    {
+      "type": "rule",
+      "x1": 72,
+      "x2": 1008,
+      "y": 1330,
+      "color": "#E5E0D8",
+      "thickness": 3
+    },
+    {
+      "type": "text",
+      "content": "战局推进 · 第二幕：孙刘联盟破冰对峙 →",
+      "x": 1008,
+      "y": 1360,
+      "size": 26,
+      "align": "right",
+      "max_width": 500,
+      "font": "body",
+      "bold": true,
+      "color": "#D4483B"
+    }
+  ]
+}

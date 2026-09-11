@@ -8,8 +8,9 @@ whenToUse: 用户想制作"长图 / 科普长图 / 漫画长图 / 一图读懂 /
 
 用「AI 生图素材 + 程序排版 + LLM 识图闭环校准」稳定产出高质量长图。
 成品规格：1080px 宽单栏、白底或主题底色、6~9 个 block 垂直拼接、总高 7000~14000px。
-参考成品：`~/workspace/pic-flow/output/赤壁之战_长图.jpg`
-（story × story-flow × 项目自带黑白漫画风格包 `style.json`，定稿 1080 × 12970px）。
+参考成品：`examples/chibi/赤壁之战_长图.jpg`
+（story × story-flow × 项目自带黑白漫画风格包 `style.json`，定稿 1080 × 12970px；
+源文件与渲染脚本见 `projects/chibi/`，可逐字节复现）。
 
 ## 第零步：需求引导 + 三维选型（先推荐，再确认，后开工）
 
@@ -231,7 +232,9 @@ layout 内写 `"theme"` 可覆盖。新增风格 = 新增一个 styles/*.json，
 
 - `templates/`（8）· `layouts/`（9）· `styles/`（8）· `references/` 设计系统（style-guide.md）、
   设计方法（design-principles.md）与素材指南
-- `examples/` 赤壁之战实例；完整实战项目：`~/workspace/water-cycle`（edu × vector-flat）
+- `examples/` 成品示例图；`projects/` 完整实战项目源文件：
+  `projects/chibi/`（赤壁之战，story × story-flow，含可复现脚本）、
+  `projects/water-cycle/`（水循环，edu × vector-flat）
 - `pipeline/` 全部脚本；`new_project.py` 脚手架；`layout_lint.py` 渲染前机检；
   `validate_layouts.py` 排版修改合规校验
   （字体软链共享，勿删 skill 目录）

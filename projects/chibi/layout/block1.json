@@ -1,0 +1,196 @@
+{
+  "width": 1080,
+  "height": 1680,
+  "bg": "#FFFFFF",
+  "theme": {
+    "name": "chibi",
+    "_doc": "赤壁之战v4连续漫画系统",
+    "bg": "#FFFFFF",
+    "text": "#222222",
+    "hl_color": "#E8842B",
+    "quote_color": "#236EA8",
+    "warn_color": "#D4483B",
+    "bubble": {
+      "style": "fill",
+      "bg": "#F6A83C",
+      "color": "#3A2000",
+      "pad": [
+        16,
+        22
+      ],
+      "radius": 14
+    },
+    "fonts": {
+      "body": [
+        "fonts/LXGWWenKai-Regular.ttf",
+        "fonts/LXGWWenKai-Medium.ttf"
+      ],
+      "title": [
+        "fonts/ZCOOLKuaiLe-Regular.ttf",
+        "fonts/ZCOOLKuaiLe-Regular.ttf"
+      ],
+      "brush": [
+        "fonts/MaShanZheng-Regular.ttf",
+        "fonts/MaShanZheng-Regular.ttf"
+      ]
+    },
+    "card_fill": "#FFFDF9",
+    "card_border": "#E5E0D8"
+  },
+  "elements": [
+    {
+      "type": "asset",
+      "file": "cover_fire.png",
+      "x": 540,
+      "y": 1160,
+      "width": 1180,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "cao_cao_laugh.png",
+      "x": 840,
+      "y": 450,
+      "height": 500,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "三国历史大决战",
+      "x": 72,
+      "y": 68,
+      "size": 28,
+      "align": "left",
+      "max_width": 400,
+      "font": "title",
+      "bold": true,
+      "color": "#D4483B"
+    },
+    {
+      "type": "text",
+      "content": "赤壁之战",
+      "x": 72,
+      "y": 125,
+      "size": 136,
+      "align": "left",
+      "max_width": 600,
+      "font": "title",
+      "bold": true,
+      "color": "#222222"
+    },
+    {
+      "type": "text",
+      "content": "一把火，烧出【三分天下】",
+      "x": 76,
+      "y": 290,
+      "size": 52,
+      "align": "left",
+      "max_width": 600,
+      "font": "title",
+      "bold": true,
+      "color": "#E8842B"
+    },
+    {
+      "type": "text",
+      "content": "公元 208 年 · 长江赤壁",
+      "x": 78,
+      "y": 380,
+      "size": 30,
+      "align": "left",
+      "max_width": 500,
+      "font": "body",
+      "bold": true,
+      "color": "#236EA8"
+    },
+    {
+      "type": "text",
+      "content": "曹操平定北方，率号称〖八十万〗大军顺江压境；\n刘备败退夏口，孙权退无可退，五万联军迎敌！\n这不是势均力敌的较量，\n而是一场把“绝对优势”烧成灰烬的绝地反杀。",
+      "x": 78,
+      "y": 450,
+      "size": 35,
+      "align": "left",
+      "max_width": 550,
+      "line_height": 1.55,
+      "font": "body",
+      "bold": false,
+      "color": "#222222"
+    },
+    {
+      "type": "text",
+      "content": "“江东，我唾手可得！”",
+      "x": 770,
+      "y": 165,
+      "size": 34,
+      "align": "center",
+      "max_width": 300,
+      "font": "title",
+      "bold": true,
+      "color": "#3A2000",
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "pad": [
+          14,
+          22
+        ],
+        "radius": 16,
+        "tail": "br"
+      },
+      "rotate": -4
+    },
+    {
+      "type": "text",
+      "content": "决战将至",
+      "x": 950,
+      "y": 660,
+      "size": 28,
+      "align": "center",
+      "max_width": 200,
+      "font": "brush",
+      "bold": true,
+      "color": "#D4483B",
+      "box": {
+        "style": "stamp",
+        "border_color": "#D4483B",
+        "pad": [
+          10,
+          16
+        ],
+        "radius": 8
+      },
+      "rotate": 6
+    },
+    {
+      "type": "text",
+      "content": "〖战局伏笔〗 长江天堑横亘，当北方水战门外汉撞上江东火网……",
+      "x": 72,
+      "y": 1525,
+      "size": 33,
+      "align": "left",
+      "max_width": 936,
+      "font": "title",
+      "bold": true,
+      "color": "#222222"
+    },
+    {
+      "type": "rule",
+      "x1": 72,
+      "x2": 1008,
+      "y": 1595,
+      "color": "#D4483B",
+      "thickness": 4
+    },
+    {
+      "type": "text",
+      "content": "战局推进 · 第一幕：曹军南下狂飙 →",
+      "x": 1008,
+      "y": 1618,
+      "size": 26,
+      "align": "right",
+      "max_width": 500,
+      "font": "body",
+      "bold": true,
+      "color": "#D4483B"
+    }
+  ]
+}

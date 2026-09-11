@@ -1,0 +1,207 @@
+{
+  "width": 1080,
+  "height": 1550,
+  "bg": "#FFFFFF",
+  "theme": {
+    "name": "chibi",
+    "_doc": "赤壁之战v4连续漫画系统",
+    "bg": "#FFFFFF",
+    "text": "#222222",
+    "hl_color": "#E8842B",
+    "quote_color": "#236EA8",
+    "warn_color": "#D4483B",
+    "bubble": {
+      "style": "fill",
+      "bg": "#F6A83C",
+      "color": "#3A2000",
+      "pad": [
+        16,
+        22
+      ],
+      "radius": 14
+    },
+    "fonts": {
+      "body": [
+        "fonts/LXGWWenKai-Regular.ttf",
+        "fonts/LXGWWenKai-Medium.ttf"
+      ],
+      "title": [
+        "fonts/ZCOOLKuaiLe-Regular.ttf",
+        "fonts/ZCOOLKuaiLe-Regular.ttf"
+      ],
+      "brush": [
+        "fonts/MaShanZheng-Regular.ttf",
+        "fonts/MaShanZheng-Regular.ttf"
+      ]
+    },
+    "card_fill": "#FFFDF9",
+    "card_border": "#E5E0D8"
+  },
+  "elements": [
+    {
+      "type": "text",
+      "content": "06 / 鼎足拉开",
+      "x": 72,
+      "y": 68,
+      "size": 34,
+      "align": "left",
+      "max_width": 300,
+      "font": "title",
+      "bold": true,
+      "color": "#D4483B"
+    },
+    {
+      "type": "text",
+      "content": "一场赤壁大火，\n真正烧出五十年三国鼎立",
+      "x": 72,
+      "y": 130,
+      "size": 60,
+      "align": "left",
+      "max_width": 850,
+      "font": "title",
+      "bold": true,
+      "color": "#222222"
+    },
+    {
+      "type": "text",
+      "content": "战火余烬尚未冷透，天下格局已彻底撕裂！\n三家各自拿到历史筹码，五十年三国时代由此开启。",
+      "x": 72,
+      "y": 275,
+      "size": 32,
+      "align": "left",
+      "max_width": 936,
+      "line_height": 1.55,
+      "font": "body",
+      "bold": true,
+      "color": "#236EA8"
+    },
+    {
+      "type": "asset",
+      "file": "three_kingdoms.png",
+      "x": 540,
+      "y": 680,
+      "width": 920,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "〖曹操 镇北方〗",
+      "x": 72,
+      "y": 1050,
+      "size": 34,
+      "align": "left",
+      "max_width": 280,
+      "font": "title",
+      "bold": true,
+      "color": "#D4483B"
+    },
+    {
+      "type": "text",
+      "content": "虽遭重创，元气犹存；\n无力再大举南征，\n专心中原筑牢魏基。",
+      "x": 72,
+      "y": 1105,
+      "size": 28,
+      "align": "left",
+      "max_width": 280,
+      "line_height": 1.5,
+      "font": "body",
+      "bold": false,
+      "color": "#222222"
+    },
+    {
+      "type": "text",
+      "content": "『刘备 入西川』",
+      "x": 400,
+      "y": 1050,
+      "size": 34,
+      "align": "left",
+      "max_width": 280,
+      "font": "title",
+      "bold": true,
+      "color": "#236EA8"
+    },
+    {
+      "type": "text",
+      "content": "最大赢家，绝处逢生；\n夺荆州诸郡入西川，\n由此奠定蜀汉基业。",
+      "x": 400,
+      "y": 1105,
+      "size": 28,
+      "align": "left",
+      "max_width": 280,
+      "line_height": 1.5,
+      "font": "body",
+      "bold": false,
+      "color": "#222222"
+    },
+    {
+      "type": "text",
+      "content": "【孙权 霸江东】",
+      "x": 730,
+      "y": 1050,
+      "size": 34,
+      "align": "left",
+      "max_width": 280,
+      "font": "title",
+      "bold": true,
+      "color": "#E8842B"
+    },
+    {
+      "type": "text",
+      "content": "击退强敌，威震华夏；\n稳固江南六郡基业，\n立定东吴割据之本。",
+      "x": 730,
+      "y": 1105,
+      "size": 28,
+      "align": "left",
+      "max_width": 280,
+      "line_height": 1.5,
+      "font": "body",
+      "bold": false,
+      "color": "#222222"
+    },
+    {
+      "type": "text",
+      "content": "〖历史定局〗 三国鼎立不是凭空降临的，它从赤壁烈火中破土而生！",
+      "x": 540,
+      "y": 1285,
+      "size": 35,
+      "align": "center",
+      "max_width": 936,
+      "font": "title",
+      "bold": true,
+      "color": "#D4483B"
+    },
+    {
+      "type": "text",
+      "content": "赤壁之前，天下似乎只有统一一个定局；\n赤壁之后，历史走向了三足鼎立的新棋局。",
+      "x": 540,
+      "y": 1350,
+      "size": 31,
+      "align": "center",
+      "max_width": 936,
+      "line_height": 1.5,
+      "font": "body",
+      "bold": false,
+      "color": "#222222"
+    },
+    {
+      "type": "rule",
+      "x1": 72,
+      "x2": 1008,
+      "y": 1435,
+      "color": "#E5E0D8",
+      "thickness": 3
+    },
+    {
+      "type": "text",
+      "content": "战局推进 · 终章：赤壁真正烧掉的是什么？ →",
+      "x": 1008,
+      "y": 1465,
+      "size": 26,
+      "align": "right",
+      "max_width": 500,
+      "font": "body",
+      "bold": true,
+      "color": "#D4483B"
+    }
+  ]
+}

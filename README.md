@@ -169,8 +169,12 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 
 | 示例 | 选型 | 位置 |
 |---|---|---|
-| 赤壁之战（半小时漫画风历史科普，定稿 1080 × 12970px） | story × story-flow × bw-sketch 系黑白漫画风格包（项目自带 `style.json`） | `examples/chibi/`（完整项目源码：`~/workspace/pic-flow/`） |
+| 赤壁之战（半小时漫画风历史科普，定稿 1080 × 12970px） | story × story-flow × bw-sketch 系黑白漫画风格包（项目自带 `style.json`） | 成品图 `examples/chibi/`；完整源文件 `projects/chibi/` |
 | 水循环（教育讲解，多布局混用） | edu × info-feed/event-flow × vector-flat | `projects/water-cycle/` |
+
+赤壁之战是首个实战项目，迭代四轮后定稿。其 `projects/chibi/` 保留可直接渲染的
+源文件（分镜 / 素材清单 / 排版 / 风格包）与 `DESIGN_NOTES.md` 设计报告；
+`examples/chibi/` 只有成品图。用其自带脚本重跑排版与拼接，结果与成品**逐字节一致**。
 
 ## 目录
 
@@ -181,8 +185,21 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 | `layouts/` | 9 种布局骨架（可直接拷进项目改） |
 | `styles/` | 8 种风格包（生图画风后缀 + 排版主题） |
 | `references/` | 设计系统详解、设计方法、素材 prompt 指南 |
-| `examples/` | 赤壁之战示例 + 成品图 |
-| `projects/` | 完整实战项目（水循环） |
+| `examples/` | 成品示例图（只放成品，便于预览） |
+| `projects/` | 完整实战项目源文件（`chibi/` 赤壁之战、`water-cycle/` 水循环） |
 | `fonts/` | OFL 开源中文字体（霞鹜文楷 / 站酷快乐体 / 马善政毛笔楷书） |
 
 skill 的完整工作指引（选型引导、识图校准 SOP、设计方法、常见坑）见 [SKILL.md](SKILL.md)。
+
+## 本仓库即 skill 源码
+
+本仓库是 pic-flow 的**源码仓库**，同时也可直接被 agent 当作 skill 加载。
+本机开发时的接法是把 agent 技能目录软链过来，这样改完即时生效、可在线调试，
+源码始终只在这一处：
+
+```bash
+ln -s ~/workspace/pic-flow ~/.dsh/skills/pic-flow   # workbuddy / DeepSeek Harness
+```
+
+`.dsh` 里那份只是软链视图，`git` 与 GitHub 同步都以本仓库为准。
+（用 `git clone` 安装而非软链时，技能目录本身就是一份独立副本，两者互不影响。）
