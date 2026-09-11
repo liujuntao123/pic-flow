@@ -169,7 +169,7 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 
 | 示例 | 选型 | 位置 |
 |---|---|---|
-| 赤壁之战（半小时漫画风历史科普） | story × story-flow × bw-sketch | `examples/chibi/` |
+| 赤壁之战（半小时漫画风历史科普，定稿 1080 × 12970px） | story × story-flow × bw-sketch 系黑白漫画风格包（项目自带 `style.json`） | `examples/chibi/`（完整项目源码：`~/workspace/pic-flow/`） |
 | 水循环（教育讲解，多布局混用） | edu × info-feed/event-flow × vector-flat | `projects/water-cycle/` |
 
 ## 目录

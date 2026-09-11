@@ -298,7 +298,7 @@ def paint_box(d, rect, el):
                 p = [(x1 - 12, by), (x1 - 44, by), (x1 - 2, tip_y)]
             else:
                 p = [(cx - 16, by), (cx + 16, by), (cx, tip_y)]
-        else:
+        elif tail in ("tl", "tc", "tr"):
             by, tip_y = y0 + 2, y0 - th
             if tail == "tl":
                 p = [(x0 + 12, by), (x0 + 44, by), (x0 + 2, tip_y)]
@@ -306,12 +306,27 @@ def paint_box(d, rect, el):
                 p = [(x1 - 12, by), (x1 - 44, by), (x1 - 2, tip_y)]
             else:
                 p = [(cx - 16, by), (cx + 16, by), (cx, tip_y)]
-        tail_fill = bg if solid else box.get("fill", "#FFFFFF")
-        d.polygon(p, fill=tail_fill)
-        if not solid:
-            d.line(list(p) + [p[0]], fill=bc, width=3)
-            sx0, sx1 = sorted([p[0][0], p[1][0]])
-            d.rectangle([sx0 + 2, by - 5, sx1 - 2, by + 5], fill=tail_fill)
+        elif tail == "lc":
+            bx, tip_x = x0 + 2, x0 - th
+            cy = (y0 + y1) / 2
+            p = [(bx, cy - 16), (bx, cy + 16), (tip_x, cy)]
+        elif tail == "rc":
+            bx, tip_x = x1 - 2, x1 + th
+            cy = (y0 + y1) / 2
+            p = [(bx, cy - 16), (bx, cy + 16), (tip_x, cy)]
+        else:
+            p = []
+        if p:
+            tail_fill = bg if solid else box.get("fill", "#FFFFFF")
+            d.polygon(p, fill=tail_fill)
+            if not solid:
+                d.line(list(p) + [p[0]], fill=bc, width=3)
+                if tail in ("lc", "rc"):
+                    sy0, sy1 = sorted([p[0][1], p[1][1]])
+                    d.rectangle([bx - 5, sy0 + 2, bx + 5, sy1 - 2], fill=tail_fill)
+                else:
+                    sx0, sx1 = sorted([p[0][0], p[1][0]])
+                    d.rectangle([sx0 + 2, by - 5, sx1 - 2, by + 5], fill=tail_fill)
     return rect
 
 

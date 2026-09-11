@@ -27,7 +27,8 @@
 - 人物/单人动作：`1024x1024`；横向场面（船队/战场/地图）：`1792x1024`。
 - 一期长图 12~16 张：可复用主角 2~3 张 + 每块专用 1~2 张 + 大场面 1~2 张。
 - gen_all.py 并行 4 路、断点续跑（已存在的文件跳过）；`--force` 强制重生成。
-- 上游链自动故障切换（见 ~/.dsh/AGENTS.md）；产物为白底 RGB，用
+- 上游链自动故障切换（本机上游由 image-gen skill 统一维护，其 sync.mjs 生成
+  ~/.config/pic-flow/providers.json）；产物为白底 RGB，用
   make_transparent.py 转透明+裁边后再排版。
 
 ## 赤壁之战实战例（assets.json 全文见 examples/chibi-assets.json）

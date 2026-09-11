@@ -8,7 +8,8 @@ whenToUse: 用户想制作"长图 / 科普长图 / 漫画长图 / 一图读懂 /
 
 用「AI 生图素材 + 程序排版 + LLM 识图闭环校准」稳定产出高质量长图。
 成品规格：1080px 宽单栏、白底或主题底色、6~9 个 block 垂直拼接、总高 7000~14000px。
-参考成品：`~/workspace/pic-flow/output/赤壁之战_长图.jpg`（story × bw-sketch × story-flow）。
+参考成品：`~/workspace/pic-flow/output/赤壁之战_长图.jpg`
+（story × story-flow × 项目自带黑白漫画风格包 `style.json`，定稿 1080 × 12970px）。
 
 ## 第零步：需求引导 + 三维选型（先推荐，再确认，后开工）
 
