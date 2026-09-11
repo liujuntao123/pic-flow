@@ -16,7 +16,7 @@ story × story-flow × 定稿黑白漫画风格包，8 块、1080 × 12970 px。
 | `assets.json` | 素材清单 14 条，与 `assets/`、`layout/` 一一对应 |
 | `layout/block1..8.json` | 每块排版描述，内嵌定稿主题 |
 | `DESIGN_NOTES.md` | 定稿设计系统与各块构图意图 |
-| `scripts/` | 流水线脚本副本（脚手架 `new_project.py` 生成，与仓库 `pipeline/` 同源） |
+| `scripts/` | 流水线脚本**软链**到仓库 `pipeline/`（不复制，永远指向当前版本） |
 | `fonts` | 软链到仓库 `fonts/`（OFL 开源中文字体） |
 
 **产物（不入 git，仅本地保留）**

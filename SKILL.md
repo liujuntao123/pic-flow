@@ -109,12 +109,15 @@ dark 风格注意：白底线稿与其冲突，素材用深底插画整图贴用
 ## 快速开始（六步）
 
 ```bash
-# 0. 脚手架：按选型生成项目（流水线+字体软链+CONTENT.md+style.json+布局骨架）
+# 0. 脚手架：按选型生成项目（脚本与字体软链+CONTENT.md+storyboard.json+style.json+布局骨架）
 #    项目自包含，产物位置固定（全部在项目目录内）：
 #      assets/  AI 生成素材      blocks/  渲染块（stage*=调试、final*=正式）
 #      output/  拼接成品长图     ← 唯一需要保留/发布的产物
 #    源文件：storyboard.json、assets.json、layout/、style.json、CONTENT.md；
 #    产物（assets/ blocks/ output/）均可由脚本再生，是否入 git 由项目自己的仓库决定
+#    注：scripts/ 与 fonts/ 是软链而非副本 —— 项目里的脚本永远等于 skill 当前版本，
+#    不会各自漂移；因此也可原地运行，项目不必有副本：
+#      python3 <本skill目录>/pipeline/compose.py <项目>/layout/block1.json -o out.png
 python3 <本skill目录>/pipeline/new_project.py ~/workspace/<主题名> \
     --title "主题名" --template story --style bw-sketch --layout story-flow
 cd ~/workspace/<主题名>

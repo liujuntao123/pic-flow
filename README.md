@@ -91,7 +91,7 @@ agent 会先给一张**选型选择卡**——推荐组合 + 最多两个备选 
 ### 方式二：手动命令行（不经过 agent 也能跑）
 
 ```bash
-# 1) 脚手架：生成项目目录（流水线脚本 + 字体软链 + 内容骨架 + 风格包）
+# 1) 脚手架：生成项目目录（脚本与字体软链 + 内容骨架 + 分镜 + 风格包）
 python3 pipeline/new_project.py ~/workspace/my-topic --title "主题" \
     --template edu --style vector-flat --layout flow-steps
 cd ~/workspace/my-topic
@@ -127,6 +127,18 @@ python3 scripts/stitch.py output/out.jpg blocks/final1.png blocks/final2.png
 
 产物均可由脚本再生，是否入 git 由你自己的项目仓库决定；仓库自带示例成品在
 `examples/`，`projects/` 只保留源文件。
+
+**脚本与字体都是软链，不是副本**：脚手架把 `scripts/` 与 `fonts/` 软链到 skill
+本体，因此项目里的脚本永远等于 skill 当前版本，不会各自漂移。副作用是脚本也能
+原地运行——项目里不必有副本：
+
+```bash
+python3 <skill>/pipeline/compose.py <项目>/layout/block1.json -o out.png
+PICFLOW_ROOT=<项目> python3 <skill>/pipeline/compose.py layout/block1.json -o out.png
+```
+
+项目根由「被操作的 layout 文件」逐级上溯自动推断（找 `assets.json` / `style.json` /
+`layout/` 等标志），无需把脚本复制进项目；个别场景可用 `PICFLOW_ROOT` 显式指定。
 
 ### 生图 Provider 配置（用户自备）
 

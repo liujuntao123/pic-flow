@@ -6,12 +6,13 @@ Usage: new_project.py <project_dir> [--title "主题名"]
                        [--style bw-sketch|color-sketch|vector-flat|magazine]
                        [--layout story-flow|event-flow|info-feed|kanban]
 
-Creates: assets/ blocks/ layout/ output/ scripts/ + fonts symlink
+Creates: assets/ blocks/ layout/ output/ scripts/(软链) + fonts(软链)
          + CONTENT.md (内容模板) + style.json (风格包) + storyboard.json (整图分镜)
          + layout/block1.json (布局骨架) + assets.json 模板。
 产物位置固定：assets/ 生成素材、blocks/ 渲染块、output/ 成品长图；
 源文件：storyboard.json、assets.json、layout/、style.json、CONTENT.md。
 产物是否入 git 由项目自己的仓库决定，脚手架不写 .gitignore。
+scripts/ 与 fonts/ 均软链到 skill 本体（不复制），故项目内脚本恒为当前版本。
 """
 import argparse
 import json
@@ -52,9 +53,20 @@ def main():
 
     for d in ("assets", "blocks", "layout", "output", "scripts"):
         (root / d).mkdir(parents=True, exist_ok=True)
-    for f in (SKILL_DIR / "pipeline").glob("*.py"):
-        if f.name != "new_project.py":
-            shutil.copy2(f, root / "scripts" / f.name)
+
+    # 流水线脚本用**软链**共享，不复制：副本会随时间漂移（项目里的 compose.py
+    # 与 skill 版本各自演化、修复无法互相回流），软链永远指向当前 skill。
+    # 脚本已改为从被操作文件推断项目根，因此原地运行也成立：
+    #   python3 <skill>/pipeline/compose.py <项目>/layout/block1.json
+    # 不支持软链的文件系统（如部分 Windows 环境）回退为复制。
+    for f in sorted((SKILL_DIR / "pipeline").glob("*")):
+        if f.name in ("new_project.py", "__pycache__"):
+            continue
+        dst = root / "scripts" / f.name
+        try:
+            dst.symlink_to(f)
+        except OSError:
+            shutil.copy2(f, dst)
     fonts_dst = root / "fonts"
     try:
         fonts_dst.symlink_to(SKILL_DIR / "fonts", target_is_directory=True)

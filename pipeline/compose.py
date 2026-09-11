@@ -28,7 +28,17 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path(__file__).resolve().parent.parent
+try:
+    from roots import find_root
+except ImportError:  # 脚本被单独复制进 <项目>/scripts/ 时，roots.py 就在同目录
+    from pathlib import Path as _P
+    import sys as _s
+    _s.path.insert(0, str(_P(__file__).resolve().parent))
+    from roots import find_root
+
+# 项目根从「本次要渲染的 layout 文件」推断，无需把脚本复制进项目。
+# 显式覆盖：环境变量 PICFLOW_ROOT。
+ROOT = find_root(sys.argv[1] if len(sys.argv) > 1 else None)
 FONT_DIR = ROOT / "fonts"
 FONT_REG = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
 FONT_BOLD = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"

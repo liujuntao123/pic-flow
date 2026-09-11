@@ -11,8 +11,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from genlib import STYLE_SUFFIX, generate  # noqa: E402
+from roots import find_root  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+# 项目根从当前工作目录推断（在项目里运行即为项目根）；
+# 与旧版「脚本必须被复制进项目的 scripts/」不同，脚本可原地运行。
+# 显式覆盖：环境变量 PICFLOW_ROOT。
+ROOT = find_root(Path.cwd())
 
 
 def main():
