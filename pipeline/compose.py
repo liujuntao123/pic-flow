@@ -282,9 +282,11 @@ def _missing_placeholder(canvas, el):
     return (px, py, px + w, py + h)
 
 
-def draw_asset(canvas, el):
+def draw_asset(canvas, el, allow_missing=False):
     img = load_asset(el)
     if img is None:
+        if not allow_missing:
+            raise FileNotFoundError(f"素材缺失：assets/{el['file']}（请先生成或替换 layout 中的 file）")
         return _missing_placeholder(canvas, el)
     anchor = el.get("anchor", "cc")
     x, y = el["x"], el["y"]
@@ -420,7 +422,7 @@ def render(layout, out_path, debug=False):
     for el in layout.get("elements", []):
         t = el["type"]
         if t == "asset":
-            boxes.append(("asset:" + el["file"], draw_asset(canvas, el)))
+            boxes.append(("asset:" + el["file"], draw_asset(canvas, el, allow_missing=debug)))
         elif t == "card":
             x, y, w, h = el["x"], el["y"], el["width"], el["height"]
             border_c = el.get("border_color") or THEME.get("card_border")

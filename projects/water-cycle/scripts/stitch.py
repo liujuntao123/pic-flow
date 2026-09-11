@@ -1,1 +1,0 @@
-../../../pipeline/stitch.py

@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""Scaffold a new pic-flow long-image project.
+"""Scaffold a new pic-flow long-image project (story × story-flow × bw-sketch).
 
 Usage: new_project.py <project_dir> [--title "主题名"]
-                       [--template story|edu|howto|news]
-                       [--style bw-sketch|color-sketch|vector-flat|magazine]
-                       [--layout story-flow|event-flow|info-feed|kanban]
 
 Creates: assets/ blocks/ layout/ output/ scripts/(软链) + fonts(软链)
          + CONTENT.md (内容模板) + style.json (风格包) + storyboard.json (整图分镜)
          + layout/block1.json (布局骨架) + assets.json 模板。
-产物位置固定：assets/ 生成素材、blocks/ 渲染块、output/ 成品长图；
-源文件：storyboard.json、assets.json、layout/、style.json、CONTENT.md。
-产物是否入 git 由项目自己的仓库决定，脚手架不写 .gitignore。
+标准项目位置：~/pic-flow-projects/<项目名>/；最终交付目录固定为该项目下的 output/。
+assets/ 与 blocks/ 是可再生中间产物，layout/、style.json、storyboard.json、assets.json、CONTENT.md 是源文件。
+脚手架会写 .gitignore，默认不把生图素材、渲染块和成品提交进源代码仓库。
 scripts/ 与 fonts/ 均软链到 skill 本体（不复制），故项目内脚本恒为当前版本。
 """
 import argparse
@@ -34,17 +31,12 @@ ASSETS_TEMPLATE = [
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="Scaffold a new pic-flow project (story × story-flow × bw-sketch)")
     ap.add_argument("project_dir")
     ap.add_argument("--title", default="新主题")
-    ap.add_argument("--template", default="story",
-                    choices=["story", "edu", "howto", "news", "data", "review", "list", "profile"])
-    ap.add_argument("--style", default="bw-sketch",
-                    choices=["bw-sketch", "color-sketch", "vector-flat", "magazine",
-                             "guochao", "dark", "pastel-cute", "paper-news"])
-    ap.add_argument("--layout", default="story-flow",
-                    choices=["story-flow", "event-flow", "info-feed", "kanban",
-                             "dashboard", "versus", "ranked-list", "flow-steps", "big-quote"])
+    ap.add_argument("--template", default="story", choices=["story"])
+    ap.add_argument("--style", default="bw-sketch", choices=["bw-sketch"])
+    ap.add_argument("--layout", default="story-flow", choices=["story-flow"])
     args = ap.parse_args()
 
     root = Path(args.project_dir).resolve()
@@ -84,6 +76,9 @@ def main():
         json.dumps(skeleton, ensure_ascii=False, indent=2), encoding="utf-8")
     (root / "assets.json").write_text(
         json.dumps(ASSETS_TEMPLATE, ensure_ascii=False, indent=2), encoding="utf-8")
+    (root / ".gitignore").write_text(
+        "assets/*.png\nblocks/*.png\noutput/*.jpg\noutput/*.jpeg\noutput/*.png\n",
+        encoding="utf-8")
     (root / "README.md").write_text(
         f"# {args.title}\n\n模板 {args.template} × 风格 {args.style} × 布局 {args.layout}\n"
         "流程详见 CONTENT.md 与 skill「pic-flow」（~/.dsh/skills/pic-flow/SKILL.md）。\n",

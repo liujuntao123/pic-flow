@@ -1,1 +1,0 @@
-../../../pipeline/validate_layouts.py

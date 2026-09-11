@@ -21,7 +21,11 @@ ROOT = find_root(Path.cwd())
 
 def main():
     force = "--force" in sys.argv
-    par = int(os.environ.get("GEN_PAR", "4"))
+    try:
+        par = max(1, int(os.environ.get("GEN_PAR", "4")))
+    except ValueError:
+        print("[error] GEN_PAR 必须是正整数", file=sys.stderr)
+        return 2
     suffix = STYLE_SUFFIX
     style_path = ROOT / "style.json"
     if style_path.exists():
@@ -45,10 +49,14 @@ def main():
         futs = {ex.submit(generate, it["prompt"] + suffix, it["size"], p): it["name"]
                 for it, p in todo}
         for f in as_completed(futs):
-            ok += 1 if f.result() else 0
+            name = futs[f]
+            try:
+                ok += 1 if f.result() else 0
+            except Exception as e:
+                print(f"[fail] {name}: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
     print(f"[gen_all] done: {ok}/{len(todo)} ok", flush=True)
-    sys.exit(0 if ok == len(todo) else 1)
+    return 0 if ok == len(todo) else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

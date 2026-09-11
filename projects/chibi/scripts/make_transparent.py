@@ -1,1 +1,0 @@
-../../../pipeline/make_transparent.py

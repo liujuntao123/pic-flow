@@ -94,16 +94,28 @@ def _load_config():
     _model = os.environ.get("PICFLOW_IMAGE_MODEL") or model or DEFAULT_MODEL
 
 
+# 部分上游（image.mlgb7.com 等）挂在 Cloudflare 后面，会按浏览器指纹拦截请求：
+# urllib 默认的 "Python-urllib/3.x" 会被判为机器人，直接回 HTTP 403 + "error code: 1010"
+# （表现为整条上游链里好几个节点同时"坏死"，实际只是缺一个正常的 User-Agent）。
+# 这里统一带浏览器 UA；可用 PICFLOW_UA 覆盖。
+BROWSER_UA = os.environ.get(
+    "PICFLOW_UA",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/124.0.0.0 Safari/537.36",
+)
+
+
 def _http_json(url, payload, key, timeout=300):
     req = urllib.request.Request(
         url, data=json.dumps(payload).encode(), method="POST",
-        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
+                 "User-Agent": BROWSER_UA})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode())
 
 
 def _fetch_bytes(url, timeout=180):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
 

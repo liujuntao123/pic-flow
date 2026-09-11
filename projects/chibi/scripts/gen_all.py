@@ -1,1 +1,0 @@
-../../../pipeline/gen_all.py

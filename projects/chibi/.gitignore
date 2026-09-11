@@ -1,7 +1,0 @@
-# 本实例的产物（可再生，不入仓库）
-# 说明见 README.md「目录内容」；源文件与 scripts/、fonts 仍需跟踪。
-assets/
-blocks/
-output/
-__pycache__/
-*.pyc

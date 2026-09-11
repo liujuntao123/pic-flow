@@ -5,6 +5,17 @@ Outputs human-readable warnings and exits non-zero on hard errors.
 import json, sys
 from pathlib import Path
 
+try:
+    from PIL import Image, ImageDraw, ImageFont
+except ImportError:
+    Image = ImageDraw = ImageFont = None
+
+try:
+    from roots import find_root
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from roots import find_root
+
 HARD = 0
 WARN = 0
 
@@ -23,6 +34,26 @@ def box(el):
         align = el.get('align','center')
         left = x-width/2 if align=='center' else (x if align=='left' else x-width)
         return (left-px, y-py, left+width+px, y+height+py)
+    if t == 'asset':
+        w, h = el.get('width'), el.get('height')
+        path = ROOT / 'assets' / el.get('file', '')
+        if path.is_file() and Image is not None:
+            try:
+                iw, ih = Image.open(path).size
+                if h is not None:
+                    w = iw * h / ih
+                elif w is not None:
+                    h = ih * w / iw
+                else:
+                    w, h = iw, ih
+            except Exception:
+                pass
+        w, h = w or 360, h or 360
+        x, y = el.get('x', 0), el.get('y', 0)
+        anchor = el.get('anchor', 'cc')
+        left = x - w / 2 if anchor[0] == 'c' else (x - w if anchor[0] == 'r' else x)
+        top = y - h / 2 if anchor[1] == 'c' else (y - h if anchor[1] == 'b' else y)
+        return (left, top, left + w, top + h)
     if t == 'card': return (el['x'],el['y'],el['x']+el['width'],el['y']+el['height'])
     if t in ('rule','arrow'):
         if t == 'rule':
@@ -36,13 +67,19 @@ def box(el):
         h=n*el.get('row_height',72) if t=='table' else n*(el.get('bar_height',56)+el.get('gap',36))
         return (x,y,x+w,y+h)
     if t=='piechart':
-        r=el['r']; return (el['cx']-r,el['cy']-r,el['cx']+r+460,el['cy']+r)
+        r = el['r']; items = el.get('items', [])
+        # Match compose.py: legend width is label-dependent, with a safe estimate.
+        label_size = el.get('label_size', 30)
+        legend_width = max([len(str(i.get('label', ''))) * label_size + 150 for i in items] or [0])
+        return (el['cx']-r, el['cy']-r, el['cx']+r+40+legend_width, el['cy']+r)
     return None
 
 def overlap(a,b): return max(0,min(a[2],b[2])-max(a[0],b[0])) * max(0,min(a[3],b[3])-max(a[1],b[1]))
 
 def main(path):
-    global HARD,WARN
+    global HARD, WARN, ROOT
+    HARD, WARN = 0, 0
+    ROOT = find_root(path)
     data=json.loads(Path(path).read_text()); W,H=data['width'],data['height']; els=data.get('elements',[])
     boxes=[]
     for i,e in enumerate(els):
@@ -57,9 +94,12 @@ def main(path):
             area=overlap(ba,bb)
             if area <= 0: continue
             intentional = (a.get('type')=='asset' and b.get('type')=='asset') or (a.get('type')=='card' or b.get('type')=='card')
+            # Illustrations commonly sit behind labels or bubbles; report these for
+            # visual review without making existing, intentional compositions fail.
+            asset_text = {a.get('type'), b.get('type')} == {'asset', 'text'}
             if intentional: continue
             ratio=area/max(1,min((ba[2]-ba[0])*(ba[3]-ba[1]),(bb[2]-bb[0])*(bb[3]-bb[1])))
-            level='WARN' if ratio < .12 else 'ERROR'
+            level='WARN' if asset_text or ratio < .12 else 'ERROR'
             print(f'{level} {path} [{i},{j}]: {a.get("type")} overlaps {b.get("type")} ({ratio:.0%})')
             if level=='ERROR': HARD+=1
             else: WARN+=1
