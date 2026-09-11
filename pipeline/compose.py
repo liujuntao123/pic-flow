@@ -232,7 +232,14 @@ def _paste_clipped(canvas, img, px, py):
 def load_asset(el):
     path = ROOT / "assets" / el["file"]
     if not path.exists():
-        raise FileNotFoundError(path)
+        # 素材尚未生成（常见于刚脚手架出的项目：布局骨架引用 icon_a/char_a，
+        # 而 assets.json 里是另一批占位名）。此处不抛异常，改为画一个占位框，
+        # 让 debug 画布与识图环节能直接看出"这个素材还没生成"，
+        # 而不是抛 FileNotFoundError 中断整块渲染。
+        print(f"[compose][warn] 素材缺失，已用占位框代替：assets/{el['file']}"
+              "（先跑 gen_all.py 生图，或把 layout 里的 file 改成 assets.json 中的名字）",
+              file=sys.stderr)
+        return None
     img = Image.open(path).convert("RGBA")
     if "height" in el:
         s = el["height"] / img.height
@@ -251,8 +258,34 @@ def load_asset(el):
     return img
 
 
+def _missing_placeholder(canvas, el):
+    """素材缺失时画一个虚线框 + 文件名，坐标口径与真实素材一致。"""
+    w = int(el.get("width") or 360)
+    h = int(el.get("height") or 360)
+    anchor = el.get("anchor", "cc")
+    x, y = el["x"], el["y"]
+    px = x - w // 2 if anchor[0] == "c" else (x - w if anchor[0] == "r" else x)
+    py = y - h // 2 if anchor[1] == "c" else (y if anchor[1] == "t" else y - h)
+    d = ImageDraw.Draw(canvas, "RGBA")
+    for i in range(px, px + w, 18):  # 上/下虚线
+        d.line([(i, py), (min(i + 9, px + w), py)], fill=(220, 60, 60, 170), width=2)
+        d.line([(i, py + h), (min(i + 9, px + w), py + h)], fill=(220, 60, 60, 170), width=2)
+    for j in range(py, py + h, 18):  # 左/右虚线
+        d.line([(px, j), (px, min(j + 9, py + h))], fill=(220, 60, 60, 170), width=2)
+        d.line([(px + w, j), (px + w, min(j + 9, py + h))], fill=(220, 60, 60, 170), width=2)
+    label = f"[缺素材] {el['file']}"
+    f = font(26, True, "body")
+    tw = d.textlength(label, font=f)
+    tx, ty = px + max(0, (w - tw) / 2), py + max(0, (h - 30) / 2)
+    d.rectangle([tx - 8, ty - 4, tx + tw + 8, ty + 32], fill=(255, 255, 255, 210))
+    d.text((tx, ty), label, font=f, fill=(200, 40, 40, 255))
+    return (px, py, px + w, py + h)
+
+
 def draw_asset(canvas, el):
     img = load_asset(el)
+    if img is None:
+        return _missing_placeholder(canvas, el)
     anchor = el.get("anchor", "cc")
     x, y = el["x"], el["y"]
     px = x - img.width // 2 if anchor[0] == "c" else (x - img.width if anchor[0] == "r" else x)
