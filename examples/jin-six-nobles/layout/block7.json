@@ -1,0 +1,102 @@
+{
+  "width": 1080,
+  "height": 1880,
+  "elements": [
+    {
+      "type": "text",
+      "content": "七、历史回响与意外的彩蛋",
+      "x": 540,
+      "y": 80,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "权力的游戏以血腥收场，历史的齿轮却总留下令人惊叹的伏笔。\n当年老范家虽在晋国灭族退场，但其先祖逃难时曾留了一支在秦国。\n这一支范氏辗转流亡至魏国丰邑，改姓为刘。",
+      "x": 540,
+      "y": 160,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "text",
+      "content": "『六卿算什么？\n老子直接给一个民族冠了名！』",
+      "x": 340,
+      "y": 320,
+      "size": 27,
+      "bold": true,
+      "align": "center",
+      "rotate": -3,
+      "font": "title",
+      "box": {
+        "style": "sketch",
+        "bg": "#FFFDF7",
+        "color": "#1A1A1A",
+        "pad": [12, 18],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b7_history_echo_liubang.png",
+      "x": 270,
+      "y": 660,
+      "height": 520
+    },
+    {
+      "type": "text",
+      "content": "数百年后，这里走出了一位\n神奇的“街道治保主任”——\n【泗水亭长刘邦】！\n\n他提三尺剑开创四百年大汉，\n给这片土地上的民族，\n冠上了延续至今的名字：【汉】。",
+      "x": 580,
+      "y": 550,
+      "size": 30,
+      "align": "left",
+      "max_width": 430
+    },
+    {
+      "type": "rule",
+      "x1": 160,
+      "x2": 920,
+      "y": 950,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "〖见三岁孩童抱金砖于闹市，世人皆魔鬼；\n遇笑脸弥勒旁立护法韦驮，群魔皆圣贤。〗",
+      "x": 540,
+      "y": 1040,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "font": "brush",
+      "max_width": 900
+    },
+    {
+      "type": "text",
+      "content": "晋国公室丢了护国的利刃（刀），却坐拥肥沃的国土（金砖），\n手下的六大巨头自然瞬间撕下伪装，化身嗜血恶魔。\n当道德失去武力兜底，秩序失去制度锁死，博弈的唯一结局就是大淘汰！",
+      "x": 540,
+      "y": 1200,
+      "size": 28,
+      "align": "center",
+      "max_width": 880
+    },
+    {
+      "type": "rule",
+      "x1": 240,
+      "x2": 840,
+      "y": 1340,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "分家前夜，晋阳孤城下的战火终将燃遍整个中原。\n六卿洗牌只是序幕，随之而来的【三家分晋】，彻底终结了春秋旧秩序，\n将华夏文明推向了空前激荡、改写历史大势的——【战国时代】！",
+      "x": 540,
+      "y": 1430,
+      "size": 30,
+      "align": "center",
+      "max_width": 940
+    }
+  ]
+}

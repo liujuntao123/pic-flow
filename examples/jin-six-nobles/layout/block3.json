@@ -1,0 +1,116 @@
+{
+  "width": 1080,
+  "height": 2160,
+  "elements": [
+    {
+      "type": "text",
+      "content": "三、晋阳风云：庄家被“反攻柏林”",
+      "x": 540,
+      "y": 80,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "赵鞅自以为胜券在握，却没想到踢到了铁板！\n邯郸稷搬来亲娘舅——六卿之一的【中行寅】。\n中行寅生怕独力难支，又拉上铁盟友【范氏】，三方联军尽起大军疯狂反扑！",
+      "x": 540,
+      "y": 150,
+      "size": 29,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "text",
+      "content": "『敢动我亲外甥？\n三家合兵，连老赵家一起端了！』",
+      "x": 540,
+      "y": 330,
+      "size": 27,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "box": {
+        "style": "burst",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [12, 20],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b3_three_armies_charge.png",
+      "x": 540,
+      "y": 760,
+      "width": 980
+    },
+    {
+      "type": "rule",
+      "x1": 160,
+      "x2": 920,
+      "y": 1070,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "联军战车如潮狂飙，赵军遭遇重创大溃败！\n赵鞅不仅没吞下邯郸，反被一路追杀数百里，仓皇逃回老巢【晋阳】（今太原）。\n中行氏与范氏尽起大兵将晋阳死死围困，〖晋阳风云第一季〗正式打响！",
+      "x": 540,
+      "y": 1140,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "asset",
+      "file": "b3_zhao_trapped_jinyang.png",
+      "x": 280,
+      "y": 1580,
+      "height": 520
+    },
+    {
+      "type": "text",
+      "content": "『原本是我做局吃肉……\n怎么转眼被人“反攻柏林”了？！』",
+      "x": 680,
+      "y": 1360,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "title",
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [12, 18],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "text",
+      "content": "【庄家翻车预警】",
+      "x": 640,
+      "y": 1500,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "rotate": -4,
+      "font": "brush",
+      "box": {
+        "style": "stamp",
+        "color": "#C0392B",
+        "pad": [10, 18],
+        "radius": 8
+      }
+    },
+    {
+      "type": "text",
+      "content": "本来是他做的局，结果自己这个庄家却面临被彻底清盘的绝境。\n晋阳孤城危在旦夕，但搞了一辈子阴谋诡计的赵鞅，大脑正在飞速运转……",
+      "x": 540,
+      "y": 1980,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    }
+  ]
+}

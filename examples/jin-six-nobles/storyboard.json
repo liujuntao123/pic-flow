@@ -1,0 +1,55 @@
+{
+  "_doc": "渤海小吏《分家前夜，晋国六卿》科普长图分镜设计",
+  "title": "分家前夜：晋国六卿的权力大逃杀",
+  "blocks": [
+    {
+      "id": "block1",
+      "role": "hook",
+      "density": "medium",
+      "focal": "center",
+      "notes": "视觉任务：晋国作为华夏门神独挑四夷，然而晋侯沦为汉献帝，背后矗立着六个曹操（智、中行、范、韩、魏、赵）"
+    },
+    {
+      "id": "block2",
+      "role": "buildup",
+      "density": "medium",
+      "focal": "left",
+      "notes": "视觉任务：赵氏掌门赵鞅老谋深算，抛出卫国五百户为诱饵，钓鱼执法闪电诱捕贪心邯郸午"
+    },
+    {
+      "id": "block3",
+      "role": "buildup",
+      "density": "high",
+      "focal": "right",
+      "notes": "视觉任务：反攻柏林！邯郸稷拉来娘舅中行寅与老范家，三家联军打残赵军，将赵鞅死死围困在晋阳孤城"
+    },
+    {
+      "id": "block4",
+      "role": "buildup",
+      "density": "medium",
+      "focal": "left",
+      "notes": "视觉任务：教科书级利益说服：赵鞅生死关头找智伯，利诱+威胁+可行性，帮老大算明白四家灭两家的大肥肉"
+    },
+    {
+      "id": "block5",
+      "role": "climax",
+      "density": "high",
+      "focal": "full_bleed",
+      "notes": "视觉任务：高潮清场！四卿联军如黑潮席卷，中行氏与范氏硬刚惨败，朝歌城破一路狂奔溃逃齐国"
+    },
+    {
+      "id": "block6",
+      "role": "consequence",
+      "density": "medium",
+      "focal": "right",
+      "notes": "视觉任务：晋出公抗议被四家直接打跑气死，六人牌桌变成四人麻将（智韩魏赵），更残酷的分家前夜来临"
+    },
+    {
+      "id": "block7",
+      "role": "ending",
+      "density": "low",
+      "focal": "center",
+      "notes": "视觉任务：历史彩蛋与哲理收束：溃败范氏流落秦国的一支，后代成了泗水亭长刘邦；执子者终成棋子"
+    }
+  ]
+}

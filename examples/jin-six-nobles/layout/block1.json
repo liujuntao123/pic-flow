@@ -1,0 +1,137 @@
+{
+  "width": 1080,
+  "height": 2080,
+  "elements": [
+    {
+      "type": "text",
+      "content": "【分家前夜】晋国六卿的大逃杀",
+      "x": 540,
+      "y": 80,
+      "size": 58,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "一、华夏文明的“第一号门神”",
+      "x": 540,
+      "y": 160,
+      "size": 34,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "提到华夏脊梁，人人都知齐鲁，但春秋真正的大哥是【晋国】。\n它以一己之力独挑东夷、西戎、南蛮、北狄，是华夏初兴时的〖第一号门神〗！",
+      "x": 540,
+      "y": 240,
+      "size": 30,
+      "align": "center",
+      "max_width": 980
+    },
+    {
+      "type": "asset",
+      "file": "b1_door_god.png",
+      "x": 250,
+      "y": 600,
+      "height": 500
+    },
+    {
+      "type": "text",
+      "content": "『想灭华夏？\n先过老子这一关！』",
+      "x": 380,
+      "y": 360,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "box": {
+        "style": "burst",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [12, 18],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "text",
+      "content": "晋国的疆域横跨晋、冀、豫、鲁、陕，\n汇聚了当时华夏所有的精华财富。\n国力强到即便日后它彻底解体，\n分出来的三个国家依然全部位列【战国七雄】！\n\n然而，这尊超级战神，\n却亲手给自己埋下了【灭亡的引信】。",
+      "x": 580,
+      "y": 440,
+      "size": 28,
+      "align": "left",
+      "max_width": 440
+    },
+    {
+      "type": "rule",
+      "x1": 160,
+      "x2": 920,
+      "y": 880,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "当年春秋霸主晋文公重耳在外逃亡19年，被自家同姓亲戚害惨了。\n即位后他深感同姓相残之痛，立下铁律：『自家人全不可信，大权全交异姓执政官！』",
+      "x": 540,
+      "y": 950,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "asset",
+      "file": "b1_monarch_and_six_shadows.png",
+      "x": 540,
+      "y": 1420,
+      "height": 580
+    },
+    {
+      "type": "text",
+      "content": "『公室微弱如蝼蚁，\n这天下归我六卿说了算！』",
+      "x": 840,
+      "y": 1110,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": 3,
+      "font": "title",
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "color": "#FFFFFF",
+        "pad": [12, 18],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "text",
+      "content": "『防住了自家人坑害……\n怎么朝堂上冒出六个曹操？！』",
+      "x": 230,
+      "y": 1720,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -3,
+      "font": "title",
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [12, 16],
+        "tail": "tr"
+      }
+    },
+    {
+      "type": "text",
+      "content": "百年演化，异姓贵族变成六大庞大利益集团：\n〖智氏、中行氏、范氏、韩氏、魏氏、赵氏〗，史称“晋国六卿”。\n国君沦为傀儡，一场你死我活的权力大洗牌，在黑夜中悄然拉开序幕！",
+      "x": 540,
+      "y": 1920,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    }
+  ]
+}

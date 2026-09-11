@@ -1,0 +1,142 @@
+{
+  "width": 1080,
+  "height": 2040,
+  "elements": [
+    {
+      "type": "text",
+      "content": "二、京巴千万别占狮子的便宜",
+      "x": 540,
+      "y": 80,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "六卿对峙近百年，谁先无端动手谁就是众矢之的。\n但赵氏掌门【赵鞅】却盯上了同宗兄弟【邯郸氏】这块肥肉。\n明抢会坏规矩，阴谋大师赵鞅精心布下了一个极阴损的〖钓鱼大局〗！",
+      "x": 540,
+      "y": 160,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "asset",
+      "file": "b2_zhao_yang_fishing.png",
+      "x": 270,
+      "y": 660,
+      "height": 500
+    },
+    {
+      "type": "text",
+      "content": "『借你五百户当鱼饵，\n就等傻子咬钩！』",
+      "x": 240,
+      "y": 330,
+      "size": 27,
+      "bold": true,
+      "align": "center",
+      "rotate": -4,
+      "font": "title",
+      "box": {
+        "style": "sketch",
+        "bg": "#FFFDF7",
+        "color": "#1A1A1A",
+        "pad": [12, 16],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b2_handan_greedy.png",
+      "x": 780,
+      "y": 670,
+      "height": 480
+    },
+    {
+      "type": "text",
+      "content": "『老大哥家大业大，\n这五百户我就笑纳啦！』",
+      "x": 800,
+      "y": 340,
+      "size": 27,
+      "bold": true,
+      "align": "center",
+      "rotate": 3,
+      "font": "title",
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [12, 16],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "rule",
+      "x1": 160,
+      "x2": 920,
+      "y": 960,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "三年前赵鞅借出卫国500户人口，几年后突然变脸索要：『还我那五百户！』\n邯郸午自恃同宗同族，贪图便宜赖账不还。\n赵鞅等的就是这个借口，闪电诱捕邯郸午囚于晋阳，逼其家族改立新族长！",
+      "x": 540,
+      "y": 1020,
+      "size": 29,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "text",
+      "content": "『不仅抓我爹，还逼我们换族长？！\n这大族长我不认了，反了！』",
+      "x": 540,
+      "y": 1200,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "box": {
+        "style": "burst",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [14, 24]
+      }
+    },
+    {
+      "type": "text",
+      "content": "邯郸午之子邯郸稷暴怒举兵造反，赵鞅立刻以“宗主平叛”之名大军压境。\n可恨如黄世仁也没上来就抢白毛女，等你想赖账再名正言顺抄家灭门！",
+      "x": 540,
+      "y": 1370,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "rule",
+      "x1": 240,
+      "x2": 840,
+      "y": 1510,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "〖京巴千万别占狮子的便宜〗",
+      "x": 540,
+      "y": 1580,
+      "size": 42,
+      "bold": true,
+      "align": "center",
+      "font": "brush"
+    },
+    {
+      "type": "text",
+      "content": "贪小便宜吃大亏，心穷的成本最高。\n当你以为对方是大度施舍，对方早盘算好把你连皮带骨吞吃干净。",
+      "x": 540,
+      "y": 1700,
+      "size": 28,
+      "align": "center",
+      "max_width": 860
+    }
+  ]
+}

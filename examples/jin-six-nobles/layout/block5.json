@@ -1,0 +1,109 @@
+{
+  "width": 1080,
+  "height": 2160,
+  "elements": [
+    {
+      "type": "text",
+      "content": "五、高潮清场：四打二的无情碾压",
+      "x": 540,
+      "y": 80,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "智氏裹挟韩魏来到晋侯面前，盖下讨贼大印，奉旨平乱名正言顺！\n面对四家大军，中行与范氏原本有上策（及时止损退守）与中策（分化游说），\n但他们却狂妄选了最愚蠢的第四条：『硬刚到底，打不死你们！』",
+      "x": 540,
+      "y": 155,
+      "size": 29,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "text",
+      "content": "『奉国君大印讨贼！\n四家合围，灭了这两家！』",
+      "x": 540,
+      "y": 330,
+      "size": 27,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "box": {
+        "style": "burst",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [12, 20],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b5_four_crush_two.png",
+      "x": 540,
+      "y": 750,
+      "width": 1000
+    },
+    {
+      "type": "rule",
+      "x1": 160,
+      "x2": 920,
+      "y": 1020,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "四打二占据绝对压倒优势，中行与范氏遭遇毁灭性打击，精锐尽丧！\n随后是长达八年的清剿混战：中行大本营朝歌被攻破，邯郸城失守被赵氏吞并。\n两家丢盔弃甲，连滚带爬一路逃亡东方第一大国——齐国。",
+      "x": 540,
+      "y": 1070,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "asset",
+      "file": "b5_zhonghang_fan_flee.png",
+      "x": 280,
+      "y": 1580,
+      "height": 500
+    },
+    {
+      "type": "text",
+      "content": "『朝歌没了，邯郸也没了……\n官帽鞋子都跑飞了，快往齐国逃啊！』",
+      "x": 500,
+      "y": 1330,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "title",
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [12, 18],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "text",
+      "content": "真正的政治家深谙【斩草除根】。\n转过年赵鞅率四卿大军直扑齐国，\n把胆敢收留难民的齐国狠狠揍趴下！",
+      "x": 600,
+      "y": 1580,
+      "size": 28,
+      "align": "left",
+      "max_width": 440
+    },
+    {
+      "type": "text",
+      "content": "公元前473年，〖中行氏与范氏灰飞烟灭〗，两家数百年积累的领地被四家瓜分殆尽！",
+      "x": 540,
+      "y": 1950,
+      "size": 31,
+      "bold": true,
+      "align": "center",
+      "max_width": 980
+    }
+  ]
+}

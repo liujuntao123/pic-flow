@@ -1,0 +1,117 @@
+{
+  "width": 1080,
+  "height": 2060,
+  "elements": [
+    {
+      "type": "text",
+      "content": "六、分家前夜：国君气死，四强搓麻将",
+      "x": 540,
+      "y": 80,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "地盘瓜分完毕，有名无实的【晋出公】彻底怒了：\n『寡人是堂堂一国之君，分肉怎么连口热汤都没我的？！』\n他偷偷向齐国、鲁国发电报求援，试图请山东兄弟主持公道。",
+      "x": 540,
+      "y": 160,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "asset",
+      "file": "b6_king_driven_away.png",
+      "x": 280,
+      "y": 550,
+      "height": 480
+    },
+    {
+      "type": "text",
+      "content": "『国君算哪根葱？\n哪凉快哪呆着去！』",
+      "x": 580,
+      "y": 420,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "title",
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "color": "#FFFFFF",
+        "pad": [12, 18],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "text",
+      "content": "『你们眼里还有寡人吗？！\n我要叫山东兄弟来收拾你们！』",
+      "x": 640,
+      "y": 620,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [12, 18],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "rule",
+      "x1": 160,
+      "x2": 920,
+      "y": 860,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "还没等齐鲁援兵动身，四卿直接各出一军把晋出公乱棒轰出国门！\n晋出公活活气死在逃难路上，四卿转头立了更听话的傀儡晋哀公。\n此时的晋国公室，彻底沦为四大家族案板上的鱼肉。",
+      "x": 540,
+      "y": 930,
+      "size": 30,
+      "align": "center",
+      "max_width": 960
+    },
+    {
+      "type": "text",
+      "content": "『范氏中行已成过客，\n牌桌上这四个人……下一个轮到谁？』",
+      "x": 540,
+      "y": 1130,
+      "size": 27,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [12, 22],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b6_four_mahjong.png",
+      "x": 540,
+      "y": 1540,
+      "width": 1000
+    },
+    {
+      "type": "text",
+      "content": "六人牌桌洗牌为四人麻将：〖智氏、赵氏、魏氏、韩氏〗。\n第一轮淘汰赛宣告落幕，但这四位老狐狸都心知肚明：\n一统晋国的终极生死战，已在分家前夜的浓浓寒意中彻底拉满！",
+      "x": 540,
+      "y": 1940,
+      "size": 30,
+      "align": "center",
+      "max_width": 980
+    }
+  ]
+}
