@@ -169,7 +169,7 @@ export function blockGeom(el, W, families) {
   const left = align === 'center' ? x - w / 2 : align === 'left' ? x : x - w;
   const [px, py] = padPair(families);
   const height = lines.length * lh;
-  return { lines, widths, lh, w, height, size, bold, family, left, top: el.y ?? 0, px, py };
+  return { lines, widths, lh, w, height, size, bold, family, align, left, top: el.y ?? 0, px, py };
 }
 
 export function padPair(box) {
