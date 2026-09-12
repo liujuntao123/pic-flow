@@ -121,7 +121,7 @@ async function drawAsset(canvas, ctx, root, el, allowMissing) {
   return [left, top, left + img.width, top + img.height];
 }
 
-function drawText(canvas, ctx, el, W, theme) {
+function drawText(canvas, ctx, el, W, theme, opts = {}) {
   const box = { ...(theme.bubble || {}), ...(el.box || {}) };
   const para = layoutParagraph(el, W, box);
   const bh = para.height;
@@ -141,7 +141,7 @@ function drawText(canvas, ctx, el, W, theme) {
         baseline: r.baseline + para.py + m - para.top,
       })),
     };
-    paintParagraph(lc, shifted, el, theme, el.box);
+    if (!opts.boxOnly) paintParagraph(lc, shifted, el, theme, el.box);
     const cx = para.left + para.w / 2;
     const cy = para.top + bh / 2;
     rotateLayer(layer, el.rotate, Math.round(cx), Math.round(cy), canvas, ctx);
@@ -156,7 +156,7 @@ function drawText(canvas, ctx, el, W, theme) {
     paintBox(ctx, [para.left - para.px, para.top - para.py,
       para.left + para.w + para.px, para.top + bh + para.py], el, theme);
   }
-  paintParagraph(ctx, para, el, theme, el.box);
+  if (!opts.boxOnly) paintParagraph(ctx, para, el, theme, el.box);
   return [para.left - para.px, para.top - para.py,
     para.left + para.w + para.px, para.top + bh + para.py];
 }
@@ -325,7 +325,12 @@ function drawArrow(ctx, el) {
  * @param {string} rootOverride 项目根
  * @param {number} scale   输出倍率：1 = layout 坐标口径（默认）；2 = 超采样 2 倍出图
  */
-export async function render(layout, outPath, debug = false, rootOverride, scale = 1) {
+/**
+ * @param {object} opts.paint 只画某类图层的过滤：元素类型或 'text'/其它。
+ *   缺省 = 全画。HTML 排版线用 `paint: (t) => t !== 'text'` 只出背景层（插图/气泡/线条），
+ *   文字交给浏览器渲染 —— 这就是「背景图 + 绝对定位文本块」里的背景图。
+ */
+export async function render(layout, outPath, debug = false, rootOverride, scale = 1, opts = {}) {
   const root = rootOverride || findRoot(outPath || process.cwd());
   const theme = readTheme(root, layout);
   setFonts(root, theme.fonts);
@@ -338,6 +343,15 @@ export async function render(layout, outPath, debug = false, rootOverride, scale
 
   for (const el of layout.elements || []) {
     const t = el.type;
+    if (opts.backgroundOnly) {
+      // HTML 背景层模式：只画插图/线条/图表/气泡底板，不画字形
+      if (t === 'text') {
+        if (el.box) drawText(canvas, ctx, el, W, theme, { boxOnly: true });
+        continue;
+      }
+    } else if (opts.paint && !opts.paint(t, el)) {
+      continue;
+    }
     if (t === 'asset') {
       boxes.push([`asset:${el.file}`, await drawAsset(canvas, ctx, root, el, debug)]);
     } else if (t === 'card') {
@@ -375,7 +389,7 @@ export async function render(layout, outPath, debug = false, rootOverride, scale
         boxes.push([`text:${(el.content || '').replace(/[【】]/g, '').slice(0, 8)}`,
           [cx - rw / 2, cy - rh / 2, cx + rw / 2, cy + rh / 2]]);
       } else {
-        drawText(canvas, ctx, el, W, theme);
+        drawText(canvas, ctx, el, W, theme, opts);
       }
     } else if (t === 'rule') {
       ctx.strokeStyle = el.color ?? '#222222';
