@@ -58,6 +58,15 @@ node scripts/canvas/stitch.mjs output/标题_长图.jpg blocks/final*.png
 node scripts/canvas/parity.mjs layout/block1.json             # 与 Python 引擎逐像素对照（验收用）
 ```
 
+## 正文兜底色（两引擎共同口径）
+
+未显式指定 `color` 的文字元素，颜色兜底顺序是
+`el.color → el.box.color → style.json 的 text`。
+
+第三级读的是**元素自带的 `box`**，不是「主题 bubble 默认值合并后」的 box ——
+主题 `bubble.color` 是气泡的暖褐色（`#4A2800`），若让它兜底，全图正文与标题都会被染成暖褐。
+这个坑两套引擎都踩过（`compose.py` 与 `render.mjs` 同源写法），已同时修正。
+
 ## Canvas 版相对 Python 版的三处差异（都是收紧，不是放宽）
 
 1. **旋转元素按真实外接矩形参与碰撞/净空判定**。Python 版用未旋转框，斜置气泡的角可能
