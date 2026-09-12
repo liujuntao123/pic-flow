@@ -1,0 +1,82 @@
+{
+  "width": 1080,
+  "height": 1740,
+  "elements": [
+    {
+      "type": "text",
+      "content": "七、回到那盏灯",
+      "x": 88,
+      "y": 58,
+      "size": 34,
+      "bold": true,
+      "align": "left",
+      "font": "title",
+      "color": "#6B6259",
+      "max_width": 900,
+      "line_height": 1.35
+    },
+    {
+      "type": "text",
+      "content": "把夜晚关在门外的，从来不是「没有电」，\n而是〖点不起灯〗这四个字。",
+      "x": 540,
+      "y": 150,
+      "size": 30,
+      "align": "center",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b7a_one_lamp.png",
+      "x": 540,
+      "y": 700,
+      "width": 900,
+      "anchor": "cc",
+      "rotate": 0,
+      "flip": false,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "content": "照明有限的时代，围坐听故事，\n既省下灯油，\n也让信息、记忆与共同体延续下去。",
+      "x": 540,
+      "y": 1100,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "brush",
+      "max_width": 940,
+      "line_height": 1.4
+    },
+    {
+      "type": "text",
+      "content": "故事不贵，\n却是最亮的夜。",
+      "x": 517,
+      "y": 1450,
+      "size": 26,
+      "align": "center",
+      "max_width": 230,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b7d_question.png",
+      "x": 215,
+      "y": 1520,
+      "width": 340,
+      "anchor": "cc",
+      "rotate": -2,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b7c_today.png",
+      "x": 850,
+      "y": 1500,
+      "width": 400,
+      "anchor": "cc",
+      "rotate": 2,
+      "opacity": 1
+    }
+  ]
+}

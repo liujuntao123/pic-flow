@@ -1,0 +1,123 @@
+{
+  "width": 1080,
+  "height": 2300,
+  "elements": [
+    {
+      "type": "text",
+      "content": "四、过不去的城门：宵禁",
+      "x": 88,
+      "y": 58,
+      "size": 46,
+      "bold": true,
+      "align": "left",
+      "font": "title",
+      "max_width": 900,
+      "line_height": 1.25
+    },
+    {
+      "type": "text",
+      "content": "城里到点就锁门：城门、坊门全落锁，大街上不许普通人闲逛。\n西周已有雏形，【司寤氏】掌夜禁，历朝执行到近代才取消。",
+      "x": 90,
+      "y": 165,
+      "size": 30,
+      "align": "left",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b4a_drum.png",
+      "x": 540,
+      "y": 850,
+      "height": 860,
+      "anchor": "cc",
+      "rotate": 0,
+      "flip": false,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "content": "傍晚七点多，顺天门先击鼓〖400〗搥，外城门关闭；\n紧跟着再击〖600〗搥，坊门全落锁，宵禁正式生效。",
+      "x": 540,
+      "y": 1350,
+      "size": 30,
+      "align": "center",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "直到〖4:12〗，开门鼓响，全城才解禁。",
+      "x": 540,
+      "y": 1480,
+      "size": 42,
+      "bold": true,
+      "align": "center",
+      "font": "brush",
+      "max_width": 940,
+      "line_height": 1.35
+    },
+    {
+      "type": "text",
+      "content": "『诸犯夜者，笞二十；有故者，不坐。』——《唐律疏议·杂律》",
+      "x": 90,
+      "y": 1580,
+      "size": 27,
+      "align": "left",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "犯了夜禁，〖笞二十〗；若确有紧急公务，\n可向官府申领文牒，合法夜行。",
+      "x": 90,
+      "y": 1660,
+      "size": 30,
+      "align": "left",
+      "max_width": 620,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "犯夜者，笞二十！",
+      "x": 880,
+      "y": 1680,
+      "size": 30,
+      "bold": true,
+      "align": "center",
+      "font": "body",
+      "max_width": 300,
+      "line_height": 1.5,
+      "rotate": 2,
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "color": "#FFFFFF",
+        "pad": [18, 26],
+        "radius": 16,
+        "tail": "bc",
+        "tail_len": 28
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b4d_fine.png",
+      "x": 810,
+      "y": 2020,
+      "height": 400,
+      "anchor": "cc",
+      "rotate": 2,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b4b_lock.png",
+      "x": 270,
+      "y": 2020,
+      "height": 380,
+      "anchor": "cc",
+      "rotate": -3,
+      "opacity": 1
+    }
+  ]
+}

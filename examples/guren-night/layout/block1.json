@@ -1,0 +1,89 @@
+{
+  "width": 1080,
+  "height": 2150,
+  "elements": [
+    {
+      "type": "text",
+      "content": "一、灯一灭，古人就只剩睡觉？",
+      "x": 88,
+      "y": 64,
+      "size": 46,
+      "bold": true,
+      "align": "left",
+      "font": "title",
+      "max_width": 900,
+      "line_height": 1.25
+    },
+    {
+      "type": "text",
+      "content": "没有电灯，没有手机，也没有随时营业的商场。\n天色彻底暗下来，古人的夜晚是否就只剩下睡觉？\n而【睡前故事】这件事，其实来得比想象中晚得多。",
+      "x": 540,
+      "y": 170,
+      "size": 30,
+      "align": "center",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b1a_hook.png",
+      "x": 540,
+      "y": 770,
+      "width": 940,
+      "anchor": "cc",
+      "rotate": -1,
+      "flip": false,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "content": "睡前故事其实很年轻：【《牛津英语词典》】的早期例证，\n把它指向〖19世纪末〗的维多利亚时代——\n【工业化照明】＋成体系的育儿观＋童书营销，合力包装的〖可选项目〗。",
+      "x": 90,
+      "y": 1220,
+      "size": 30,
+      "align": "left",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b1c_lamp.png",
+      "x": 880,
+      "y": 1500,
+      "height": 240,
+      "anchor": "cc",
+      "rotate": 2,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b1b_sleep.png",
+      "x": 240,
+      "y": 1660,
+      "height": 420,
+      "anchor": "cc",
+      "rotate": -2,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b1d_dark.png",
+      "x": 580,
+      "y": 1760,
+      "height": 300,
+      "anchor": "cc",
+      "rotate": 3,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "content": "换句话说：它是工业时代顺手造出来的传统。",
+      "x": 1020,
+      "y": 2040,
+      "size": 30,
+      "align": "right",
+      "max_width": 620,
+      "line_height": 1.5
+    }
+  ]
+}

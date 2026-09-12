@@ -1,0 +1,113 @@
+{
+  "width": 1080,
+  "height": 1940,
+  "elements": [
+    {
+      "type": "text",
+      "content": "六、第二个问题：你点得起灯吗",
+      "x": 88,
+      "y": 58,
+      "size": 46,
+      "bold": true,
+      "align": "left",
+      "font": "title",
+      "max_width": 900,
+      "line_height": 1.25
+    },
+    {
+      "type": "text",
+      "content": "宵禁决定你能不能出门，【灯油】决定你能不能继续活动。\n手头紧、舍不得点灯的人，天黑没多久就只能早早睡下；\n家境尚可的读书人，才点得起挑灯夜读的那一盏灯。",
+      "x": 90,
+      "y": 158,
+      "size": 30,
+      "align": "left",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "囊萤映雪、凿壁偷光，\n不是励志故事，\n是穷人家省灯钱的办法。",
+      "x": 720,
+      "y": 520,
+      "size": 29,
+      "align": "left",
+      "max_width": 340,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "再读一段就睡。",
+      "x": 930,
+      "y": 680,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "max_width": 240,
+      "line_height": 1.5,
+      "rotate": -2,
+      "box": {
+        "style": "pill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          16,
+          24
+        ],
+        "tail": "bl",
+        "tail_len": 150
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b6b_study.png",
+      "x": 340,
+      "y": 890,
+      "height": 540,
+      "anchor": "cc",
+      "rotate": -1,
+      "flip": false,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b6c_steal_light.png",
+      "x": 850,
+      "y": 1180,
+      "height": 360,
+      "anchor": "cc",
+      "rotate": 2,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "content": "灯油是夜里最现实的那道门槛：\n点得起，夜晚就长；点不起，天黑就只剩睡。",
+      "x": 90,
+      "y": 1450,
+      "size": 30,
+      "align": "left",
+      "max_width": 630,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b6a_lamp_cost.png",
+      "x": 310,
+      "y": 1740,
+      "height": 320,
+      "anchor": "cc",
+      "rotate": -2,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b6d_sleep_poor.png",
+      "x": 820,
+      "y": 1790,
+      "height": 210,
+      "anchor": "cc",
+      "rotate": 3,
+      "opacity": 1
+    }
+  ]
+}

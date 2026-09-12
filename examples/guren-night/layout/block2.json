@@ -1,0 +1,88 @@
+{
+  "width": 1080,
+  "height": 2200,
+  "elements": [
+    {
+      "type": "text",
+      "content": "二、夜里的集会，不只小孩听故事",
+      "x": 88,
+      "y": 60,
+      "size": 46,
+      "bold": true,
+      "align": "left",
+      "font": "title",
+      "max_width": 900,
+      "line_height": 1.25
+    },
+    {
+      "type": "text",
+      "content": "法语【veillée】直译是守夜，也是夜间集会。\n深秋天气转凉，农夫们聚到一家闲聊，省下各家的柴火。",
+      "x": 540,
+      "y": 168,
+      "size": 30,
+      "align": "center",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "【女人纺织】、【男人修工具】，炉边最好的位置让给老人，\n他讲的是老老年间的故事。",
+      "x": 90,
+      "y": 300,
+      "size": 30,
+      "align": "left",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b2d_moon.png",
+      "x": 880,
+      "y": 560,
+      "height": 280,
+      "anchor": "cc",
+      "rotate": -2,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b2a_veillee.png",
+      "x": 360,
+      "y": 1060,
+      "height": 520,
+      "anchor": "cc",
+      "rotate": -1,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "content": "同类的夜还有：英国【spinning bee】、爱尔兰与苏格兰【ceilidh】，\n中国自【秦汉】以来就有【夜绩】：月圆之夜集中纺织刺绣，\n一边纺布挣钱，一边聊天听八卦。\n爱尔兰乡村还请【seanchaí】说书人，讲仙丘故事与英雄史诗。",
+      "x": 90,
+      "y": 1400,
+      "size": 30,
+      "align": "left",
+      "max_width": 940,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b2c_yeji.png",
+      "x": 250,
+      "y": 1800,
+      "height": 320,
+      "anchor": "cc",
+      "rotate": 2,
+      "opacity": 1
+    },
+    {
+      "type": "asset",
+      "file": "b2b_spinning.png",
+      "x": 790,
+      "y": 1890,
+      "height": 250,
+      "anchor": "cc",
+      "rotate": -3,
+      "opacity": 1
+    }
+  ]
+}
