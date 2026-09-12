@@ -1,15 +1,24 @@
 ---
 name: pic-flow
-description: 半小时黑白手绘叙事与科普长图流水线：聚焦 story × story-flow × bw-sketch 黄金组合，实现 AI 生图素材→程序排版→双代理对抗闭环质检→拼接。纯白底色 + 粗黑钢笔墨线 + 橙蓝红语义文字系统，专攻事件叙事、逻辑博弈、科学原理、商业案例复盘与深度科普长图。
+description: 半小时黑白手绘叙事与科普长图流水线：聚焦 story × story-flow × bw-sketch 黄金组合，实现「逐块四图生图 → 声明式程序排版 → 机检链 + 双代理对抗闭环质检 → 无缝拼接」。纯白底色 + 粗黑钢笔墨线 + 橙蓝红语义文字系统，专攻事件叙事、逻辑博弈、科学原理、商业案例复盘与深度科普长图。
 whenToUse: 用户想制作"长图 / 科普长图 / 漫画长图 / 叙事长图 / 商业复盘长图 / 科学原理解析长图 / 一图读懂 / 公众号与小红书图文"，或提到"用黑白手绘漫画风格做长图"时使用。
 ---
 
 # pic-flow：黑白手绘长图流水线
 
 专注极致的 **story（故事叙事） × story-flow（情节流动） × bw-sketch（黑白手绘）** 黄金体系。
-以「AI 生图素材 + 声明式程序排版 + 双代理对抗闭环质检」稳定产出高张力、强呼吸感的叙事与科普长图。
+以「逐块四图生图 + 声明式程序排版 + 机检链与双代理对抗闭环质检」稳定产出高张力、强呼吸感的叙事与科普长图。
 成品规格：1080px 宽单栏、纯白底色、粗黑钢笔墨线、橙蓝红语义文字系统、6~9 个 block 垂直无缝拼接、总高 10000~15000px。
 参考范例：`examples/jin-six-nobles/`（官方全套可复现工程源码）。
+
+整条流水线建立在一个分工上：**模型只负责画插画，版式与文字归排版引擎**。
+由此推出两条贯穿全篇的法则，后文所有细节都是它们的展开：
+
+1. **去容器化画卷**——长图是一卷连续的纸，画面里任何元素都不该声明自己的边界。
+   这条法则**同时管文字与图形两侧**：文字不套卡片框，插图也不许自带方框
+   （一张填满画格、四周有平直收口线、底部横着贯穿地面线的插图，本质就是一张用墨画的 card）。
+2. **素材逐块四图**——一个 block 一次生图出 4 张插画，切开后交给排版引擎。
+   省生图次数、块内笔触天然统一；只有需要 980~1080px 满铺的全幅大场景才另走单张。
 
 ## 第零步：需求理解与分镜脉络确立
 
@@ -27,29 +36,38 @@ whenToUse: 用户想制作"长图 / 科普长图 / 漫画长图 / 叙事长图 /
 ```bash
 # 0. 脚手架：生成独立自包含项目（脚本与字体软链 + 默认 story × story-flow × bw-sketch 骨架）
 #    标准项目根：~/pic-flow-projects/<主题名>/
-#    产物位置：assets/ 生成素材 · blocks/ 渲染块 · output/ 拼接成品长图（唯一交付物）
+#    产物位置：assets/ 生成素材 · sheets/ 精灵图原图 · blocks/ 渲染块 · output/ 拼接成品长图（唯一交付物）
 python3 <本skill目录>/pipeline/new_project.py ~/pic-flow-projects/<主题名> --title "主题名"
 cd ~/pic-flow-projects/<主题名>
 
 # 1. 规划分镜：
 #    先填 storyboard.json（四元组：role/density/focal/notes 视觉任务），
-#    再按 CONTENT.md 编写 assets.json 与 layout/blockN.json。
+#    再按 CONTENT.md 编写 sheets.json（逐块四图规格）与 layout/blockN.json。
 #    铁律：视觉面积 ≥60%，文字精炼为 4~8 行，严禁卡片囚笼，留足 60~90px 负空间通风口。
 
-# 2. 生成素材（全链路防御性 Prompt）：
-#    画风由 style.json 的 asset_suffix 控制（粗黑钢笔线稿、白底无文字水印）；
-#    跨块核心主体前置锁定特征三元组，专业或特定题材指定具象实体并显式追加反向排除。
-python3 scripts/gen_all.py            # 断点续跑；单图: python3 scripts/genlib.py <name> <size> <prompt>
+# 2. 生成素材：一个 block 一次生图出 4 张插画（默认路线）
+#    画风由 style.json 的 asset_suffix 控制；角色特征三元组写进 sheets.json 的 anchors，
+#    用 {占位符} 在每个格子逐字展开——跨格形象一致靠这种一字不差的重复。
+#    first-class 约束是「开放式构图」：背景全留白、只画人与必要道具、
+#    绝不写包围式布景、绝不画贯穿画面的地面线（详见 references/asset-prompts.md）。
+python3 scripts/gen_sheets.py                    # 断点续跑；--only sheetBlock1 / --force / --spec
+#    仅需 980~1080px 满铺的全幅大场景才走单张：
+python3 scripts/gen_all.py                       # 读 assets.json，断点续跑
 
-# 3. 素材标准化：自动裁边与透明通道校准（白底→alpha 兜底转换）
-python3 scripts/make_transparent.py assets/*.png
+# 3. 素材标准化 + 素材侧机检
+python3 scripts/make_transparent.py assets/*.png # 白底→透明 + 灰雾清理 + 紧致裁边（必须在机检前跑）
+python3 scripts/check_edges.py assets/*.png              # 查方图感：硬边数应趋近 0、边缘墨迹占比越低越好
 
-# 4. 排版 + 双代理对抗闭环质检（核心质量护城河，每块必过）
-python3 scripts/layout_lint.py layout/block1.json   # 渲染前机检：碰撞/越界/居中滥用
+# 4. 排版 + 机检链 + 双代理对抗闭环质检（核心质量护城河，每块必过）
+python3 scripts/layout_lint.py layout/block1.json      # 碰撞/越界/居中滥用，hard 必须 = 0
+python3 scripts/check_geom.py layout/block1.json               # 真实字体度量：自动折行/行宽越界/孤字/插图带高
+python3 scripts/check_occlusion.py layout/block1.json          # 气泡与素材墨迹压盖 0 px
+python3 scripts/check_clearance.py layout/block1.json          # 画布口径净空：气泡底缘与主体轮廓 ≥40px
 python3 scripts/compose.py layout/block1.json -o blocks/stage1.png --debug
 #   → 启动独立质检子代理（Review Agent，如 gemini-3.8-flash-high）进行地毯式审查：
 #      - 像素级零遮挡：气泡底色/描边/文字绝不压盖主体面容轮廓或关键结构线（保留 ≥40px 负空间）
 #      - 声源空间闭环：气泡 tail 必须严格对应发话实体的物理坐标与朝向
+#      - 方图感排查：插图四周有没有平直收口线、有没有画包围式布景与贯穿地面线
 #      - 道具与人设一致性：排查跨块形象漂移、跨领域道具错置、高潮场景低幼平淡
 #      - 执行中心压缩打分（1-10分制，7.0~8.5 工业基线），硬性碰撞或文字被遮直接驳回！
 #   → 改 layout 坐标/重绘素材 → 复渲确认 → 评审代理给出【PERFECT PASS】后出正式稿：
@@ -60,11 +78,35 @@ python3 scripts/compose.py layout/block1.json -o blocks/final1.png
 python3 scripts/stitch.py "output/标题_长图.jpg" blocks/final*.png 按序
 ```
 
-## 双代理对抗闭环质检 SOP
+**素材两档的分工**（决定因素：上游按总像素封顶约 1.57 MP，等比缩放、只保留长宽比，
+所以"画布长宽比"而非"画布大小"决定每格像素）：
+
+| 档 | 何时用 | 网格 | 每格像素 | 命令 |
+|---|---|---|---|---|
+| **逐块四图（默认）** | 立绘、道具、纯物态特写、≤700px 宽的中型场景 | 2×2 @2048² | 627² | `gen_sheets.py` |
+| 单张全幅（补充） | 需要 980~1080px 满铺的封面/高潮大场景 | 1×1 @1792×1024 | 1.57 M | `gen_all.py` |
+
+**明确不做**：不要把版式与文字交给生图模型（让模型自己排分格、画黑框、写画面内文字），
+产出必然滑向"漫画页"，且文字成了不可编辑的像素、语义三色系统无从落实。
+
+## 机器检查链 + 双代理对抗闭环质检
+
+**素材侧与排版侧各有一组机检，全绿才进审查**（判据见 `references/design-principles.md` 第五层）：
+
+| 侧 | 脚本 | 判据 |
+|---|---|---|
+| 素材 | `check_edges.py` | 硬边数趋近 0、边缘墨迹占比低 → 没有方图感 |
+| 素材 | `make_transparent.py` | 透明通道与四向紧致裁边正常 |
+| 排版 | `layout_lint.py` | 碰撞、越界、居中滥用，hard = 0 |
+| 排版 | `check_geom.py` | 无自动折行/行宽越界/孤字；插图带高 ≥55% |
+| 排版 | `check_occlusion.py` · `check_clearance.py` | 压盖 0 px；气泡净空 ≥40px |
+
+随后进入对抗审查：
 
 1. **生成代理职责**：专注于根据 storyboard 编写 layout/，精炼文案（4~8行），控制插图视觉面积 ≥60%。
 2. **质检代理职责**：作为极其挑剔的艺术总监，逐像素审视渲染稿与 550px 缩略图：
    - **硬性遮挡排查**：测算气泡与素材墨迹图层相交像素，严禁任何穿刺或压盖；
+   - **方图感排查**：插图四周有没有平直收口线、有没有画包围式布景与贯穿地面线；
    - **呼吸通风口核验**：图文水平间隙 ≥60~90px，正文下边缘与分割线留白 ≥50px，严禁文字越界溢出；
    - **画风与道具一致性**：跨块主体特征是否锚定、高潮动势张力是否充足、特定题材是否杜绝跨领域道具错置。
 3. **定点修正闭环**：发现硬伤即下发具体坐标修改量或重新生成素材，复检直至完全满意闭环。
@@ -89,8 +131,11 @@ python3 scripts/stitch.py "output/标题_长图.jpg" blocks/final*.png 按序
 - **视觉面积支配（Visual Dominance）**：**视觉图形与插图面积占比必须 ≥60%**。
   长图以画为主，横版大场景铺设至 980~1020px 满宽；核心主体立绘高度 480~560px；
   文字精炼为 4~8 行，绝不让冗长小作文吞噬画面。
-- **去容器化画卷哲学（De-containerization）**：除必须的对比看板外，
-  **一律取消生硬的背景卡片框（card）**。文字直排通透底色，依靠快乐体、文楷、毛笔字三级字阶自然分层。
+- **去容器化画卷哲学（De-containerization）**：长图是一卷连续的纸，任何元素都不该声明自己的边界。
+  ①**文字侧**：除必须的对比看板外，一律取消生硬的背景卡片框（card），文字直排通透底色，
+  依靠快乐体、文楷、毛笔字三级字阶自然分层；
+  ②**图形侧**：插图同样不许自带方框——不画包围式布景、不画贯穿画面的地面线，
+  四周墨迹由密到疏自然消散、构图开放不闭合。二者缺一，画卷就断。
 - **绝对零遮挡红线（Zero-Occlusion Rule）**：气泡底色和描边绝对禁止覆盖主体的面容轮廓或核心结构线；
   气泡主体置于上方纯净负空间中（保留 ≥40px 缓冲），长 tail 负责视线牵引。
 - **声源物理闭环**：气泡 tail 必须严格对应发话实体的实际物理空间坐标。
@@ -108,14 +153,23 @@ python3 scripts/stitch.py "output/标题_长图.jpg" blocks/final*.png 按序
 - 正文底部与分割线保持 ≥50~80px 缓冲，严禁文字跨线溢出
 - 气泡 ±2~5° 错落、高度错开、全图形态 ≥2 种
 - 居中与左对齐窄栏混排；标签 rotate ±3°；标题字号随内容变化
-- 反面模式：卡片囚笼、文字压倒画面、气泡遮挡穿刺、声源空间颠倒、对称等大双图、相册式排版
+- 插图四周墨迹自然消散、没有平直收口线（贴纸感的插图会毁掉整块的画卷感）
+- 反面模式：卡片囚笼、**方图贴纸**、**贯穿地面线**、文字压倒画面、气泡遮挡穿刺、声源空间颠倒、对称等大双图、相册式排版
 
 ## 常见坑与防御性 Prompt 指南
 
-- **跨分块主体锚点锁定**：同一核心实体在不同分块中容易出现形象漂移。Prompt 必须前置锁定特征三元组（核心轮廓体态 + 标志性细节标识 + 专属符号特征），状态转变时约束为保留基础特征下的神态反差，严禁省略基础特征。
+- **开放式构图（每条 prompt 的第一约束）**：插图要"落"在白纸上，不是"贴"在白纸上。
+  背景全留白、只画人物与必要道具；**绝不写"殿宇梁柱森然""帷帐低垂"这类包围式布景**；
+  **绝不画贯穿画面的地面线/地平线/地脚线**；四周墨迹由密到疏自然消散；构图开放、不闭合。
+  反直觉但已实测：**"主体居中放置、四周留出充足留白"正是贴纸感的元凶**——它等于在教模型画一张自成一体的小图。
+- **跨分块主体锚点锁定**：锚点写进 `sheets.json` 的 `anchors`，用 `{占位符}` 在**每个格子逐字展开**
+  （特征三元组：核心轮廓体态 + 标志性细节标识 + 专属符号特征）。
+  跨格形象一致靠的是一字不差的重复，不是"保持一致"这类形容词。状态转变时约束为保留基础特征下的神态反差。
 - **实体具象化与反向排除**：严禁在特定专业或时空题材中使用易引发跨领域错置的抽象隐喻，必须严格映射为该题材领域的具象实体道具，并显式加入负向排除从句：*“绝对禁止出现任何跨领域、跨时空的违和道具”*。
 - **高潮场景动势与墨重强化**：高潮大场面容易被模型弱化为平淡低幼画风。Prompt 必须强制注入粗黑钢笔墨线、纯黑墨块对比与强动势氛围，严禁浅淡灰线与呆板表情。
 - **纯物态概念的无躯体约束**：特写必须声明为纯物态构图，严禁画出无关的完整人体身躯，防止横向撑满挤死文字安全通道。
+- **新切出来的素材必须先跑 `make_transparent.py` 再机检**：`check_clearance.py` 的墨迹蒙版读 alpha 通道，
+  不转透明的话整张素材会被当成"全是墨"，净空检查全部失真。
 - **透明背景是生图时直接要的**：generate() 请求自带 `background=transparent + output_format=png`，正规上游直接回透明 PNG；`make_transparent.py` 只为未认参数回白底的情况兜底。
 - **生图上游是用户自配的**：未配置时 gen 脚本会打印配置引导。配置源在 `~/.config/pic-flow/providers.json` 或 `PICFLOW_IMAGE_*` 环境变量。多上游按序容错、断点续跑。
 
@@ -126,7 +180,16 @@ python3 scripts/stitch.py "output/标题_长图.jpg" blocks/final*.png 按序
 ## 文件指针
 
 - `examples/jin-six-nobles/`：官方标杆长图范例与全套可复现工程
-- `templates/story.md` · `layouts/story-flow.json` · `styles/bw-sketch.json`：核心模板、布局与黑白手绘风格包
-- `references/`：设计系统（`style-guide.md`）、设计方法（`design-principles.md`）、内容质量（`content-quality.md`）、Prompt 指南（`asset-prompts.md`）
-- `pipeline/`：全部脚本；`new_project.py` 脚手架；`compose.py` 渲染引擎；`layout_lint.py` 机检；`stitch.py` 拼接
-  （字体软链共享，勿删 skill 目录）
+- `templates/story.md` · `templates/storyboard.json` · `templates/sheets.json`：内容骨架、整图分镜、逐块四图规格
+- `layouts/story-flow.json` · `styles/bw-sketch.json`：布局骨架与黑白手绘风格包
+- `references/`：设计系统（`style-guide.md`）、设计方法（`design-principles.md`）、内容质量（`content-quality.md`）、
+  素材 Prompt 指南（`asset-prompts.md`：逐块四图 + 开放式构图四条）
+- `pipeline/` 素材线：`new_project.py` 脚手架 · `gen_sheets.py` 逐块四图生图 · `slice_sheet.py` 精灵图切分 ·
+  `gen_all.py` 单张全幅 · `genlib.py` 上游链 · `make_transparent.py` 标准化 · `check_edges.py` 方图感机检
+- `pipeline/` 排版线（Python 引擎）：`compose.py` 渲染引擎 · `layout_lint.py` · `check_geom.py` ·
+  `check_occlusion.py` · `check_clearance.py` · `stitch.py` 拼接
+- `pipeline/canvas/` 排版线（**Canvas/Node 引擎，与 Python 线并存、同一份 layout**）：
+  `render.mjs`（对应 compose.py）· `stitch.mjs` · `preview.mjs` 便携预览 · `parity.mjs` 双引擎逐像素对照 ·
+  `checks/{lint,geom,occlusion,clearance}.mjs` 同一套机检判据 · `SCHEMA.md` · `README.md`
+  （两条排版线读同一份 layout、产出同一批产物，可逐块互换；详见 `pipeline/canvas/README.md`）
+  （脚本与字体都是软链，可原地运行，勿删 skill 目录）

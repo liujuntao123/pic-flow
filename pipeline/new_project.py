@@ -5,9 +5,10 @@ Usage: new_project.py <project_dir> [--title "主题名"]
 
 Creates: assets/ blocks/ layout/ output/ scripts/(软链) + fonts(软链)
          + CONTENT.md (内容模板) + style.json (风格包) + storyboard.json (整图分镜)
-         + layout/block1.json (布局骨架) + assets.json 模板。
+         + layout/block1.json (布局骨架) + sheets.json (逐块四图规格) + assets.json (单张全幅用)。
 标准项目位置：~/pic-flow-projects/<项目名>/；最终交付目录固定为该项目下的 output/。
-assets/ 与 blocks/ 是可再生中间产物，layout/、style.json、storyboard.json、assets.json、CONTENT.md 是源文件。
+assets/ 与 blocks/ 是可再生中间产物；layout/、style.json、storyboard.json、
+sheets.json、assets.json、CONTENT.md 是源文件。
 脚手架会写 .gitignore，默认不把生图素材、渲染块和成品提交进源代码仓库。
 scripts/ 与 fonts/ 均软链到 skill 本体（不复制），故项目内脚本恒为当前版本。
 """
@@ -59,6 +60,12 @@ def main():
             dst.symlink_to(f)
         except OSError:
             shutil.copy2(f, dst)
+    canvas_dst = root / "scripts" / "canvas"
+    if not canvas_dst.exists():
+        try:
+            canvas_dst.symlink_to(SKILL_DIR / "pipeline" / "canvas", target_is_directory=True)
+        except OSError:
+            pass
     fonts_dst = root / "fonts"
     try:
         fonts_dst.symlink_to(SKILL_DIR / "fonts", target_is_directory=True)
@@ -76,6 +83,9 @@ def main():
         json.dumps(skeleton, ensure_ascii=False, indent=2), encoding="utf-8")
     (root / "assets.json").write_text(
         json.dumps(ASSETS_TEMPLATE, ensure_ascii=False, indent=2), encoding="utf-8")
+    sheets_tpl = LIB / "templates" / "sheets.json"
+    if sheets_tpl.exists():
+        shutil.copy2(sheets_tpl, root / "sheets.json")
     (root / ".gitignore").write_text(
         "assets/*.png\nblocks/*.png\noutput/*.jpg\noutput/*.jpeg\noutput/*.png\n",
         encoding="utf-8")
@@ -87,8 +97,18 @@ def main():
     print(f"  内容模板={args.template}  风格={args.style}  布局={args.layout}")
     print("  产物位置：assets/ 生成素材 · blocks/ 渲染块 · output/ 成品长图"
           "（是否入 git 由你的项目仓库决定）")
-    print("下一步：1) 按 CONTENT.md 写 assets.json 与 layout/*.json")
-    print("        2) python3 scripts/gen_all.py  3) 按 skill 流程识图校准")
+    print("下一步：1) 按 CONTENT.md 写 sheets.json（逐块四图）与 layout/*.json")
+    print("        2) python3 scripts/gen_sheets.py      # 每块一次生图出 4 张插画，自动切开")
+    print("           python3 scripts/gen_all.py         # 仅全幅大场景走单张（assets.json）")
+    print("        3) python3 scripts/make_transparent.py assets/*.png")
+    print("        4) python3 check_edges.py assets/*.png   # 查方图感（硬边数应趋近 0）")
+    print("  排版/机检（Canvas 方案，Node 侧工具在 scripts/canvas/）：")
+    print("        node scripts/canvas/render.mjs layout/block1.json -o blocks/final1.png [--debug]")
+    print("        node scripts/canvas/checks/lint.mjs  layout/block1.json")
+    print("        node scripts/canvas/checks/geom.mjs  layout/block1.json")
+    print("        node scripts/canvas/checks/occlusion.mjs layout/block1.json")
+    print("        node scripts/canvas/checks/clearance.mjs layout/block1.json")
+    print("        node scripts/canvas/stitch.mjs output/标题_长图.jpg blocks/final*.png")
 
 
 if __name__ == "__main__":

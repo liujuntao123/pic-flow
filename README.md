@@ -1,8 +1,16 @@
 # pic-flow：黑白手绘叙事与科普长图流水线
 
 pic-flow 是一个专为长篇叙事与深度科普打造的 AI Agent 技能（Skill）。
-通过 **AI 生图素材 → 声明式程序排版 → 双代理对抗质检 → 无缝拼接** 全流程，
+通过 **逐块四图生图 → 声明式程序排版 → 机检链与双代理对抗质检 → 无缝拼接** 全流程，
 稳定产出 1080px 宽、10000~15000px 高的高张力黑白漫画长图。
+
+整条流水线建立在一个分工上：**模型只负责画插画，版式与文字归排版引擎**。
+由此推出两条贯穿全篇的法则：
+
+- **去容器化画卷**：长图是一卷连续的纸，画面里任何元素都不该声明自己的边界。
+  这条法则**同时管文字与图形两侧**——文字不套卡片框，插图也不许自带方框。
+- **素材逐块四图**：一个 block 一次生图出 4 张插画，切开后交给排版引擎。
+  省生图次数、块内笔触天然统一；只有需要 980~1080px 满铺的全幅大场景才另走单张。
 
 成品参考（仓库自带官方标杆范例 `examples/jin-six-nobles/分家前夜_晋国六卿_长图.jpg`）：
 
@@ -15,15 +23,19 @@ pic-flow 是一个专为长篇叙事与深度科普打造的 AI Agent 技能（S
 直接让 AI 生成长图存在三大痛点：单次分辨率受限、无法承受万像素纵深、文字渲染必崩。
 pic-flow 将流水线严格解耦为可控节点：
 
-1. **AI 专注生成无文字透明背景素材**：严格执行防御性 Prompt 约束，主体辨识度高、画风高度统一；
+1. **AI 专注画无文字透明背景的插画**：**一个 block 一次生图出 4 张插画**（2×2 网格 → 自动切开），
+   严格执行开放式构图约束，主体辨识度高、块内笔触天然统一；
 2. **声明式排版引擎像素级排版**：自研文本换行、避头尾、字阶混排与带角度定向气泡几何算法；
-3. **双代理对抗闭环质检**：生成代理与独立挑剔评审代理对抗，执行中心压缩打分与像素级穿刺排查，彻底解决遮挡与贴脸。
+3. **机检链 + 双代理对抗闭环质检**：素材侧（方图感）与排版侧（碰撞/遮挡/净空）各一组机器判据全绿后，
+   生成代理与独立挑剔评审代理对抗，执行中心压缩打分与像素级穿刺排查。
 
 ## 核心特性
 
 - **聚焦王牌体系**：专注于最具感染力与传播度的 **story（故事叙事） × story-flow（情节流动） × bw-sketch（黑白手绘）** 黄金组合，专攻事件叙事、逻辑博弈、科学原理、商业案例复盘与深度科普长图。
-- **双代理对抗质检闭环**：排版代理与独立挑剔评审代理（Review Agent）协同，执行中心压缩打分与像素级穿刺排查，实现绝对零遮挡、主体锚定与跨领域道具防错置。
-- **高审美画卷排版**：严格落实去容器化（彻底摒弃生硬卡片）、图片视觉面积占比 ≥60%、60~90px 负空间通风口，保证长图如流水画卷般舒展透气。
+- **逐块四图生图**：一个 block 一次生图 = 4 张插画，切开即用。生图次数降到 1/4，且同块四图出自同一张画稿、线条与墨色不会有差异；角色特征三元组以 `{占位符}` 在每个格子逐字展开，跨格形象靠"一字不差的重复"锚定。
+- **开放式构图约束**：把"插图要落在白纸上、不是贴在白纸上"写进提示词——背景全留白、不写包围式布景、不画贯穿画面的地面线、四周墨迹由密到疏自然消散。配 `check_edges.py` 量化验收（硬边数趋近 0）。
+- **机检链 + 双代理对抗质检闭环**：素材侧查方图感与透明标准化，排版侧查碰撞、越界、真实字体折行、像素级遮挡与净空；随后排版代理与独立评审代理对抗，实现绝对零遮挡、主体锚定与跨领域道具防错置。
+- **高审美画卷排版**：严格落实去容器化（文字不套卡片、插图不带方框）、图片视觉面积占比 ≥60%、60~90px 负空间通风口，保证长图如流水画卷般舒展透气。
 - **中文排版讲究**：自动换行（避头点、英文不拆词）、三种语义高亮（关键词橙 / 引语蓝 / 强信息红）、八种气泡形态、语义化配色；内置 OFL 开源中文字体（霞鹜文楷 / 站酷快乐体 / 马善政毛笔楷书）。
 - **生图可靠与断点续跑**：多上游自动切换、失败降级、断点续跑；生图自带透明背景与防御性 Prompt 约束。
 
@@ -71,14 +83,20 @@ agent 会快速提炼核心冲突与演进脉络、梳理主角特征，确认�
 python3 pipeline/new_project.py ~/pic-flow-projects/my-topic --title "主题"
 cd ~/pic-flow-projects/my-topic
 
-# 2) 生图：防御性 Prompt 约束、多上游容错、断点续跑
-python3 scripts/gen_all.py
+# 2) 生图：逐块四图（默认路线）——一个 block 一次生图出 4 张插画，自动切开
+python3 scripts/gen_sheets.py                    # 断点续跑；--only sheetBlock1 / --force / --spec
+#    仅需满铺的全幅大场景才走单张：
+python3 scripts/gen_all.py                       # 读 assets.json
 
-# 3) 素材标准化：自动裁边与透明通道校准（白底→alpha 兜底转换）
-python3 scripts/make_transparent.py assets/*.png
+# 3) 素材标准化 + 素材侧机检
+python3 scripts/make_transparent.py assets/*.png # 白底→透明 + 灰雾清理 + 紧致裁边（必须在机检前跑）
+python3 scripts/check_edges.py assets/*.png              # 查方图感：硬边数应趋近 0
 
-# 4) 排版：编辑 layout/blockN.json，机检 → 双代理对抗审查 → 正式渲染
-python3 scripts/layout_lint.py layout/block1.json                           # 渲染前机检
+# 4) 排版：编辑 layout/blockN.json → 机检链 → 双代理对抗审查 → 正式渲染
+python3 scripts/layout_lint.py    layout/block1.json   # 碰撞/越界/居中滥用（hard 必须 = 0）
+python3 scripts/check_geom.py             layout/block1.json   # 真实字体度量：折行/孤行/插图带高
+python3 scripts/check_occlusion.py        layout/block1.json   # 气泡与素材墨迹压盖 0 px
+python3 scripts/check_clearance.py        layout/block1.json   # 画布口径净空 ≥40px
 python3 scripts/compose.py layout/block1.json -o blocks/stage1.png --debug  # 调试画布
 python3 scripts/compose.py layout/block1.json -o blocks/final1.png          # 正式渲染
 
@@ -95,8 +113,9 @@ python3 scripts/stitch.py output/out.jpg blocks/final*.png
 |---|---|---|
 | `output/` | **产物（成品）** | 拼接后的长图 JPG + 550px 宽预览，唯一需要交付与发布的产物 |
 | `blocks/` | 产物（中间） | 每块渲染图：`stage*` 调试画布、`final*` 正式块 |
-| `assets/` | 产物（中间） | AI 生成的透明背景素材，`gen_all.py` 可断点续跑再生 |
-| `storyboard.json`、`assets.json`、`layout/blockN.json`、`style.json`、`CONTENT.md` | **源文件** | 分镜、素材清单、排版描述、风格包、内容骨架——真正值得入 git 的工程源文件 |
+| `assets/` | 产物（中间） | 切开/生成后的透明背景插画，`gen_sheets.py` 可断点续跑再生 |
+| `sheets/` | 产物（中间） | 精灵图原图与 `*_slice_debug.png` 切割调试图，备查切分是否伤到内容 |
+| `storyboard.json`、`sheets.json`、`assets.json`、`layout/blockN.json`、`style.json`、`CONTENT.md` | **源文件** | 分镜、逐块四图规格、单张素材清单、排版描述、风格包、内容骨架——真正值得入 git 的工程源文件 |
 
 产物均可由脚本再生，是否入 git 由你自己的项目仓库决定；仓库自带标杆范例工程在 `examples/` 目录下。
 
@@ -111,6 +130,30 @@ PICFLOW_ROOT=<项目> python3 <skill>/pipeline/compose.py layout/block1.json -o 
 
 项目根由「被操作的 layout 文件」逐级上溯自动推断（找 `assets.json` / `style.json` /
 `layout/` 等标志），无需把脚本复制进项目；个别场景可用 `PICFLOW_ROOT` 显式指定。
+
+### 两套排版引擎（Python / Canvas），同一份 layout
+
+排版与机检有两条**并存**的实现，读**同一份 `layout/blockN.json`**、遵守**同一套判据**、
+产出**同一批产物**，可以逐块互换：
+
+| | Python 线 | Canvas 线 |
+|---|---|---|
+| 渲染 | `pipeline/compose.py` | `pipeline/canvas/render.mjs` |
+| 机检 | `layout_lint.py` · `check_geom.py` · `check_occlusion.py` · `check_clearance.py` | `pipeline/canvas/checks/{lint,geom,occlusion,clearance}.mjs` |
+| 拼接 | `pipeline/stitch.py` | `pipeline/canvas/stitch.mjs` |
+| 依赖 | Pillow + numpy | Node 18+ 与 `npm install`（预编译 Skia 绑定 `@napi-rs/canvas`） |
+| 额外能力 | —— | `preview.mjs` 便携逐块复核 · `parity.mjs` 双引擎逐像素对照 · `render.mjs --scale 2` 超采样出图 |
+
+```bash
+cd <skill 根> && npm install            # 只装一个预编译依赖
+node pipeline/canvas/render.mjs layout/block1.json -o blocks/final1.png
+node pipeline/canvas/checks/lint.mjs layout/block*.json
+node pipeline/canvas/stitch.mjs output/长图.jpg blocks/final*.png
+```
+
+脚手架会把 `scripts/canvas` 软链到 `pipeline/canvas`，项目内直接写
+`node scripts/canvas/render.mjs …` 即可。切到 Canvas 线**不需要改任何一个 layout 文件**；
+细节、两引擎差异与踩坑记录见 `pipeline/canvas/README.md` 与 `SCHEMA.md`。
 
 ### 生图 Provider 配置（用户自备）
 
@@ -161,8 +204,8 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 
 | 目录 | 内容 |
 |---|---|
-| `pipeline/` | 声明式排版引擎、生图链、脚手架、机检与拼接脚本 |
-| `templates/` | 核心叙事模板（`story.md` 骨架表 + `storyboard.json` 分镜定义） |
+| `pipeline/` | 生图线（`gen_sheets.py` 逐块四图 / `slice_sheet.py` 切分 / `gen_all.py` 单张 / `check_edges.py` 方图感机检）、排版线（`compose.py` 渲染引擎 / `layout_lint.py` · `check_geom.py` · `check_occlusion.py` · `check_clearance.py` 机检链 / `stitch.py` 拼接）、`new_project.py` 脚手架 |
+| `templates/` | 核心模板（`story.md` 内容骨架 + `storyboard.json` 分镜定义 + `sheets.json` 逐块四图规格） |
 | `layouts/` | 核心故事流布局骨架（`story-flow.json`） |
 | `styles/` | 官方黑白手绘风格包（`bw-sketch.json` 粗黑钢笔墨线 + 橙蓝红文字系统） |
 | `references/` | 设计系统详解（`style-guide.md`）、设计方法（`design-principles.md`）、内容质量（`content-quality.md`）、Prompt 指南（`asset-prompts.md`） |
