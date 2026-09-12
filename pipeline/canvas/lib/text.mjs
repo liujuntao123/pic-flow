@@ -188,13 +188,14 @@ export function ascent(size, bold, family = 'body') {
 /** 按行折好、可直接 ctx.fillText 的段落（每行给出起点 x 与各字样式）。 */
 export function layoutParagraph(el, W, families) {
   const geo = blockGeom(el, W, families);
+  const align = el.align ?? 'center';
   const asc = ascent(geo.size, geo.bold, geo.family);
   const rows = geo.lines.map((ln, i) => {
     const lw = geo.widths[i];
     let cx =
-      geo.align === 'center'
+      align === 'center'
         ? geo.left + (geo.w - lw) / 2
-        : geo.align === 'left'
+        : align === 'left'
           ? geo.left
           : geo.left + geo.w - lw;
     const chars = ln.map(([ch, st]) => {
