@@ -141,7 +141,7 @@ function drawText(canvas, ctx, el, W, theme) {
         baseline: r.baseline + para.py + m - para.top,
       })),
     };
-    paintParagraph(lc, shifted, el, theme, box);
+    paintParagraph(lc, shifted, el, theme, el.box);
     const cx = para.left + para.w / 2;
     const cy = para.top + bh / 2;
     rotateLayer(layer, el.rotate, Math.round(cx), Math.round(cy), canvas, ctx);
@@ -156,7 +156,7 @@ function drawText(canvas, ctx, el, W, theme) {
     paintBox(ctx, [para.left - para.px, para.top - para.py,
       para.left + para.w + para.px, para.top + bh + para.py], el, theme);
   }
-  paintParagraph(ctx, para, el, theme, box);
+  paintParagraph(ctx, para, el, theme, el.box);
   return [para.left - para.px, para.top - para.py,
     para.left + para.w + para.px, para.top + bh + para.py];
 }

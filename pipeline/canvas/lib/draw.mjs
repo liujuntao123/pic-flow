@@ -33,12 +33,19 @@ export function withAlpha(ctx, a, fn) {
   ctx.restore();
 }
 
-/** 语义三色：hl 橙 / quote 蓝 / warn 红；未标记的字用元素色（或气泡文字色）。 */
+/**
+ * 语义三色：hl 橙 / quote 蓝 / warn 红；未标记的字用元素色。
+ *
+ * 兜底顺序必须与 compose.char_color 一致：`el.color → el.box.color → theme.text`。
+ * 注意第三级读的是**元素自带的 box**，不是「主题 bubble 默认值合并后」的 box ——
+ * 主题 bubble 的 color 是给气泡用的暖褐色(#4A2800)，若让它兜底，正文和标题会被整体
+ * 染成暖褐（实测踩过：全图正文渲成 #4A2800，而 style.json 声明的是 #333333）。
+ */
 export function charColor(el, st, theme, box) {
   if (st === 'hl') return el.hl_color ?? theme.hl_color ?? '#E8842B';
   if (st === 'quote') return el.quote_color ?? theme.quote_color ?? '#2E7CB8';
   if (st === 'warn') return el.warn_color ?? theme.warn_color ?? '#D4483B';
-  return el.color ?? box?.color ?? theme.text ?? '#333333';
+  return el.color ?? el.box?.color ?? theme.text ?? '#333333';
 }
 
 export function roundRectPath(ctx, x0, y0, x1, y1, r) {

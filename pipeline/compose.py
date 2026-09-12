@@ -120,7 +120,11 @@ def char_color(el, st):
         return el.get("quote_color", THEME.get("quote_color", "#2E7CB8"))
     if st == "warn":
         return el.get("warn_color", THEME.get("warn_color", "#D4483B"))
-    box_color = el_box(el).get("color")
+    # 兜底顺序：元素自身 color → 元素自带 box 的 color → 主题 text 色。
+    # 第三级必须读**元素自带的 box**，不能用 el_box(el)（它已把主题 bubble 的默认值合并进来）。
+    # 主题 bubble.color 是给气泡用的暖褐色(#4A2800)，若让它兜底，所有正文与标题都会被染成
+    # 暖褐色 —— style.json 里声明的 text:#333333 永远取不到（实测踩过，两套引擎都踩了）。
+    box_color = (el.get("box") or {}).get("color")
     return el.get("color", box_color or THEME.get("text", "#333333"))
 
 
