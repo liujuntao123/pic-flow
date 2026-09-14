@@ -1,0 +1,55 @@
+{
+  "_doc": "整图分镜：黄巢起义与晚唐崩塌（历史讲述）。role 取值 hook|context|buildup|climax|consequence|meaning|ending；density 取值 low|medium|high；focal 取值 left|right|center|full_bleed。rules：相邻两块的 focal/density 至少一项不同；climax 落在 55%~70% 进度；全图连续居中构图不超过 2 块；最终 7 块。",
+  "title": "血菊残，大唐笑容已泛黄：黄巢起义始末",
+  "blocks": [
+    {
+      "id": "block1",
+      "role": "hook",
+      "density": "medium",
+      "focal": "center",
+      "notes": "【晚唐脓疮与荒诞朝堂】：抽水泵压榨下的饥民草籽为食，朝堂对'蝗虫自觉抱荆棘而死'入贺，揭开帝国病入膏肓的系统性崩溃"
+    },
+    {
+      "id": "block2",
+      "role": "context",
+      "density": "high",
+      "focal": "left",
+      "notes": "【私盐帝国与落榜狂生】：王仙芝黄巢的地下武装网络（有钱有枪有网络），黄巢考公失败后的滔天杀气《不第后赋菊》"
+    },
+    {
+      "id": "block3",
+      "role": "buildup",
+      "density": "medium",
+      "focal": "right",
+      "notes": "【绝不渡北的史诗大穿插】：避开北方凶猛骑兵，利用地方节度使'各扫门前雪'与'留贼为资'的放水心理，中原大游击"
+    },
+    {
+      "id": "block4",
+      "role": "buildup",
+      "density": "high",
+      "focal": "left",
+      "notes": "【绝境升级：劈山与水筏】：仙霞岭劈山开道入闽，广州大疫后桂林扎万筏顺湘江而下，一日破潭州，机动性全面升级"
+    },
+    {
+      "id": "block5",
+      "role": "climax",
+      "density": "high",
+      "focal": "full_bleed",
+      "notes": "【防线内溃与决战潼关】：高骈扬州称病罢战，河南诸军许昌内讧自残，长安纨绔神策军雇贫代役，禁坑踏平潼关血陷（叙事高潮 71%）"
+    },
+    {
+      "id": "block6",
+      "role": "consequence",
+      "density": "medium",
+      "focal": "right",
+      "notes": "【金甲满城与含元登基】：12岁唐僖宗黎明奔蜀展现马球体能，黄巢金轿入长安、含元殿称帝建大齐，杀戮与狂欢并起"
+    },
+    {
+      "id": "block7",
+      "role": "ending",
+      "density": "low",
+      "focal": "center",
+      "notes": "【历史镜鉴：官僚死结与白茫茫大地】：恶龙朱温沙陀并起，开启五代序幕。深刻反思：帝国之亡不在落榜生，而在吃人的体制死结"
+    }
+  ]
+}

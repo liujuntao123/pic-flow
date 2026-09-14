@@ -1,0 +1,124 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "五、密闭宇宙：永不犯错的逻辑闭环",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "外丹术最迷人也最致命的核心在于：\n丹炉绝不是一口烧矿物的铁锅，它被赋予了神圣的宏大隐喻——\n【一座高度密闭、模拟天地交合的‘微缩宇宙’】！",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "c5a_universe_furnace.png",
+      "x": 280,
+      "y": 590,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c5b_diagram_loop.png",
+      "x": 780,
+      "y": 590,
+      "height": 360,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 820,
+      "color": "#EFECE6",
+      "content": "炉盖法天，炉底象地；水银为离火，黑铅为坎水。\n投掷其中的铅汞丹砂，模拟阴阳相交、万物返本还元的造化历程。\n至此，外丹思想建立起了一套〖坚不可摧的自我保护机制〗："
+    },
+    {
+      "type": "text",
+      "content": "炉盖法天，炉底象地；水银为离，黑铅为坎。\n投掷其中的铅汞丹砂，是在模拟阴阳相交、万物返本还原的造化过程。\n至此，外丹思想建立起了一套〖坚不可摧的自我保护机制〗：",
+      "x": 540,
+      "y": 880,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.55
+    },
+    {
+      "type": "text",
+      "content": "『炼成了，丹法通神；没炼成，火候未到！\n吃没事，去毒极精；吃死了，服食失法！』",
+      "x": 540,
+      "y": 1100,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "max_width": 640,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          10,
+          18
+        ],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "c5c_master_disciple.png",
+      "x": 280,
+      "y": 1440,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c5d_closed_logic.png",
+      "x": 780,
+      "y": 1440,
+      "height": 360,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1680,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "看清这套闭环的恐怖威力了吗？\n【失败永远不会变成反证，失败永远首先被体系自身重新解释】！\n只要有‘火候、天时、配伍、心诚’作为无休止的挡箭牌，\n整个外丹体系就永远不需要承认根本前提是错的！\n这已经不是一口丹炉的问题，\n而是一个社会在面对‘权威解释与证伪机制’时的深层困境。",
+      "x": 540,
+      "y": 1750,
+      "size": 30,
+      "align": "center",
+      "max_width": 960,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "『无法被证伪的体系，终将成为认知的牢笼』",
+      "x": 540,
+      "y": 2520,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

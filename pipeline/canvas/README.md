@@ -42,7 +42,7 @@ node pipeline/canvas/checks/geom.mjs      layout/block1.json
 node pipeline/canvas/checks/occlusion.mjs layout/block1.json
 node pipeline/canvas/checks/clearance.mjs layout/block1.json
 node pipeline/canvas/stitch.mjs output/标题_长图.jpg blocks/final1.png blocks/final2.png …
-node pipeline/canvas/parity.mjs examples/jin-six-nobles/layout/block2.json
+node pipeline/canvas/parity.mjs examples/huangchao-tang-collapse/layout/block1.json
 ```
 
 项目里的 `scripts/canvas` 是指向本目录的软链（`new_project.py` 自动创建），
@@ -70,7 +70,7 @@ node pipeline/canvas/parity.mjs examples/jin-six-nobles/layout/block2.json
 
 ## 两引擎差异（已验证：判据一致，Canvas 侧仅一处收紧）
 
-在官方标杆范例 `examples/jin-six-nobles` 的 7 块上跑同一份 layout 对照：
+在官方标杆范例 `examples/huangchao-tang-collapse` 的 7 块上跑同一份 layout 对照：
 
 - **折行、行宽、基线**：由**逐字累计宽度 + 同一套贪心折行**决定 → 两引擎折行结果一致。
 - **行距默认值**：`1.4`（与 `compose.py` 的 `el.line_height ?? 1.4` 对齐；曾误用 1.5，导致同块行距差 7%）。

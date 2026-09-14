@@ -1,0 +1,141 @@
+{
+  "width": 1080,
+  "height": 2720,
+  "elements": [
+    {
+      "type": "text",
+      "content": "五、淮南让道、防线内溃与血染潼关",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "黄巢渡江，大唐防务的擎天白玉柱系于淮南节度使【高骈】身上。\n然而这位名将听信吕用之挑唆，彻底‘活明白了’：\n『贼平则威望震主、功居不赏，不如敛兵观衅、自求多福！』\n高骈称风痹高挂免战牌，直接将整个江淮阻击防区拱手相让！",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b5a_gaopian.png",
+      "x": 800,
+      "y": 620,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "朝廷命河南诸军集结溵水，却发生惊天内讧：\n忠武军夜袭许昌城内徐州兵，三千人尽遭屠戮，\n随后驱逐节度使薛能并灭其全家！\n各路官军惊恐四散，〖防线不战自溃〗。\n黄巢全军兵不血刃渡过淮河，直逼关中！",
+      "x": 80,
+      "y": 480,
+      "size": 30,
+      "align": "left",
+      "max_width": 520,
+      "line_height": 1.6
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 860,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "十二月初，黄巢数十万前锋逼近【潼关】。\n长安朝廷急调两神策军弩手2800人驰援——\n然而神策军平时皆长安富家子弟，贿赂太监挂名领饷，未尝历战：",
+      "x": 540,
+      "y": 920,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『父子聚泣，\n多以金帛雇病坊贫人代行！』",
+      "x": 280,
+      "y": 1080,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "max_width": 340,
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "color": "#FFFFFF",
+        "pad": [10, 16],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b5b_shencedu.png",
+      "x": 280,
+      "y": 1420,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "主将张承范率这批老弱病残抵关，早已绝粮数日。\n关外齐克让军饥饿溃散，数万官兵逃入关旁【禁坑】，\n茂密灌木长藤〖一夕践为坦途〗，\n百年天然屏障彻底荡然无存！",
+      "x": 540,
+      "y": 1340,
+      "size": 30,
+      "align": "left",
+      "max_width": 500,
+      "line_height": 1.6
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1660,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "十二月初三，黄巢大军夹攻潼关，烈火焚尽关楼！\n十二连城偷渡失守，守将王师会自尽，张承范微服逃遁。\n挡在黄巢与帝都长安之间的最后天险——〖彻底沦陷〗！",
+      "x": 540,
+      "y": 1720,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.55
+    },
+    {
+      "type": "asset",
+      "file": "b5c_jinkeng.png",
+      "x": 280,
+      "y": 2120,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b5d_tongguan.png",
+      "x": 780,
+      "y": 2120,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『潼关失守，大唐三百里秦川门户大开！』",
+      "x": 540,
+      "y": 2580,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

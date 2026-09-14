@@ -1,0 +1,145 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "四、明知有毒：以猛攻猛与微毒陷阱",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "古人是因为‘不知道水银有毒’才敢服食吗？完全不是！\n炼丹家早就极其清楚地记录了丹砂与水银的剧毒。\n《黄帝九鼎神丹经诀》就曾发出严厉警告：",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『不知水银出于丹砂，而有大毒……\n末既有毒，本岂无毒？若去毒不尽，欲益反损！』",
+      "x": 540,
+      "y": 360,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "max_width": 640,
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "color": "#FFFFFF",
+        "pad": [
+          10,
+          18
+        ],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "c4a_warning_scroll.png",
+      "x": 280,
+      "y": 680,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c4b_fire_control.png",
+      "x": 780,
+      "y": 680,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 890,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "在中古医学观念中，【‘毒’并不等于死敌，而是意味着‘药力至刚至猛’】！\n正因生水银力量如此狂暴，才必须通过复杂的丹法去‘伏火’与‘驯服’。\n只要通过精细火候与药物配伍除尽火毒，剧毒便能反转为无上仙药！",
+      "x": 540,
+      "y": 950,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.55
+    },
+    {
+      "type": "text",
+      "content": "『服后燥热口渴？\n此乃仙药发动、体内浊气排散！』",
+      "x": 280,
+      "y": 1150,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "max_width": 360,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          10,
+          16
+        ],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "c4c_heat_reaction.png",
+      "x": 280,
+      "y": 1480,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c4d_balance_herb.png",
+      "x": 780,
+      "y": 1480,
+      "height": 360,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1720,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "现代毒理学更解释了为什么这种致命经验能维持千年：\n丹砂主要成分硫化汞难溶于水，肠道吸收率仅约 〖0.2%〗！\n少量服用通常根本不会引发急性中毒！\n吃了一点没事，经验便进一步强化了信念；\n偶有燥热腹泻，被当成‘药力行散’；即使有人中毒身亡，\n也被归咎为‘火候不够、去毒未尽’，而绝不怀疑理论本身！",
+      "x": 540,
+      "y": 1800,
+      "size": 30,
+      "align": "center",
+      "max_width": 960,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "『不死的幻觉，来自真实的低急性毒性』",
+      "x": 540,
+      "y": 2520,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

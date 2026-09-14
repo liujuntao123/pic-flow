@@ -1,0 +1,147 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "三、惊天化育：丹砂化汞的化学奇迹",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "黄金提供了‘不朽’的静态范本；\n但真正让历代炼丹家陷入极致痴迷的，\n是【丹砂与水银】展现出的动态超自然转化！",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『凡草木烧之即烬，\n而丹砂烧之成水银，积变又还成丹砂！』",
+      "x": 540,
+      "y": 350,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "font": "title",
+      "max_width": 540,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          10,
+          18
+        ],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "c3a_cinnabar_rock.png",
+      "x": 280,
+      "y": 660,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c3b_mercury_beads.png",
+      "x": 780,
+      "y": 660,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 890,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "从现代化学看，这完全是真实的无机化学反应：\n丹砂主要成分是【硫化汞（HgS）】，受热释放汞蒸气，\n经冷凝后便成为银白、闪亮、常温下唯一滚动的液态金属！\n水银与硫黄再度化合，又会重新析出红色的硫化汞。",
+      "x": 540,
+      "y": 950,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.55
+    },
+    {
+      "type": "asset",
+      "file": "c3c_sublimation.png",
+      "x": 280,
+      "y": 1480,
+      "height": 400,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c3d_amalgam.png",
+      "x": 780,
+      "y": 1480,
+      "height": 380,
+      "anchor": "cc",
+      "content": "『水银流动聚散由心，\n更能钻入金铜形成【汞齐】！』",
+      "max_width": 360
+    },
+    {
+      "type": "text",
+      "content": "『水银不仅流动聚散由心，\n更能钻入金铜之中，形成神奇【汞齐】！』",
+      "x": 780,
+      "y": 1180,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "title",
+      "max_width": 340,
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [
+          10,
+          16
+        ],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1720,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "在没有原子概念的古人眼中，这种转化太具冲击力了：\n鲜红坚硬的石头消失了，变成能滚动的活金属，随后还能复归原貌！\n这绝不是普通的死物，\n而是拥有一种〖变化而不灭、死而复生〗的造化神力！\n而‘长生’，不正是肉体经历一次脱胎换骨的根本转化吗？",
+      "x": 540,
+      "y": 1800,
+      "size": 32,
+      "align": "center",
+      "max_width": 960,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "『变化而不亡，正是长生的至高形态』",
+      "x": 540,
+      "y": 2520,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

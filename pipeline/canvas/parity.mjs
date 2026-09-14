@@ -1,5 +1,5 @@
 // Canvas vs Python 双引擎对照（Canvas 方案可行性验收工具）。
-//   node pipeline/canvas/parity.mjs examples/jin-six-nobles/layout/block2.json [...]
+//   node pipeline/canvas/parity.mjs examples/huangchao-tang-collapse/layout/block1.json [...]
 // 对同一份 layout：Python 引擎（pipeline/compose.py）与 Canvas 引擎（render.mjs）各渲一次，
 // 报告墨迹像素比、重合度 IoU 与平均像素差，并落一张左右对照图 + 差异热力图到 blocks/parity/。
 import path from 'node:path';

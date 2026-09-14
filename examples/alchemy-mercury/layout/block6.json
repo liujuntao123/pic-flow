@@ -1,0 +1,103 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "六、认知错觉：后见之明与集体大脑",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "现代人看古代炼丹，往往带着轻佻的居高临下与优越感。\n但这正是心理学经典的【后见之明偏差（Hindsight Bias）】：\n一旦知道了结局，就会误以为‘答案显而易见’，\n进而产生错觉：『这么荒唐的事，古人怎么就看不出来？』",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "c6a_alone_thinker.png",
+      "x": 280,
+      "y": 590,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c6b_modern_lab.png",
+      "x": 780,
+      "y": 590,
+      "height": 360,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 820,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "现代人的大脑真的比葛洪大一圈吗？绝非如此！\n我们之所以能脱口而出‘丹砂是HgS’，不是因为我们多聪明，\n而是我们踩在人类文明庞大的【认识劳动分工】与【集体大脑】之上！\n实验室、大学、计量标准、同行评议，替我们垫高了起点。",
+      "x": 540,
+      "y": 880,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.55
+    },
+    {
+      "type": "asset",
+      "file": "c6c_collective_brain.png",
+      "x": 280,
+      "y": 1420,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c6d_hourglass.png",
+      "x": 780,
+      "y": 1420,
+      "height": 380,
+      "anchor": "cc",
+      "content": "若剥掉手机、仪器、光谱仪、大学与教科书，\n把一个普通现代人扔回公元四世纪，只给他一座炭炉几块红石，\n没有任何人敢保证自己能独立建立现代化学！\n人与人之间的个体智力差距，\n远没有他们背后的〖知识基础设施差距〗那么大！"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1660,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "若剥掉手机、仪器、光谱仪、大学与教科书，\n把一个普通现代人扔回公元四世纪，只给他一座炭炉几块红石，\n没有任何人敢保证自己能独立建立现代化学！\n\n人与人之间的个体智力差距，\n远没有他们背后的〖知识基础设施差距〗那么大！",
+      "x": 540,
+      "y": 1740,
+      "size": 32,
+      "align": "center",
+      "max_width": 960,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "『你所掌握的常识，是整个人类文明替你垫在脚下的台阶』",
+      "x": 540,
+      "y": 2520,
+      "size": 34,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

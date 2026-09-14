@@ -1,0 +1,58 @@
+[
+ {
+  "name": "b7a_zhuwen",
+  "status": "ok",
+  "size": [
+   375,
+   634
+  ],
+  "cell": [
+   632,
+   650
+  ],
+  "fill": 0.261,
+  "touch": []
+ },
+ {
+  "name": "b7b_shatuo",
+  "status": "ok",
+  "size": [
+   549,
+   637
+  ],
+  "cell": [
+   622,
+   650
+  ],
+  "fill": 0.374,
+  "touch": []
+ },
+ {
+  "name": "b7c_scale",
+  "status": "ok",
+  "size": [
+   615,
+   560
+  ],
+  "cell": [
+   632,
+   604
+  ],
+  "fill": 0.185,
+  "touch": []
+ },
+ {
+  "name": "b7d_sunset",
+  "status": "ok",
+  "size": [
+   601,
+   548
+  ],
+  "cell": [
+   622,
+   604
+  ],
+  "fill": 0.229,
+  "touch": []
+ }
+]

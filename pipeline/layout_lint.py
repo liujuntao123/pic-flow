@@ -40,7 +40,9 @@ def box(el):
         if path.is_file() and Image is not None:
             try:
                 iw, ih = Image.open(path).size
-                if h is not None:
+                if w is not None and h is not None:
+                    w, h = w, h
+                elif h is not None:
                     w = iw * h / ih
                 elif w is not None:
                     h = ih * w / iw

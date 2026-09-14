@@ -1,0 +1,114 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "七、科学真谛：承认错误的制度",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "丹炉最终彻底熄灭了，但这段历史留下的启示却历久弥新。\n现代科学与古代炼丹术的真正分水岭，\n绝不是因为‘现代科学绝不会犯错’——",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "c7a_extinguished.png",
+      "x": 280,
+      "y": 590,
+      "height": 400,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c7b_open_book.png",
+      "x": 780,
+      "y": 590,
+      "height": 350,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 820,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "现代科学同样会犯错、会修改模型；但它完成了一项制度跃迁：\n【它把‘承认自己可能会错’正式写进了知识生产的底层逻辑】！\n公开发表、定量标准、可重复实验、独立验证——\n让理论必须直面现实的反例，而不是靠‘火候未到’永远苟活！",
+      "x": 540,
+      "y": 880,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.55
+    },
+    {
+      "type": "asset",
+      "file": "c7c_balance_truth.png",
+      "x": 280,
+      "y": 1420,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "c7d_dawn_sun.png",
+      "x": 780,
+      "y": 1420,
+      "height": 360,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1660,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "丹炉熄灭，并不意味着这种故事从此只属于过去。\n人恰恰能够动用相当多的理性，为一套固有偏见修修补补。\n我们今天真正应该比古人多拥有的，\n未必是一颗更聪明的大脑；\n而是一套更有能力让聪明人〖承认自己错了〗的制度。",
+      "x": 540,
+      "y": 1740,
+      "size": 32,
+      "align": "center",
+      "max_width": 940,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "『敬畏理性，警惕自我闭合的认知丹炉』",
+      "x": 540,
+      "y": 2180,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "brush",
+      "max_width": 860,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "—— 全篇完 ——",
+      "x": 540,
+      "y": 2440,
+      "size": 32,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "width": 1080,
+  "height": 2720,
+  "elements": [
+    {
+      "type": "text",
+      "content": "四、仙霞开山、编木为筏与机动狂飙",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "878年，黄巢在浙东遭遇名将高骈部将张璘重击。\n面对四面合围的绝境，黄巢做出惊天壮举：\n率十万大军在险峻崇山间【劈山开道七百里】，凿开仙霞岭直插福建！",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『前无去路便凿出绝路！\n入闽咽喉，尽入我手！』",
+      "x": 280,
+      "y": 360,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "max_width": 380,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [10, 16],
+        "tail": "bc"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b4a_xianxia.png",
+      "x": 280,
+      "y": 680,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "利用浙东、江西与福州三镇交界的盲区，\n黄巢顺仙霞古道直扑福州、席卷闽粤，\n旋即攻克大唐通商钱袋子——【广州】！",
+      "x": 540,
+      "y": 570,
+      "size": 30,
+      "align": "left",
+      "max_width": 500,
+      "line_height": 1.6
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 890,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "879年秋，岭南酷热大疫，军中减员三四成。\n黄巢决意北伐，行至桂林，开启了古代战争史罕见的【载具大升级】：\n全军就地取材，【编木为筏】，乘秋水暴涨沿湘江飞速下泻！",
+      "x": 540,
+      "y": 950,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『游击队上船了！\n借滔滔江水直插长江！』",
+      "x": 780,
+      "y": 1140,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "title",
+      "max_width": 320,
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [10, 16],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b4b_guangzhou.png",
+      "x": 280,
+      "y": 1470,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b4c_rafts.png",
+      "x": 780,
+      "y": 1470,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1730,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "水陆机动彻底升级，朝廷神经系统瘫痪！\n十月二十七，万筏大军杀抵潭州城下，\n大将李系五万精锐吓得闭门自固，\n〖一日城陷，官兵尽屠，投尸于江〗！\n黄巢顺江东掠十五州，直指中原腹地！",
+      "x": 80,
+      "y": 1790,
+      "size": 30,
+      "align": "left",
+      "max_width": 480,
+      "line_height": 1.6
+    },
+    {
+      "type": "asset",
+      "file": "b4d_tan_fall.png",
+      "x": 840,
+      "y": 2100,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『万筏下湘江，半个南国已尽入股掌！』",
+      "x": 540,
+      "y": 2580,
+      "size": 34,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

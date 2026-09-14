@@ -245,13 +245,16 @@ def load_asset(el):
               file=sys.stderr)
         return None
     img = Image.open(path).convert("RGBA")
-    if "height" in el:
+    if "width" in el and "height" in el:
+        img = img.resize((max(1, round(el["width"])), max(1, round(el["height"]))), Image.LANCZOS)
+    elif "height" in el:
         s = el["height"] / img.height
+        img = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.LANCZOS)
     elif "width" in el:
         s = el["width"] / img.width
+        img = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.LANCZOS)
     else:
         s = 1.0
-    img = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.LANCZOS)
     if el.get("flip"):
         img = img.transpose(Image.FLIP_LEFT_RIGHT)
     if el.get("opacity", 1.0) < 1.0:

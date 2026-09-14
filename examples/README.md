@@ -1,68 +1,64 @@
 # pic-flow 官方示例库（Examples）
 
-本目录收录基于 **story × story-flow × bw-sketch** 黄金流水线打造的工业级实战长图范例。
+本目录收录基于 **story × story-flow × bw-sketch** 黄金流水线打造的工业级实战长图范例，涵盖**历史讲述**与**知识科普**两大核心领域。
 
 ---
 
-## 标杆案例一：《分家前夜：晋国六卿的大逃杀》
+## 标杆案例一（历史讲述）：《血菊残，大唐笑容已泛黄：黄巢起义始末》
 
-* **案例目录**：`examples/jin-six-nobles/`
-* **成品长图**：`examples/jin-six-nobles/分家前夜_晋国六卿_长图.jpg`（1080 × 14540 px）
-* **缩略预览**：`examples/jin-six-nobles/分家前夜_晋国六卿_长图_preview.jpg`（540 × 7270 px）
-* **题材来源**：渤海小吏作品《秦汉奠基》第一卷·三家分晋前夜的六卿权力博弈
+* **案例目录**：`examples/huangchao-tang-collapse/`
+* **成品长图**：`examples/huangchao-tang-collapse/血菊残_大唐笑容已泛黄_长图.jpg`（**1080 × 18780 px**）
+* **缩略预览**：`examples/huangchao-tang-collapse/血菊残_大唐笑容已泛黄_长图_preview.jpg`（**540 × 9390 px**）
+* **题材来源**：微信公众号“渤海小吏”文章《黄巢起义（全）血菊残，满地伤，大唐笑容已泛黄》
 * **技术体系**：
-  * **画风**：`bw-sketch`（白底黑线、粗黑钢笔勾边、灰色排线、橙蓝红语义三色文字系统）
-  * **分镜结构**：7 个 block 垂直无缝拼接，叙事高潮（Climax）精准落在 65%（Block 5）
-  * **视觉面积**：插图与视觉图形面积占比 $\ge 60\%$，大场景 1000px 满幅铺设，立绘 480~560px
-  * **排版哲学**：去卡片化画卷感（文字直排底色，由快乐体/文楷/毛笔字自然分层）、绝对零遮挡（气泡与素材墨迹保留 $\ge 40\text{px}$ 纯净负空间）
-  * **质检标准**：双代理对抗闭环质检，获得【PERFECT PASS】工业级定稿裁决
+  * **画风**：`bw-sketch`（白底黑线、粗黑钢笔勾边、少量排线阴影、橙蓝红三色语义系统）
+  * **分镜结构**：7 个 Block 递进闭环（晚唐脓疮与荒诞朝堂 → 私盐巨鳄与落榜狂生 → 绝不渡北与官军放水 → 仙霞开山与万筏下湘江 → 淮南让道与决战潼关【高潮 71%】 → 满城尽带黄金甲与含元登基 → 恶龙降生与体制死结）
+  * **视觉面积**：插图与视觉图形带高占比达 $56\% \sim 60\%$，大场景与人物立绘错落穿插，文字精炼克制
+  * **排版哲学**：去卡片化画卷感（文字直排底色，快乐体/文楷/毛笔字三级字阶自然分层）、绝对零遮挡（气泡与素材墨迹保留 $\ge 40\text{px}$ 纯净负空间）
+  * **质检标准**：机检链（`layout_lint` hard=0、`check_geom` 无折行/孤字、`check_occlusion` 0px、`check_clearance` ≥40px）全部一次性全绿通过
 
 ### 目录结构一览
 
 ```
-examples/jin-six-nobles/
-├── 分家前夜_晋国六卿_长图.jpg       # 1080x14540px 高清无缝长图成品
-├── 分家前夜_晋国六卿_长图_preview.jpg # 540x7270px 移动端全景缩略图
-├── storyboard.json                 # 7 块分镜规划（role / density / focal / 视觉任务）
-├── style.json                      # 风格与字体配置文件
-├── assets.json                     # AI 生图素材清单与防御性 Prompt
-├── layout/                         # block1.json ~ block7.json 声明式排版源码
-├── assets/                         # 13 张标准化透明 PNG 手绘插图
-└── blocks/                         # final1.png ~ final7.png 各块独立渲染稿
+examples/huangchao-tang-collapse/
+├── 血菊残_大唐笑容已泛黄_长图.jpg        # 1080x18780px 高清成品长图
+├── 血菊残_大唐笑容已泛黄_长图_preview.jpg  # 540x9390px 移动端预览
+├── README.md                              # 案例详细说明
+├── CONTENT.md                             # 历史考据、引用出处与叙事剧本
+├── storyboard.json                        # 7 块分镜规划（role / density / focal / 视觉任务）
+├── style.json                             # 风格与三色语义配置
+├── sheets.json                            # 逐块四图（2×2）生图规格与防漂移锚点
+├── layout/                                # block1.json ~ block7.json 声明式排版源码
+├── assets/                                # 28 张标准化透明 PNG 手绘插图
+└── blocks/                                # final1.png ~ final7.png 各块渲染稿
 ```
 
 ---
 
-## 标杆案例二：《古人晚上八点以后，都在干什么》（微信科普转长图）
+## 标杆案例二（知识科普）：《为什么古人相信水银能炼出长生不老药？》
 
-* **案例目录**：`examples/guren-night/`
-* **成品长图（前缀区分版本，一目了然）**：
-  * **最新精修版**：`[Refined]古人晚上八点以后_都在干什么_长图.jpg`（**1080 × 15600 px**，加大34px基础字体、字阶与留白精修版，最推荐）
-  * Canvas 版：`[Canvas]古人晚上八点以后_都在干什么_长图.jpg`（1080 × 14510 px）
-  * HTML 基础平替版：`[HTML]古人晚上八点以后_都在干什么_长图.jpg`（1080 × 14510 px）
-  * 热血漫画增强版：`[Manga]古人晚上八点以后_都在干什么_长图.jpg`（1080 × 14510 px，集中线与拟声词版）
-* **缩略预览**：`[Refined]古人晚上八点以后_都在干什么_长图_preview.jpg`（550 × 7944 px）及各版本对应 preview 图
-* **题材来源**：知乎日报科普文章《古代没有电灯，古人晚上都怎么打发时间？》
+* **案例目录**：`examples/alchemy-mercury/`
+* **成品长图**：`examples/alchemy-mercury/水银与长生_古人为何迷信金石炼丹_长图.jpg`（**1080 × 18760 px**）
+* **缩略预览**：`examples/alchemy-mercury/水银与长生_古人为何迷信金石炼丹_长图_preview.jpg`（**540 × 9380 px**）
+* **题材来源**：知乎科普长文《科普丨为什么古人相信水银等物质可以炼出长生不老药？》
 * **技术体系**：
-  * **画风**：`bw-sketch`（黑白手绘幽默历史漫画，纯白底、粗黑墨线、橙蓝红语义三色文字系统）
-  * **分镜结构**：7 个 block 垂直无缝拼接（跨时空设问 → 夜间集会 → 咖啡馆说书人 → 宵禁高潮 → 宋夜市/清夜禁 → 照明成本 → 收束）
-  * **全栈打通**：同时支持 **Canvas 渲染线** 与 **HTML 排版线**，读同一套 layout JSON，墨迹比 1.003
-  * **素材规格**：逐块四图（`sheets.json` 28 张素材全部标准化与机检过关）
+  * **画风**：`bw-sketch`（白底黑线、严谨与幽默兼具的科学史手绘图解、橙蓝红语义系统）
+  * **分镜结构**：7 个 Block 深度层层递进（迷信之惑与历史设问 → 假求外物：草木皆腐与金石不朽 → 惊天化育：丹砂化汞的化学奇迹 → 明知有毒：以猛攻猛与微毒陷阱 → 密闭宇宙：永不犯错的逻辑闭环【高潮 71%】 → 认知错觉：后见之明与集体大脑 → 科学真谛：承认错误的制度）
+  * **科普深度**：还原真实化学机理（$HgS \leftrightarrow Hg$ 氧化还原、汞齐）、现代毒理学吸收率对比与社会认识论（认识劳动分工与集体大脑）
+  * **质检标准**：全图 7 块机检全绿（`layout_lint` hard=0、`check_occlusion` 0px、气泡安全净空 $\ge 40\text{px}$）
 
 ### 目录结构一览
 
 ```
-examples/guren-night/
-├── [Refined]古人晚上八点以后_都在干什么_长图.jpg       # 最新精修版 1080x15600px（推荐）
-├── [Refined]古人晚上八点以后_都在干什么_长图_preview.jpg # 移动端预览图
-├── [Canvas]古人晚上八点以后_都在干什么_长图.jpg        # Canvas 版成品
-├── [HTML]古人晚上八点以后_都在干什么_长图.jpg          # HTML 基础平替版
-├── [Manga]古人晚上八点以后_都在干什么_长图.jpg         # 漫画拟声词增强版
-├── CONTENT.md                              # 事实/出处与叙事大纲
-├── storyboard.json                         # 7 块分镜规划
-├── style.json                              # 风格与三色语义配置
-├── sheets.json                             # 逐块四图生图规格与防漂移锚点
-├── layout/                                 # block1.json ~ block7.json 声明式排版
-├── assets/                                 # 28 张标准化透明 PNG 插图
-└── blocks/                                 # final*.png 与 html*.png 各块独立渲染稿
+examples/alchemy-mercury/
+├── 水银与长生_古人为何迷信金石炼丹_长图.jpg        # 1080x18760px 高清成品长图
+├── 水银与长生_古人为何迷信金石炼丹_长图_preview.jpg  # 540x9380px 移动端预览
+├── README.md                                      # 案例详细说明
+├── CONTENT.md                                     # 科学事实、毒理学依据与论证剧本
+├── storyboard.json                                # 7 块分镜规划
+├── style.json                                     # 风格与三色语义配置
+├── sheets.json                                    # 逐块四图生图规格与防漂移锚点
+├── layout/                                        # block1.json ~ block7.json
+├── assets/                                        # 28 张标准化透明 PNG 插图
+└── blocks/                                        # final1.png ~ final7.png
 ```

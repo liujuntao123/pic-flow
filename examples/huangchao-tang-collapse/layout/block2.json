@@ -1,0 +1,156 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "二、盐帮巨鳄、落榜生与满城黄金甲",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "875年，濮州私盐贩子【王仙芝】起兵长垣，自号“天补均平大将军”。\n在晚唐，私盐贩子绝非盲流，而是真正的【地下武装贸易集团】！\n他们掌握着足以让朝廷窒息的三大杀手锏：",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b2b_salt_gang.png",
+      "x": 260,
+      "y": 580,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "①【深谙体制】：结交官吏，精通黑白运转；\n②【跨区网络】：长途贩运，每日吞吐情报；\n③【武装护航】：〖有钱有枪有组织网络〗，\n随时具备在全国快速开分公司的可怕能力！",
+      "x": 510,
+      "y": 480,
+      "size": 30,
+      "align": "left",
+      "max_width": 580,
+      "line_height": 1.6
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 810,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "曹州冤句的盐业大亨【黄巢】，率数千铁骑破空呼应！\n黄巢善骑射、通文史，性格豪侠，世代经营私盐积累了巨资。\n然而这位自命不凡的山东汉子，却在【科举考场】屡次落榜！",
+      "x": 540,
+      "y": 870,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『十载寒窗无人问，\n昏官阉党全该杀！』",
+      "x": 250,
+      "y": 1090,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "max_width": 300,
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "color": "#FFFFFF",
+        "pad": [
+          10,
+          16
+        ],
+        "tail": "br"
+      }
+    },
+    {
+      "type": "text",
+      "content": "『冲天香阵透长安，\n满城尽带黄金甲！』",
+      "x": 800,
+      "y": 1080,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "brush",
+      "max_width": 340,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          12,
+          18
+        ],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b2c_exam_fail.png",
+      "x": 260,
+      "y": 1440,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b2a_huangchao.png",
+      "x": 800,
+      "y": 1440,
+      "height": 400,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1710,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "他不仅爱菊，更爱菊的【肃杀金黄】，\n因为自己就姓黄！\n这首写在长安门下的诗绝非无病呻吟，\n而是【蓄谋已久的造反宣言】。\n当初朝廷若录用了他，大唐或许还不至于瓦解；\n但大唐公公们很快就会领教到——\n〖山东大哥考公失败后的滔天怒火〗！",
+      "x": 80,
+      "y": 1780,
+      "size": 30,
+      "align": "left",
+      "max_width": 580,
+      "line_height": 1.6
+    },
+    {
+      "type": "asset",
+      "file": "b2d_chrysanthemum.png",
+      "x": 800,
+      "y": 2080,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『民困于重敛者，数月之间争归之！』",
+      "x": 540,
+      "y": 2540,
+      "size": 34,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

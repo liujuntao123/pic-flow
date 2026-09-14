@@ -60,7 +60,10 @@ async function loadAsset(root, el) {
   let img = await loadImageFile(p);
   let tw = img.width;
   let th = img.height;
-  if (el.height !== undefined) {
+  if (el.width !== undefined && el.height !== undefined) {
+    tw = el.width;
+    th = el.height;
+  } else if (el.height !== undefined) {
     const s = el.height / img.height;
     tw = img.width * s;
     th = el.height;

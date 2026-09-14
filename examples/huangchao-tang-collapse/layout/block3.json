@@ -1,0 +1,150 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "三、绝不渡北的游击战与官僚大放水",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "义军如野火燎原，但黄巢却立下一条铁律：【绝不渡过黄河以北】！\n这展现了顶级私盐头子的极高见识——\n因为黄河以北，驻扎着天下最恐怖的步兵克星：",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b3a_cavalry.png",
+      "x": 820,
+      "y": 580,
+      "height": 400,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『河北牙兵与沙陀铁骑机动如风！\n平原遭遇战，能把缺乏纪律的流民瞬间冲垮，\n还能一路穷追断粮，彻底追死！』",
+      "x": 80,
+      "y": 480,
+      "size": 30,
+      "align": "left",
+      "max_width": 500,
+      "line_height": 1.55
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 820,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "避开骑兵锋芒，黄巢开启了史诗级的中原大穿插。\n但为什么数年围剿，义军不仅没被消灭，反而滚雪球般壮大？\n答案藏在大唐节度使们心照不宣的【自私算盘】里：",
+      "x": 540,
+      "y": 880,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『国家喜负人，事宁则弃之。\n不若【留贼以为富贵之资】！』",
+      "x": 280,
+      "y": 1050,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "max_width": 360,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [10, 16],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "text",
+      "content": "『官军只保自家防区，\n咱们天地广阔任驰骋！』",
+      "x": 780,
+      "y": 1050,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "title",
+      "max_width": 340,
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [10, 16],
+        "tail": "br"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b3b_warlord_slack.png",
+      "x": 280,
+      "y": 1400,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b3c_guerrilla.png",
+      "x": 780,
+      "y": 1400,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1680,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "宋威谎奏『仙芝已死』，班师青州饮酒；\n百官贺表未完，贼众已连陷数州！\n朝廷以官职诱降，黄巢怒击仙芝决裂；\n仙芝战死黄梅，黄巢独领大军。\n一柄利刃，彻底斩断了招安退路！",
+      "x": 80,
+      "y": 1770,
+      "size": 30,
+      "align": "left",
+      "max_width": 500,
+      "line_height": 1.6
+    },
+    {
+      "type": "asset",
+      "file": "b3d_split.png",
+      "x": 840,
+      "y": 2080,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『历朝流民军，皆在官僚放纵中越混越壮！』",
+      "x": 540,
+      "y": 2540,
+      "size": 34,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

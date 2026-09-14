@@ -1,0 +1,165 @@
+{
+  "width": 1080,
+  "height": 2580,
+  "elements": [
+    {
+      "type": "text",
+      "content": "一、抽水泵、大灾与“自觉绝食”的蝗虫",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "公元873年，12岁的小皇帝【唐僖宗】登基，大权落入宦官田令孜之手。\n朝廷中枢奢靡贪纵，层层盘剥：\n皇帝压宰相、宰相压百官、百官压军镇，\n最终这台【贪腐抽水泵】，将冰冷屠刀对准了绝境中的老百姓！",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b1a_pump.png",
+      "x": 660,
+      "y": 620,
+      "height": 400,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『只要想在体系里混，\n就得开足马力刮地皮！』",
+      "x": 195,
+      "y": 580,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "rotate": -3,
+      "font": "title",
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          12,
+          18
+        ],
+        "tail": "mr"
+      }
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 880,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "关东连年大旱大水，百姓草籽为面、槐叶为菜，饿殍遍野。\n学士卢携痛陈：『百姓撤屋卖子都交不上，乞敕州县停征残税！』\n小皇帝准了，但官僚体系烂透：〖徒为空文，有司竟不能行〗！",
+      "x": 540,
+      "y": 940,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『朝政大事先放放，\n朕的斗鸡和马球赛不能停！』",
+      "x": 780,
+      "y": 1160,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "title",
+      "box": {
+        "style": "outline",
+        "bg": "#FFFFFF",
+        "color": "#2F2A26",
+        "pad": [
+          10,
+          16
+        ],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b1b_starving.png",
+      "x": 290,
+      "y": 1500,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b1d_emperor.png",
+      "x": 780,
+      "y": 1500,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『拆屋卖子……\n官吏还捶挞催租！』",
+      "x": 280,
+      "y": 1770,
+      "size": 26,
+      "bold": true,
+      "align": "center",
+      "rotate": -2,
+      "font": "title",
+      "box": {
+        "style": "ink",
+        "bg": "#2F2A26",
+        "color": "#FFFFFF",
+        "pad": [
+          10,
+          16
+        ],
+        "tail": "tr"
+      }
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1870,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "更荒诞的黑色幽默紧接着上演——\n875年七月，遮天蔽日的蝗灾席卷关东，庄稼被啃食殆尽。\n京兆尹杨知至却向皇帝递上一份奇葩贺表：",
+      "x": 540,
+      "y": 1930,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b1c_locust.png",
+      "x": 310,
+      "y": 2310,
+      "height": 360,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『蝗入京畿，极有觉悟，\n不食庄稼，【皆抱荆棘而死】！』\n如此扯淡的弥天大谎，\n满朝宰相百官竟然〖全堂入贺〗！\n大唐就在这种荒诞的欺瞒中，\n点燃了通往灭亡的引信。",
+      "x": 570,
+      "y": 2190,
+      "size": 30,
+      "align": "left",
+      "max_width": 460,
+      "line_height": 1.5
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+[
+ {
+  "name": "c7a_extinguished",
+  "status": "ok",
+  "size": [
+   535,
+   578
+  ],
+  "cell": [
+   606,
+   641
+  ],
+  "fill": 0.187,
+  "touch": [
+   "top"
+  ]
+ },
+ {
+  "name": "c7b_open_book",
+  "status": "ok",
+  "size": [
+   639,
+   389
+  ],
+  "cell": [
+   648,
+   641
+  ],
+  "fill": 0.115,
+  "touch": []
+ },
+ {
+  "name": "c7c_balance_truth",
+  "status": "ok",
+  "size": [
+   574,
+   422
+  ],
+  "cell": [
+   606,
+   613
+  ],
+  "fill": 0.168,
+  "touch": []
+ },
+ {
+  "name": "c7d_dawn_sun",
+  "status": "ok",
+  "size": [
+   609,
+   486
+  ],
+  "cell": [
+   648,
+   613
+  ],
+  "fill": 0.049,
+  "touch": []
+ }
+]

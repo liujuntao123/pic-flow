@@ -1,0 +1,134 @@
+{
+  "width": 1080,
+  "height": 2680,
+  "elements": [
+    {
+      "type": "text",
+      "content": "七、恶龙降生、体制死结与历史回响",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "黄巢虽然最终败亡，但这记重锤彻底砸碎了大唐的统治脊梁。\n更为恐怖的是，在这场席卷全国的“流动大军校”里，\n孵化出了比黄巢凶残百倍的真正恶龙——",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b7a_zhuwen.png",
+      "x": 280,
+      "y": 590,
+      "height": 400,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b7b_shatuo.png",
+      "x": 780,
+      "y": 590,
+      "height": 400,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "【朱温（朱三儿）】：徐州无赖，\n在义军中学会了所有杀戮与组织技能，\n日后叛齐降唐，最终〖弑君篡唐开启后梁〗！",
+      "x": 280,
+      "y": 830,
+      "size": 26,
+      "align": "center",
+      "max_width": 500,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "【李克用】：沙陀独眼枭雄，\n借镇压黄巢名正言顺吸收兼并诸部，\n成为后唐、后晋、后汉的铁血策源地！",
+      "x": 780,
+      "y": 830,
+      "size": 26,
+      "align": "center",
+      "max_width": 460,
+      "line_height": 1.5
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 960,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "半个世纪的五代十国超级乱世，由此拉开血色大幕。\n但回望这场史诗浩劫，最深刻的历史警示在于：\n历朝历代的灭亡，罪魁祸首从来不是考公失败者，也不是流民大军！",
+      "x": 540,
+      "y": 1020,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b7c_scale.png",
+      "x": 280,
+      "y": 1460,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b7d_sunset.png",
+      "x": 780,
+      "y": 1460,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1720,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "—— 全篇完 ——",
+      "x": 540,
+      "y": 1800,
+      "size": 32,
+      "align": "center",
+      "max_width": 940,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "血菊残，大唐笑容已泛黄；\n不知后人，可曾读懂这满城秋风？",
+      "x": 540,
+      "y": 2100,
+      "size": 38,
+      "bold": true,
+      "align": "center",
+      "font": "brush",
+      "max_width": 860,
+      "line_height": 1.6
+    },
+    {
+      "type": "text",
+      "content": "【终】",
+      "x": 540,
+      "y": 2360,
+      "size": 36,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}

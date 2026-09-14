@@ -1,0 +1,55 @@
+{
+  "_doc": "整图分镜：为什么古人相信水银能炼出长生药（知识科普）。role 取值 hook|context|buildup|climax|consequence|meaning|ending；density 取值 low|medium|high；focal 取值 left|right|center|full_bleed。rules：相邻两块的 focal/density 至少一项不同；climax 落在 55%~70% 进度；全图连续居中构图不超过 2 块；最终 7 块。",
+  "title": "为什么古人相信水银能炼出长生不老药？",
+  "blocks": [
+    {
+      "id": "block1",
+      "role": "hook",
+      "density": "medium",
+      "focal": "center",
+      "notes": "【迷信之惑与历史设问】：帝王名士前赴后继服食丹砂水银，如果只说'古人迷信'解释太轻了。丹炉里交织着真实实验、科学误读与制度信念"
+    },
+    {
+      "id": "block2",
+      "role": "context",
+      "density": "high",
+      "focal": "left",
+      "notes": "【假求外物：草木皆腐与金石不朽】：葛洪《抱朴子》的核心哲学：草木入火成灰埋地化腐，如何让人长生？黄金百炼不消，唯有摄入金石，肉体方能分享其不朽"
+    },
+    {
+      "id": "block3",
+      "role": "buildup",
+      "density": "medium",
+      "focal": "right",
+      "notes": "【惊天化育：丹砂化汞的化学奇迹】：丹砂(HgS)烧炼变银白滚动水银，再炼复归红丹！真实的氧化还原与汞齐反应，在古人眼中是不灭的超自然神力"
+    },
+    {
+      "id": "block4",
+      "role": "buildup",
+      "density": "high",
+      "focal": "left",
+      "notes": "【明知有毒：以猛攻猛与微毒陷阱】：古人并非不知汞毒，中古概念中'毒即猛药'；加上朱砂吸收率仅0.2%不易急性中毒，燥热反被视作'药力发动'，经验进一步巩固信念"
+    },
+    {
+      "id": "block5",
+      "role": "climax",
+      "density": "high",
+      "focal": "full_bleed",
+      "notes": "【密闭宇宙：永不犯错的自洽闭环】：丹炉被视作模拟阴阳交合的天地微缩系统；炼成了是仙药，吃死人是'火候未到、去毒未尽'，失败永远被体系自身吸收（叙事高潮 71%）"
+    },
+    {
+      "id": "block6",
+      "role": "meaning",
+      "density": "medium",
+      "focal": "right",
+      "notes": "【后见之明与集体大脑】：现代人并非天生比葛洪聪明，而是踩在'认识劳动分工'与'集体大脑'的庞大基础设施上；剥离现代体系，单个现代人面对丹砂也难建现代化学"
+    },
+    {
+      "id": "block7",
+      "role": "ending",
+      "density": "low",
+      "focal": "center",
+      "notes": "【科学真谛：承认错误的制度】：现代科学的伟大在于将'自我纠错'制度化。丹炉虽熄灭，但用智性修补偏见的本能仍在；我们真正需要的是能让聪明人认错的机制"
+    }
+  ]
+}

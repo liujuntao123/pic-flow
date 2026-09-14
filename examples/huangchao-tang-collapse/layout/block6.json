@@ -1,0 +1,134 @@
+{
+  "width": 1080,
+  "height": 2720,
+  "elements": [
+    {
+      "type": "text",
+      "content": "六、满城尽带黄金甲：帝王出逃与含元登基",
+      "x": 540,
+      "y": 90,
+      "size": 48,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    },
+    {
+      "type": "text",
+      "content": "潼关失守，长安震恐。十二月初五黎明，\n宦官田令孜率五百神策军护卫12岁小皇帝【唐僖宗】仓皇出奔！\n这位自封大唐马球状元的少年天子，在蜀道上展现出惊人体能，\n昼夜狂奔奔驰不息，连扈从官员都被远远甩在了后面！",
+      "x": 540,
+      "y": 190,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "asset",
+      "file": "b6a_flee.png",
+      "x": 280,
+      "y": 590,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『百年不变的老李家惯常跑路套餐：\n打不过就跑蜀中！\n爱卿们在关中顶住，朕先去汉中加油！』",
+      "x": 540,
+      "y": 490,
+      "size": 30,
+      "align": "left",
+      "max_width": 530,
+      "line_height": 1.6
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 820,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "十二月十三日，帝都长安迎来了历史上最惊心动魄的一幕：\n黄巢乘金轿、部众皆披发穿红缯锦绣，铁甲如流开进长安！\n黄巢登大明宫含元殿，击数百面战鼓代雅乐，\n正式即皇帝位，国号【大齐】，改元【金统】！",
+      "x": 540,
+      "y": 880,
+      "size": 32,
+      "align": "center",
+      "max_width": 980,
+      "line_height": 1.5
+    },
+    {
+      "type": "text",
+      "content": "『冲天香阵透长安，\n满城尽带黄金甲！』",
+      "x": 780,
+      "y": 1100,
+      "size": 28,
+      "bold": true,
+      "align": "center",
+      "rotate": 2,
+      "font": "brush",
+      "max_width": 340,
+      "box": {
+        "style": "fill",
+        "bg": "#F6A83C",
+        "color": "#4A2800",
+        "pad": [
+          12,
+          18
+        ],
+        "tail": "bl"
+      }
+    },
+    {
+      "type": "asset",
+      "file": "b6b_gold_sedan.png",
+      "x": 280,
+      "y": 1440,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "asset",
+      "file": "b6c_hanyuan.png",
+      "x": 780,
+      "y": 1440,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "rule",
+      "x1": 140,
+      "x2": 940,
+      "y": 1680,
+      "color": "#EFECE6"
+    },
+    {
+      "type": "text",
+      "content": "中国历史上最扬眉吐气的考公落榜生，\n兑现了他当年杀气腾腾的誓言！\n然而登基的狂欢很快被失控的血腥撕碎：\n乱军见官即杀、烧街掠库，大唐宗室近乎诛戮殆尽。\n繁华的大唐帝国，在血火中化为灰烬！",
+      "x": 80,
+      "y": 1750,
+      "size": 30,
+      "align": "left",
+      "max_width": 530,
+      "line_height": 1.6
+    },
+    {
+      "type": "asset",
+      "file": "b6d_ruins.png",
+      "x": 800,
+      "y": 2080,
+      "height": 380,
+      "anchor": "cc"
+    },
+    {
+      "type": "text",
+      "content": "『誓言兑现之时，亦是盛唐文明焚毁之日！』",
+      "x": 540,
+      "y": 2540,
+      "size": 34,
+      "bold": true,
+      "align": "center",
+      "font": "title"
+    }
+  ]
+}
