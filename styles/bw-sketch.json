@@ -28,6 +28,26 @@
     "brush": [
       "fonts/MaShanZheng-Regular.ttf",
       "fonts/MaShanZheng-Regular.ttf"
+    ],
+    "butter": [
+      "fonts/ZCOOLQingKeHuangYou-Regular.ttf",
+      "fonts/ZCOOLQingKeHuangYou-Regular.ttf"
+    ],
+    "xiaowei": [
+      "fonts/ZCOOLXiaoWei-Regular.ttf",
+      "fonts/ZCOOLXiaoWei-Regular.ttf"
+    ],
+    "handwriting": [
+      "fonts/Xiaolai-Regular.ttf",
+      "fonts/Xiaolai-Regular.ttf"
+    ],
+    "running": [
+      "fonts/ZhiMangXing-Regular.ttf",
+      "fonts/ZhiMangXing-Regular.ttf"
+    ],
+    "cursive": [
+      "fonts/LongCang-Regular.ttf",
+      "fonts/LongCang-Regular.ttf"
     ]
   },
   "asset_suffix": "。风格：黑白幽默现代手绘漫画，粗黑钢笔线条勾边，适度夸张的角色与物件比例，简洁白色填充，少量灰色排线阴影，强调动作、关系与视觉叙事。纯白色背景，无投影；画面四周留白通透、墨迹由密到疏自然消散，绝对不要出现无意形成的画框、边框、矩形背景或整块背景填充；画面中绝对不要出现任何文字、字幕、对话框、水印。",

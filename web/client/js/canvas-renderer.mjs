@@ -7,7 +7,13 @@ const FONT_MAP = {
   body: 'LXGWWenKai, "Noto Sans CJK SC", sans-serif',
   title: 'ZCOOLKuaiLe, "Noto Sans CJK SC", sans-serif',
   brush: 'MaShanZheng, "Noto Serif CJK SC", serif',
+  butter: 'ZCOOLQingKeHuangYou, sans-serif',
+  xiaowei: 'ZCOOLXiaoWei, serif',
+  handwriting: 'Xiaolai, "LXGWWenKai", sans-serif',
+  running: 'ZhiMangXing, "MaShanZheng", cursive',
+  cursive: 'LongCang, "MaShanZheng", cursive',
   sans: '"Noto Sans CJK SC", sans-serif',
+  serif: '"Noto Serif CJK SC", serif',
 };
 
 // 避头标点（不能出现在行首）

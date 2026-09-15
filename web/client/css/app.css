@@ -30,6 +30,41 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'ZCOOLQingKeHuangYou';
+  src: url('/fonts/ZCOOLQingKeHuangYou-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'ZCOOLXiaoWei';
+  src: url('/fonts/ZCOOLXiaoWei-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Xiaolai';
+  src: url('/fonts/Xiaolai-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'ZhiMangXing';
+  src: url('/fonts/ZhiMangXing-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'LongCang';
+  src: url('/fonts/LongCang-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --bg-primary: #09090b;
   --bg-surface: #18181b;

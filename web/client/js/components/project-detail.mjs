@@ -745,9 +745,16 @@ export class ProjectDetailComponent {
           <div class="prop-col">
             <label class="prop-label">字体</label>
             <select class="prop-select" id="prop-font">
-              <option value="body" ${el.font === 'body' || !el.font ? 'selected' : ''}>文楷 (正文)</option>
-              <option value="title" ${el.font === 'title' ? 'selected' : ''}>快乐体 (标题)</option>
-              <option value="brush" ${el.font === 'brush' ? 'selected' : ''}>毛笔楷书 (金句)</option>
+              <option value="body" ${el.font === 'body' || !el.font ? 'selected' : ''}>文楷 (正文叙事推荐)</option>
+              <option value="title" ${el.font === 'title' ? 'selected' : ''}>站酷快乐体 (活泼主标题)</option>
+              <option value="butter" ${el.font === 'butter' ? 'selected' : ''}>站酷黄油体 (厚重高视觉冲击)</option>
+              <option value="xiaowei" ${el.font === 'xiaowei' ? 'selected' : ''}>站酷小薇体 (文艺纤细标语)</option>
+              <option value="handwriting" ${el.font === 'handwriting' ? 'selected' : ''}>小徕手写体 (生动对话气泡)</option>
+              <option value="brush" ${el.font === 'brush' ? 'selected' : ''}>马善政毛笔 (苍劲雄浑重点)</option>
+              <option value="running" ${el.font === 'running' ? 'selected' : ''}>志莽行书 (洒脱行书高光)</option>
+              <option value="cursive" ${el.font === 'cursive' ? 'selected' : ''}>龙藏体 (写意草书飞白)</option>
+              <option value="sans" ${el.font === 'sans' ? 'selected' : ''}>思源黑体 (现代干练科普)</option>
+              <option value="serif" ${el.font === 'serif' ? 'selected' : ''}>思源宋体 (典雅古朴古籍)</option>
             </select>
           </div>
           <div class="prop-col">

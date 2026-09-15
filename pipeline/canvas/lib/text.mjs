@@ -23,11 +23,26 @@ function ctx2d() {
   return measureCtx;
 }
 
+// 内置字体预设表
+const DEFAULT_FONTS = {
+  body: ['fonts/LXGWWenKai-Regular.ttf', 'fonts/LXGWWenKai-Medium.ttf'],
+  title: ['fonts/ZCOOLKuaiLe-Regular.ttf', 'fonts/ZCOOLKuaiLe-Regular.ttf'],
+  brush: ['fonts/MaShanZheng-Regular.ttf', 'fonts/MaShanZheng-Regular.ttf'],
+  butter: ['fonts/ZCOOLQingKeHuangYou-Regular.ttf', 'fonts/ZCOOLQingKeHuangYou-Regular.ttf'],
+  xiaowei: ['fonts/ZCOOLXiaoWei-Regular.ttf', 'fonts/ZCOOLXiaoWei-Regular.ttf'],
+  handwriting: ['fonts/Xiaolai-Regular.ttf', 'fonts/Xiaolai-Regular.ttf'],
+  running: ['fonts/ZhiMangXing-Regular.ttf', 'fonts/ZhiMangXing-Regular.ttf'],
+  cursive: ['fonts/LongCang-Regular.ttf', 'fonts/LongCang-Regular.ttf'],
+  sans: [FONT_REG, FONT_BOLD],
+  serif: ['/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc', '/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc'],
+};
+
 /** 解析字体族：{body:[reg,bold]}，相对路径按项目根解析。 */
 export function setFonts(root, fonts) {
   state.root = root;
   state.families = {};
-  for (const [fam, pair] of Object.entries(fonts || {})) {
+  const merged = { ...DEFAULT_FONTS, ...(fonts || {}) };
+  for (const [fam, pair] of Object.entries(merged)) {
     const [reg, bold] = Array.isArray(pair) ? pair : [pair, pair];
     state.families[fam] = [resolve(reg), resolve(bold)];
   }
