@@ -5,13 +5,17 @@
   "type": "module",
   "description": "pic-flow 的 Canvas 渲染方案（@napi-rs/canvas/Skia），声明的 JS 生图/排版工具链放在 pipeline/canvas/，与 Python 引擎共用同一份 layout schema。",
   "scripts": {
+    "web": "node web/server/index.mjs",
+    "dev": "node web/server/index.mjs",
+    "render": "node pipeline/canvas/render.mjs",
     "compose": "node pipeline/canvas/render.mjs",
     "lint": "node pipeline/canvas/checks/lint.mjs",
     "geom": "node pipeline/canvas/checks/geom.mjs",
     "occlusion": "node pipeline/canvas/checks/occlusion.mjs",
     "clearance": "node pipeline/canvas/checks/clearance.mjs",
     "stitch": "node pipeline/canvas/stitch.mjs",
-    "parity": "node pipeline/canvas/parity.mjs"
+    "parity": "node pipeline/canvas/parity.mjs",
+    "check:all": "node pipeline/canvas/checks/lint.mjs && node pipeline/canvas/checks/geom.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.100"

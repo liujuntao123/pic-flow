@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pic-flow · Canvas 可视化人机共创工作台</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>" />
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <header class="navbar">
+    <div class="brand" id="brand-home" title="返回项目管理">
+      <div class="brand-logo">P</div>
+      <div class="brand-title">
+        pic-flow <span class="brand-tag">Canvas Studio</span>
+      </div>
+      <div class="breadcrumb" style="margin-left: 16px;">
+        <span class="breadcrumb-item" id="breadcrumb-root">项目管理</span>
+        <span class="breadcrumb-sep" id="breadcrumb-sep" style="display: none;">/</span>
+        <span class="breadcrumb-item active" id="breadcrumb-sub" style="display: none;"></span>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <div class="status-badge synced" id="status-badge">
+        <span class="status-dot"></span>
+        <span id="status-text">已同步磁盘</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主应用视口 -->
+  <main class="app-container" id="app-main">
+    <!-- 动态视图插入在此 -->
+  </main>
+
+  <!-- 全局 Toast 容器 -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 主 JS 脚本 -->
+  <script type="module" src="/js/app.mjs"></script>
+</body>
+</html>

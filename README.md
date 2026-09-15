@@ -131,29 +131,31 @@ PICFLOW_ROOT=<项目> python3 <skill>/pipeline/compose.py layout/block1.json -o 
 项目根由「被操作的 layout 文件」逐级上溯自动推断（找 `assets.json` / `style.json` /
 `layout/` 等标志），无需把脚本复制进项目；个别场景可用 `PICFLOW_ROOT` 显式指定。
 
-### 两套排版引擎（Python / Canvas），同一份 layout
+### Canvas 排版引擎与可视化 Web 工作台（官方推荐）
 
-排版与机检有两条**并存**的实现，读**同一份 `layout/blockN.json`**、遵守**同一套判据**、
-产出**同一批产物**，可以逐块互换：
+画布排版已**全面切换为 Canvas 方案（Node/Skia & 浏览器 Canvas）**作为官方首选，与历史 Python 线读同一套 `layout/blockN.json`。
 
-| | Python 线 | Canvas 线 |
-|---|---|---|
-| 渲染 | `pipeline/compose.py` | `pipeline/canvas/render.mjs` |
-| 机检 | `layout_lint.py` · `check_geom.py` · `check_occlusion.py` · `check_clearance.py` | `pipeline/canvas/checks/{lint,geom,occlusion,clearance}.mjs` |
-| 拼接 | `pipeline/stitch.py` | `pipeline/canvas/stitch.mjs` |
-| 依赖 | Pillow + numpy | Node 18+ 与 `npm install`（预编译 Skia 绑定 `@napi-rs/canvas`） |
-| 额外能力 | —— | `preview.mjs` 便携逐块复核 · `parity.mjs` 双引擎逐像素对照 · `render.mjs --scale 2` 超采样出图 |
+同时提供了一套基于 Canvas 的**可视化人机共创 Web 页面**，支持在浏览器中自由拖拽修改位置、实时改文字、所见即所得调试与机检，并与 Agent 保持同来源文件双向同步：
 
 ```bash
-cd <skill 根> && npm install            # 只装一个预编译依赖
+# 启动可视化控制台（本地 127.0.0.1:3100 或公网隧道 grok-picflow.aizhi.site）
+npm run web
+```
+
+- **项目管理**：自动扫描并管理 `~/pic-flow-projects/` 与示例项目，展示分块数、封面图、更新时间，支持一键新建长图工程。
+- **项目详情与可视化编辑**：
+  - 基于 Canvas 的交互式画板，点击元素即刻高亮并呼出 8 向变换手柄；
+  - 拖拽直接调整文字与素材的 `(x, y)` 坐标，中轴自动吸附；
+  - 属性检查器提供文字精修、1 键插入 `【关键词】` / `『引语』` / `〖强信息〗`、八种气泡与方向微调；
+  - **人机双向同步**：用户修改后保存直接写入磁盘 `layout/blockN.json` 并自动复渲；Agent 在后台/终端修改后，用户刷新页面即可无缝呈现最新效果。
+  - **一体化工具链**：集成机检（Lint/Geom/Occlusion/Clearance）与全长图拼接导出。
+
+```bash
+# 命令行日常排版与机检（基于 Canvas）
 node pipeline/canvas/render.mjs layout/block1.json -o blocks/final1.png
 node pipeline/canvas/checks/lint.mjs layout/block*.json
 node pipeline/canvas/stitch.mjs output/长图.jpg blocks/final*.png
 ```
-
-脚手架会把 `scripts/canvas` 软链到 `pipeline/canvas`，项目内直接写
-`node scripts/canvas/render.mjs …` 即可。切到 Canvas 线**不需要改任何一个 layout 文件**；
-细节、两引擎差异与踩坑记录见 `pipeline/canvas/README.md` 与 `SCHEMA.md`。
 
 ### 生图 Provider 配置（用户自备）
 

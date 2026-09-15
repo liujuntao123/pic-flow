@@ -66,6 +66,19 @@ def main():
             canvas_dst.symlink_to(SKILL_DIR / "pipeline" / "canvas", target_is_directory=True)
         except OSError:
             pass
+    # 默认以 Canvas 排版方案为一等公民
+    for name, target in [
+        ("render.mjs", SKILL_DIR / "pipeline" / "canvas" / "render.mjs"),
+        ("compose.mjs", SKILL_DIR / "pipeline" / "canvas" / "render.mjs"),
+        ("stitch.mjs", SKILL_DIR / "pipeline" / "canvas" / "stitch.mjs"),
+        ("checks", SKILL_DIR / "pipeline" / "canvas" / "checks"),
+    ]:
+        link_dst = root / "scripts" / name
+        if not link_dst.exists():
+            try:
+                link_dst.symlink_to(target, target_is_directory=target.is_dir())
+            except OSError:
+                pass
     fonts_dst = root / "fonts"
     try:
         fonts_dst.symlink_to(SKILL_DIR / "fonts", target_is_directory=True)
@@ -108,13 +121,15 @@ def main():
     print("           python3 scripts/gen_all.py         # 仅全幅大场景走单张（assets.json）")
     print("        3) python3 scripts/make_transparent.py assets/*.png")
     print("        4) python3 check_edges.py assets/*.png   # 查方图感（硬边数应趋近 0）")
-    print("  排版/机检（Canvas 方案，Node 侧工具在 scripts/canvas/）：")
-    print("        node scripts/canvas/render.mjs layout/block1.json -o blocks/final1.png [--debug]")
-    print("        node scripts/canvas/checks/lint.mjs  layout/block1.json")
-    print("        node scripts/canvas/checks/geom.mjs  layout/block1.json")
-    print("        node scripts/canvas/checks/occlusion.mjs layout/block1.json")
-    print("        node scripts/canvas/checks/clearance.mjs layout/block1.json")
-    print("        node scripts/canvas/stitch.mjs output/标题_长图.jpg blocks/final*.png")
+    print("  排版/机检（Canvas 官方默认方案）：")
+    print("        node scripts/render.mjs layout/block1.json -o blocks/final1.png [--debug]")
+    print("        node scripts/checks/lint.mjs  layout/block1.json")
+    print("        node scripts/checks/geom.mjs  layout/block1.json")
+    print("        node scripts/checks/occlusion.mjs layout/block1.json")
+    print("        node scripts/checks/clearance.mjs layout/block1.json")
+    print("        node scripts/stitch.mjs output/标题_长图.jpg blocks/final*.png")
+    print("  可视化修改与项目管理 Web 控制台：")
+    print("        npm run web   # 或在 pic-flow 目录执行 node web/server/index.mjs")
 
 
 if __name__ == "__main__":

@@ -58,12 +58,12 @@ python3 scripts/gen_all.py                       # 读 assets.json，断点续�
 python3 scripts/make_transparent.py assets/*.png # 白底→透明 + 灰雾清理 + 紧致裁边（必须在机检前跑）
 python3 scripts/check_edges.py assets/*.png              # 查方图感：硬边数应趋近 0、边缘墨迹占比越低越好
 
-# 4. 排版 + 机检链 + 双代理对抗闭环质检（核心质量护城河，每块必过）
-python3 scripts/layout_lint.py layout/block1.json      # 碰撞/越界/居中滥用，hard 必须 = 0
-python3 scripts/check_geom.py layout/block1.json               # 真实字体度量：自动折行/行宽越界/孤字/插图带高
-python3 scripts/check_occlusion.py layout/block1.json          # 气泡与素材墨迹压盖 0 px
-python3 scripts/check_clearance.py layout/block1.json          # 画布口径净空：气泡底缘与主体轮廓 ≥40px
-python3 scripts/compose.py layout/block1.json -o blocks/stage1.png --debug
+# 4. 排版 + 机检链 + 双代理对抗闭环质检（核心质量护城河，每块必过，Canvas 方案为官方默认）
+node scripts/checks/lint.mjs layout/block1.json      # 碰撞/越界/居中滥用，hard 必须 = 0
+node scripts/checks/geom.mjs layout/block1.json      # 真实字体度量：自动折行/行宽越界/孤字/插图带高
+node scripts/checks/occlusion.mjs layout/block1.json # 气泡与素材墨迹压盖 0 px
+node scripts/checks/clearance.mjs layout/block1.json # 画布口径净空：气泡底缘与主体轮廓 ≥40px
+node scripts/render.mjs layout/block1.json -o blocks/stage1.png --debug
 #   → 启动独立质检子代理（Review Agent，如 gemini-3.8-flash-high）进行地毯式审查：
 #      - 像素级零遮挡：气泡底色/描边/文字绝不压盖主体面容轮廓或关键结构线（保留 ≥40px 负空间）
 #      - 声源空间闭环：气泡 tail 必须严格对应发话实体的物理坐标与朝向
@@ -71,11 +71,16 @@ python3 scripts/compose.py layout/block1.json -o blocks/stage1.png --debug
 #      - 道具与人设一致性：排查跨块形象漂移、跨领域道具错置、高潮场景低幼平淡
 #      - 执行中心压缩打分（1-10分制，7.0~8.5 工业基线），硬性碰撞或文字被遮直接驳回！
 #   → 改 layout 坐标/重绘素材 → 复渲确认 → 评审代理给出【PERFECT PASS】后出正式稿：
-python3 scripts/compose.py layout/block1.json -o blocks/final1.png
+node scripts/render.mjs layout/block1.json -o blocks/final1.png
 #   → read_image 终验
 
 # 5. 拼接
-python3 scripts/stitch.py "output/标题_长图.jpg" blocks/final*.png 按序
+node scripts/stitch.mjs "output/标题_长图.jpg" blocks/final*.png 按序
+
+# 6. 可视化 Web 控制台（人机共创与交互式微调）
+npm run web                                          # 启动 Web 可视化编辑器（本地 127.0.0.1:3100 或公网隧道）
+#   → 支持在浏览器中直接对文字内容、字阶、气泡、插图位置进行所见即所得的拖拽与修改
+#   → 用户保存后直接回写 layout/*.json 并自动复渲；Agent 外部修改后用户刷新即可无缝查看最新效果
 ```
 
 **素材两档的分工**（决定因素：上游按总像素封顶约 1.57 MP，等比缩放、只保留长宽比，

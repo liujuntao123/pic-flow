@@ -68,7 +68,7 @@ export function lint(path) {
     warn += 1;
   }
   console.log(`[lint] ${path}: ${hard ? 'FAIL' : 'OK'}, hard=${hard}, warnings=${warn}`);
-  return hard ? 1 : 0;
+  return { hard, warn, code: hard ? 1 : 0 };
 }
 
 export { blockGeom, textWidth };
@@ -76,6 +76,9 @@ export { blockGeom, textWidth };
 if (isMain(import.meta.url)) {
   const { files } = parseArgs(process.argv.slice(2));
   let rc = 0;
-  for (const f of files) rc = Math.max(rc, lint(f));
+  for (const f of files) {
+    const res = lint(f);
+    rc = Math.max(rc, typeof res === 'object' ? res.code : res);
+  }
   process.exit(rc);
 }
