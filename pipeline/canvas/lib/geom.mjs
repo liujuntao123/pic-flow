@@ -1,4 +1,4 @@
-// 几何口径：与 compose.py / render.mjs 共用同一套（元素包围盒、气泡 rect、tail 三角、墨迹蒙版）。
+// 几何口径：渲染（render.mjs）与机检共用同一套（元素包围盒、气泡 rect、tail 三角、墨迹蒙版）。
 // 机检全部建立在这里的几何上，保证「渲染什么就检查什么」。
 import path from 'node:path';
 import fs from 'node:fs';
@@ -23,21 +23,21 @@ export function padPair(pad) {
 }
 
 /**
- * 气泡样式解析（对应 compose.py 的 el_box）：主题默认气泡 + 元素自带 box。
- * 注意：与 Python 版**完全一致**地把主题默认值套到每个文本元素上，
+ * 气泡样式解析：主题默认气泡 + 元素自带 box。
+ * 注意：把主题默认值套到每个文本元素上，
  * 包括主题的 `pad`。要「不要内边距」就在元素上写 `"box": {"pad": 0}`。
  */
 export function boxOf(el, theme) {
   return { ...(theme?.bubble || {}), ...(el.box || {}) };
 }
 
-/** 元素画布包围盒（与 Python layout_lint.box 同一口径）。 */
+/** 元素画布包围盒（与 checks/lint.mjs 同一口径）。 */
 export function elemBox(el, root, W, theme) {
   const t = el.type;
   if (t === 'text') {
-    // 宽高沿用 layout_lint.py 的**粗估口径**（宽 = min(max_width, max(size*1.2, 字数*size*0.62))、
-    // 高 = 行数 * size * line_height，line_height 默认 1.05），且**只有元素自带 box 时才计 pad**，
-    // 与 layout_lint.py 逐字一致。这是刻意的：lint 的定位是「快检 + 预先暴露潜在重叠」，
+    // 宽高用**粗估口径**（宽 = min(max_width, max(size*1.2, 字数*size*0.62))、
+    // 高 = 行数 * size * line_height，line_height 默认 1.05），且**只有元素自带 box 时才计 pad**。
+    // 这是刻意的：lint 的定位是「快检 + 预先暴露潜在重叠」，
     // 而真折行后的实际行高大于 1.05×size —— 用真实度量去判，会让上下相邻但视觉并不重叠的
     // 文本块大面积误报（实测认证范例 7 块里 6 块误报）。
     // 真实字体度量与折行交给 checks/geom.mjs，像素级压盖/净空交给 checks/clearance.mjs。
@@ -57,7 +57,7 @@ export function elemBox(el, root, W, theme) {
     const x1 = left + width + px;
     const y1 = y + height + py;
     if (el.rotate) {
-      // 旋转元素按真实外接矩形算（Python 版用未旋转框，会漏判斜置气泡的对角侵入）
+      // 旋转元素按真实外接矩形算（用未旋转框会漏判斜置气泡的对角侵入）
       const a = (el.rotate * Math.PI) / 180;
       const cx = (x0 + x1) / 2;
       const cy = (y0 + y1) / 2;
@@ -116,7 +116,7 @@ export function elemBox(el, root, W, theme) {
     return [el.cx - el.r, el.cy - el.r, el.cx + el.r + 40 + legend, el.cy + el.r];
   }
   if (t === 'arrow') {
-    // 与 layout_lint.py 同口径：按 direction 决定箭头朝哪边长，不能一律当右下
+    // 与 checks/lint.mjs 同口径：按 direction 决定箭头朝哪边长，不能一律当右下
     const l = el.length;
     const down = (el.direction ?? 'down') === 'down' || el.direction === 'right';
     return down
@@ -225,7 +225,7 @@ export function bubbleQuad(el, W, theme) {
   const [px, py] = padPair(box.pad ?? 0);
   const rect = [geo.left - px, geo.top - py,
     geo.left + geo.w + px, geo.top + geo.height + py];
-  // 旋转中心 = 文本块中心（不含 pad），与 render.mjs / compose.py 的 rotateLayer 一致
+  // 旋转中心 = 文本块中心（不含 pad），与 render.mjs 的 rotateLayer 一致
   const cx = geo.left + geo.w / 2;
   const cy = geo.top + geo.height / 2;
   const a = ((el.rotate ?? 0) * Math.PI) / 180;

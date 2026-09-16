@@ -18,7 +18,7 @@
    - 7 个 Block 共计 7 张 Sprite Sheet，一次生图切出 28 张透明 PNG 手绘素材。
    - 全套素材通过 `make_transparent.py` 标准化处理与 `check_edges.py` 边缘墨迹机检（平均硬边数仅 0.11 / 4，边缘墨迹占比 2.0%）。
 4. **机检与双代理对抗闭环质检**：
-   - 7 个 Block 均通过 `layout_lint`（hard=0）；`check_geom` 另有若干「自动折行/孤字行」提示；
+   - 7 个 Block 均通过 `lint`（hard=0）；`geom` 另有若干「自动折行/孤字行」提示；
      `check_clearance` 在 `block4`、`block5` 各报 1 处气泡净空 <40px（详见下方「实测状态」）。
 
 ---
@@ -44,7 +44,7 @@ huangchao-tang-collapse/
 
 本工程是历史产物：**排版源码可复现**，但机检链会如实报出以下问题（不是机检误报）：
 
-- `lint`（Canvas `checks/lint.mjs` 与 Python `layout_lint.py` 同判据）：7 个 block 全部 `hard=0`。
+- `lint`（`checks/lint.mjs`）：7 个 block 全部 `hard=0`。
 - `checks/geom.mjs`：`block2`、`block3`、`block4`、`block5`、`block6`、`block7` 报「自动折行 / 孤字行」提示。
 - `checks/clearance.mjs`：`block4`、`block5` 各 1 处气泡净空 <40px；无压盖。
 - 本目录没有 `fonts/` 软链，两个引擎都会回退到 skill 自带的 `fonts/`（这正是它声明的文楷/快乐体/毛笔三级字阶）。

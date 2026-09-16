@@ -1,4 +1,4 @@
-// 静态布局质量检查（layout_lint.py 的 Canvas 对应实现）。
+// 静态布局质量检查。
 //   node pipeline/canvas/checks/lint.mjs layout/block1.json [...]
 // hard 必须为 0，warnings 供视觉复核。
 import { realpathSync } from 'node:fs';

@@ -47,10 +47,9 @@ def main():
     for d in ("assets", "blocks", "layout", "output", "scripts"):
         (root / d).mkdir(parents=True, exist_ok=True)
 
-    # 流水线脚本用**软链**共享，不复制：副本会随时间漂移（项目里的 compose.py
-    # 与 skill 版本各自演化、修复无法互相回流），软链永远指向当前 skill。
-    # 脚本已改为从被操作文件推断项目根，因此原地运行也成立：
-    #   python3 <skill>/pipeline/compose.py <项目>/layout/block1.json
+    # 流水线脚本用**软链**共享，不复制：副本会随时间漂移、修复无法互相回流，
+    # 软链永远指向当前 skill。脚本从被操作文件推断项目根，因此原地运行也成立：
+    #   node <skill>/pipeline/canvas/render.mjs <项目>/layout/block1.json
     # 不支持软链的文件系统（如部分 Windows 环境）回退为复制。
     for f in sorted((SKILL_DIR / "pipeline").glob("*")):
         if f.name in ("new_project.py", "__pycache__"):

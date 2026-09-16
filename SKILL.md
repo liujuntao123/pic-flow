@@ -108,10 +108,10 @@ cd <skill 根> && npm run web                         # 启动 Web 可视化编�
 |---|---|---|
 | 素材 | `check_edges.py` | 硬边数趋近 0、边缘墨迹占比低 → 没有方图感 |
 | 素材 | `make_transparent.py` | 透明通道与四向紧致裁边正常 |
-| 排版 | `layout_lint.py` | 碰撞、越界、居中滥用，hard = 0 |
-| 排版 | `check_geom.py` | 无自动折行/行宽越界/孤字；插图带高 ≥55% |
-| 排版 | `check_clearance.py` | 红线：压盖必须 0 px、气泡净空 ≥40px |
-| 排版 | `check_occlusion.py` | 压盖面积 >120px 判硬伤（≤120px 属边缘擦碰，只提示） |
+| 排版 | `checks/lint.mjs` | 碰撞、越界、居中滥用，hard = 0 |
+| 排版 | `checks/geom.mjs` | 无自动折行/行宽越界/孤字；插图带高 ≥55% |
+| 排版 | `checks/clearance.mjs` | 红线：压盖必须 0 px、气泡净空 ≥40px |
+| 排版 | `checks/occlusion.mjs` | 压盖面积 >120px 判硬伤（≤120px 属边缘擦碰，只提示） |
 
 随后进入对抗审查：
 
@@ -183,7 +183,7 @@ cd <skill 根> && npm run web                         # 启动 Web 可视化编�
 - **领域一致性与反向排除**：对容易发生语义、时代或领域错置的主题，明确指定符合主题的实体、属性和排除项；其他主题可使用符号、图表或适度隐喻，不必强行具象化。
 - **重点场景的动势与对比**：对需要突出变化或冲突的场景，按主题包加强动作、线条、明暗和构图对比；静态说明型素材保持清晰、稳定和克制。
 - **主体隔离条件**：只有当素材用途要求纯物态或独立对象时，才排除无关人物与肢体；若人物与对象共同构成信息，应保留必要关系。
-- **新切出来的素材必须先跑 `make_transparent.py` 再机检**：`check_clearance.py` 的墨迹蒙版读 alpha 通道，
+- **新切出来的素材必须先跑 `make_transparent.py` 再机检**：`checks/clearance.mjs` 的墨迹蒙版读 alpha 通道，
   不转透明的话整张素材会被当成"全是墨"，净空检查全部失真。
 - **透明背景是生图时直接要的**：generate() 请求自带 `background=transparent + output_format=png`，正规上游直接回透明 PNG；`make_transparent.py` 只为未认参数回白底的情况兜底。
 - **生图上游是用户自配的**：未配置时 gen 脚本会打印配置引导。配置源在 `~/.config/pic-flow/providers.json` 或 `PICFLOW_IMAGE_*` 环境变量。多上游按序容错、断点续跑。
@@ -199,16 +199,14 @@ cd <skill 根> && npm run web                         # 启动 Web 可视化编�
 - `layouts/story-flow.json` · `styles/bw-sketch.json`：布局骨架与黑白手绘风格包
 - `references/`：设计系统（`style-guide.md`）、设计方法（`design-principles.md`）、内容质量（`content-quality.md`）、
   素材 Prompt 指南（`asset-prompts.md`：逐块四图 + 开放式构图四条）
-- `pipeline/` 素材线：`new_project.py` 脚手架 · `gen_sheets.py` 逐块四图生图 · `slice_sheet.py` 精灵图切分 ·
-  `gen_all.py` 单张全幅 · `genlib.py` 上游链 · `make_transparent.py` 标准化 · `check_edges.py` 方图感机检
-- `pipeline/` 排版线（Python 引擎）：`compose.py` 渲染引擎 · `layout_lint.py` · `check_geom.py` ·
-  `check_occlusion.py` · `check_clearance.py` · `stitch.py` 拼接 · `inkgeom.py` 机检共用真实几何
-- `pipeline/canvas/` 排版线（**Canvas/Node 引擎，与 Python 线并存、同一份 layout**）：
-  `render.mjs`（对应 compose.py）· `stitch.mjs` · `preview.mjs` 便携预览 · `parity.mjs` 双引擎逐像素对照 ·
-  `checks/{lint,geom,occlusion,clearance}.mjs` 同一套机检判据 · `checks/all.mjs` 四检统一闸门 ·
+- `pipeline/` 素材线（Python）：`new_project.py` 脚手架 · `gen_sheets.py` 逐块四图生图 · `slice_sheet.py` 精灵图切分 ·
+  `gen_all.py` 单张全幅 · `genlib.py` 上游链 · `make_transparent.py` 标准化 · `check_edges.py` 方图感机检 · `roots.py` 项目根推断
+- `pipeline/canvas/` 排版线（**Canvas/Node 引擎，唯一官方排版线**）：
+  `render.mjs` 渲染引擎 · `stitch.mjs` 拼接 · `preview.mjs` 便携预览 ·
+  `checks/{lint,geom,occlusion,clearance}.mjs` 机检链 · `checks/all.mjs` 四检统一闸门 ·
   `lib/cli.mjs` 统一命令行解析 · `SCHEMA.md` · `README.md`
 - `web/` 可视化人机共创控制台（`npm run web`，须在 skill 根目录启动）· `tests/` 测试（`npm test`）
 - 机检链的退出码即闸门：`lint`(hard>0) / `geom`(问题项>0) / `occlusion`(压盖>120px) /
   `clearance`(压盖>0 或净空<40px) 任一非 0 即不通过，`checks/all.mjs` 把它们绑在一起
-  （两条排版线读同一份 layout、产出同一批产物，可逐块互换；详见 `pipeline/canvas/README.md`）
+  （详见 `pipeline/canvas/README.md`）
   （脚本与字体都是软链，可原地运行，勿删 skill 目录）

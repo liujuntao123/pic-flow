@@ -143,7 +143,7 @@ sheet 原图与 `*_slice_debug.png` 切割调试图都留在 `sheets/` 备查。
    再批量跑全部 sheet。
 2. **标准化**：生成后统一 `python3 scripts/make_transparent.py assets/*.png`
    （透明通道 + 灰雾清理 + 四向紧致裁边）。
-   ⚠️ 新切出来的素材**必须先跑这一步**：`check_clearance.py` 的墨迹蒙版用 alpha 通道，
+   ⚠️ 新切出来的素材**必须先跑这一步**：`canvas/checks/clearance.mjs` 的墨迹蒙版用 alpha 通道，
    不转透明的话整张素材会被当成"全是墨"，净空检查全部失真。
 3. **定点返工对照表**：
 

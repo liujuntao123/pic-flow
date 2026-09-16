@@ -1,5 +1,5 @@
 {
-  "_doc": "逐块四图规格：一个 block = 一次生图 = 4 张插画（2×2 网格，切开后交给 compose.py 排版）。素材命名 blockN 的 a/b/c/d 四格。anchors 里的角色特征三元组会在每个格子被逐字展开。命令：python3 scripts/gen_sheets.py（断点续跑）；单张：--only sheetBlock1；重来：--force。",
+  "_doc": "逐块四图规格：一个 block = 一次生图 = 4 张插画（2×2 网格，切开后交给 Canvas 排版引擎（scripts/render.mjs））。素材命名 blockN 的 a/b/c/d 四格。anchors 里的角色特征三元组会在每个格子被逐字展开。命令：python3 scripts/gen_sheets.py（断点续跑）；单张：--only sheetBlock1；重来：--force。",
 
   "anchors": {
     "HUANG": "黄巢固定特征三元组：①身材精壮挺拔、肩膀宽厚略显魁梧 ②面容冷峻刚毅、剑眉入鬓、修剪整齐的八字短须 ③身穿唐代黑色武官窄袖劲装束发、腰系革带佩长剑与铁胎弓，眼神带有一股狠厉不驯之气",

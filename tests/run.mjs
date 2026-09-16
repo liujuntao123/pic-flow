@@ -4,7 +4,7 @@
  * 设计原则：
  *  · 不依赖网络与外部服务；需要 Web 服务 / Playwright 的项在不可用时 **SKIP** 并给出提示，
  *    不会把「环境没起」伪装成「通过」。
- *  · 快：只跑一份范例块做引擎冒烟，全量对照交给 `npm run parity`。
+ *  · 快：只跑一份范例块做引擎冒烟。
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -45,13 +45,6 @@ function smokeRender() {
   if (!ok) console.log(`${r.stdout || ''}${r.stderr || ''}`.replace(/^/gm, '    '));
 }
 
-/** 双引擎逐像素对照（需要 python3 + Pillow）。 */
-function engineParity() {
-  const py = spawnSync('python3', ['-c', 'import PIL'], { encoding: 'utf8' });
-  run('双引擎逐像素对照 (parity)', process.execPath, ['pipeline/canvas/parity.mjs', EXAMPLE],
-    { skipIf: py.status === 0 ? null : '未安装 python3/Pillow' });
-}
-
 /** 预览↔渲染折行一致性（需要 Web 服务在线）。 */
 function previewParity(online) {
   run('预览↔渲染 折行一致性', process.execPath, ['tests/test_preview_parity.mjs'],
@@ -89,7 +82,6 @@ function fontPreview() {
 console.log('=== pic-flow 测试 ===\n');
 smokeRender();
 fontPreview();
-engineParity();
 const online = serverOnline();
 if (!online) console.log(`[INFO] 未检测到 Web 服务（${BASE_URL}），跳过依赖它的两项\n`);
 previewParity(online);

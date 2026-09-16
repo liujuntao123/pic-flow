@@ -1,4 +1,4 @@
-// 项目根推断：与 Python roots.py 同一套规则（含项目标志的那一层）。
+// 项目根推断：从被操作文件上溯找含项目标志的那一层。
 import fs from 'node:fs';
 import path from 'node:path';
 

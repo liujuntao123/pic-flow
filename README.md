@@ -47,7 +47,7 @@ pic-flow 将流水线严格解耦为可控节点：
 
 - **排版/机检（官方 Canvas 线，推荐）**：Node.js 18+，并在 skill 根目录跑一次
   `npm install`（只装 `@napi-rs/canvas`；`playwright-core` 是 HTML 排版线的可选依赖）。
-- **生图与 Python 老线**：Python 3.8+、Pillow、numpy。
+- **生图线（素材生成与标准化）**：Python 3.8+、Pillow、numpy。
 
 **生图功能需配置你自己的 OpenAI Images 兼容
 Provider**（见下文「生图 Provider 配置」，skill 不内置任何 Key），不生图可跳过。
@@ -100,15 +100,15 @@ python3 scripts/make_transparent.py assets/*.png # 白底→透明 + 灰雾清�
 python3 scripts/check_edges.py assets/*.png              # 查方图感：硬边数应趋近 0
 
 # 4) 排版：编辑 layout/blockN.json → 机检链 → 双代理对抗审查 → 正式渲染
-python3 scripts/layout_lint.py    layout/block1.json   # 碰撞/越界/居中滥用（hard 必须 = 0）
-python3 scripts/check_geom.py             layout/block1.json   # 真实字体度量：折行/孤行/插图带高
-python3 scripts/check_occlusion.py        layout/block1.json   # 气泡压盖素材墨迹（>120px 判硬伤，≤120px 只提示）
-python3 scripts/check_clearance.py        layout/block1.json   # 红线口径：压盖必须 0px、气泡净空 ≥40px
-python3 scripts/compose.py layout/block1.json -o blocks/stage1.png --debug  # 调试画布
-python3 scripts/compose.py layout/block1.json -o blocks/final1.png          # 正式渲染
+node scripts/checks/lint.mjs      layout/block1.json   # 碰撞/越界/居中滥用（hard 必须 = 0）
+node scripts/checks/geom.mjs      layout/block1.json   # 真实字体度量：折行/孤行/插图带高
+node scripts/checks/occlusion.mjs layout/block1.json   # 气泡压盖素材墨迹（>120px 判硬伤，≤120px 只提示）
+node scripts/checks/clearance.mjs layout/block1.json   # 红线口径：压盖必须 0px、气泡净空 ≥40px
+node scripts/render.mjs layout/block1.json -o blocks/stage1.png --debug  # 调试画布
+node scripts/render.mjs layout/block1.json -o blocks/final1.png          # 正式渲染
 
 # 5) 拼接成品长图
-python3 scripts/stitch.py output/out.jpg blocks/final*.png
+node scripts/stitch.mjs output/out.jpg blocks/final*.png
 ```
 
 校准循环：看 `stage1.png`（自带 100px 网格坐标与元素包围盒）→ 改 `layout/block1.json`
@@ -121,7 +121,7 @@ node scripts/checks/all.mjs layout/block*.json          # 项目里（软链）
 node pipeline/canvas/checks/all.mjs <项目>/layout/block*.json   # 或从 skill 根目录原地跑
 ```
 
-自带测试（渲染冒烟 / 全字体 / 双引擎逐像素对照 / 预览↔渲染折行一致性）：
+自带测试（渲染冒烟 / 全字体 / 预览↔渲染折行一致性）：
 
 ```bash
 npm test        # 需要 Web 服务的那一项在服务未启动时会 SKIP，不会假装通过
@@ -144,8 +144,8 @@ npm test        # 需要 Web 服务的那一项在服务未启动时会 SKIP，�
 原地运行——项目里不必有副本：
 
 ```bash
-python3 <skill>/pipeline/compose.py <项目>/layout/block1.json -o out.png
-PICFLOW_ROOT=<项目> python3 <skill>/pipeline/compose.py layout/block1.json -o out.png
+node <skill>/pipeline/canvas/render.mjs <项目>/layout/block1.json -o out.png
+PICFLOW_ROOT=<项目> node <skill>/pipeline/canvas/render.mjs layout/block1.json -o out.png
 ```
 
 项目根由「被操作的 layout 文件」逐级上溯自动推断（找 `assets.json` / `style.json` /
@@ -153,7 +153,7 @@ PICFLOW_ROOT=<项目> python3 <skill>/pipeline/compose.py layout/block1.json -o 
 
 ### Canvas 排版引擎与可视化 Web 工作台（官方推荐）
 
-画布排版已**全面切换为 Canvas 方案（Node/Skia & 浏览器 Canvas）**作为官方首选，与历史 Python 线读同一套 `layout/blockN.json`。
+画布排版采用 **Canvas 方案（Node/Skia & 浏览器 Canvas）**，是唯一的官方排版线，读写 `layout/blockN.json`。
 
 同时提供了一套基于 Canvas 的**可视化人机共创 Web 页面**，支持在浏览器中自由拖拽修改位置、实时改文字、所见即所得调试与机检，并与 Agent 保持同来源文件双向同步：
 
@@ -233,18 +233,18 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 - `lint`：14 个 block 全部 `hard=0`。
 - `geom`：多数 block 报「自动折行 / 孤字行」提示（文案与栏宽的历史遗留，不影响渲染正确性）。
 - `clearance` / `occlusion`：仍有若干处气泡净空 <40px、以及 `alchemy-mercury/layout/block3.json` 的 1 处真实压盖（约 710px，`〖水银不仅流动聚散由心…〗` 气泡压到 `c3d_amalgam.png` 的墨迹）。这是**版面内容**问题，机检如实报出；要修的话把该气泡上移到 `y≈1165`、`c3d_amalgam` 下移到 `y≈1530`、并把上方 block2 气泡上移到 `y≈340`，即可让 `lint`/`occlusion`/`clearance` 全绿（`geom` 还剩 1 处「自动折行」提示，属文案层面）。注意这会改变已提交的 `blocks/final3.png` 与长图成品。
-- 示例工程里没有 `fonts/` 软链，两个引擎都会回退到 skill 自带的 `fonts/`（这正是它们声明的文楷/快乐体/毛笔三级字阶）；若把示例单独拷出仓库，请一并带上 skill 的 `fonts/`。
+- 示例工程里没有 `fonts/` 软链，引擎会回退到 skill 自带的 `fonts/`（这正是它们声明的文楷/快乐体/毛笔三级字阶）；若把示例单独拷出仓库，请一并带上 skill 的 `fonts/`。
 - 因此示例的成品图**不是**「逐字节可复现」的：用当前引擎重渲版式完全一致，但字形栅格化（Skia vs 历史版本）会有亚像素差异，属预期行为。
 
 ## 目录结构
 
 | 目录 | 内容 |
 |---|---|
-| `pipeline/` | 生图线（`gen_sheets.py` 逐块四图 / `slice_sheet.py` 切分 / `gen_all.py` 单张 / `check_edges.py` 方图感机检）、排版线（`compose.py` 渲染引擎 / `layout_lint.py` · `check_geom.py` · `check_occlusion.py` · `check_clearance.py` 机检链 / `stitch.py` 拼接，共用 `inkgeom.py` 的真实几何）、`new_project.py` 脚手架 |
-| `pipeline/canvas/` | **官方 Canvas/Node/Skia 排版线**：`render.mjs` · `stitch.mjs` · `preview.mjs` · `parity.mjs`（双引擎逐像素对照）· `checks/`（`lint` `geom` `occlusion` `clearance` + `all.mjs` 四检闸门）· `lib/` |
+| `pipeline/` | 生图线（Python：`gen_sheets.py` 逐块四图 / `slice_sheet.py` 切分 / `gen_all.py` 单张 / `make_transparent.py` 标准化 / `check_edges.py` 方图感机检 / `roots.py` 项目根推断）、`new_project.py` 脚手架 |
+| `pipeline/canvas/` | **唯一官方排版线（Node/Skia）**：`render.mjs` · `stitch.mjs` · `preview.mjs` · `checks/`（`lint` `geom` `occlusion` `clearance` + `all.mjs` 四检闸门）· `lib/` |
 | `pipeline/html/` | 可选的第三条线：Canvas 出背景图 + 浏览器排版文字（Playwright 栅格化） |
 | `web/` | 可视化人机共创工作台（`server/` 本地服务 + `client/` Canvas 编辑器），`npm run web` |
-| `tests/` | 测试：`npm test`（渲染冒烟 / 全字体 / 双引擎对照 / 预览↔渲染折行一致性），以及 Playwright 端到端脚本 |
+| `tests/` | 测试：`npm test`（渲染冒烟 / 全字体 / 预览↔渲染折行一致性），以及 Playwright 端到端脚本 |
 | `templates/` | 核心模板（`story.md` 内容骨架 + `storyboard.json` 分镜定义 + `sheets.json` 逐块四图规格） |
 | `layouts/` | 核心故事流布局骨架（`story-flow.json`） |
 | `styles/` | 官方黑白手绘风格包（`bw-sketch.json` 粗黑钢笔墨线 + 橙蓝红文字系统） |

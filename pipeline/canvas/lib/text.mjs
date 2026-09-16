@@ -1,4 +1,4 @@
-// 文字度量与排版（Canvas 版）：与 Python `compose.py` 同一套几何口径。
+// 文字度量与排版：渲染与机检共用同一套几何口径。
 //
 // 关键：折行、行宽、基线全部用**逐字累计宽度**算出来，不依赖 Canvas 的
 // ctx.fillText 自动排版。所以同一份 layout JSON 在两个引擎下：
@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 export const MARKERS = { '【': ['】', 'hl'], '『': ['』', 'quote'], '〖': ['〗', 'warn'] };
 export const KINSOKU = '，。！？；：、）】》%”…—』〗';
 
-// 与 compose.py 的 fallback 保持同一口径（Noto CJK），保证两引擎字形族一致
+// 字体兜底族固定为 Noto CJK，跨环境字形族不漂移
 const FONT_REG = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc';
 const FONT_BOLD = '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc';
 
@@ -75,7 +75,7 @@ function familyOf(fam, bold) {
   if (!path || !fs.existsSync(path)) path = FONT_REG;
   const key = `${path}`;
   if (!state.registered.has(key)) {
-    // .ttc 需要指定 face index（与 Pillow 的 index=SC 对齐：简中面）
+    // .ttc 需要指定 face index（index 2 = 简中面）
     const kw = path.endsWith('.ttc') ? { index: 2 } : undefined;
     const alias = `picflow-${state.registered.size}`;
     try {
@@ -135,7 +135,7 @@ export function parseContent(s) {
 
 /**
  * 贪心逐字折行 + 避头点 + ASCII 整词不拆。
- * 与 compose.py 的 wrap_lines 逐行等价（含把行尾 ASCII 词整体挪到下一行的分支）。
+ * 贪心折行（含把行尾 ASCII 词整体挪到下一行的分支）。
  */
 export function wrapLines(chars, size, bold, maxW, family = 'body') {
   const lines = [];
@@ -190,7 +190,7 @@ export function blockGeom(el, W, families) {
   const family = el.font ?? 'body';
   const maxW = el.max_width ?? 940;
   const lines = wrapLines(chars, size, bold, maxW, family);
-  const lh = size * (el.line_height ?? 1.5); // 与 compose.py `el.get("line_height", 1.5)` 一致
+  const lh = size * (el.line_height ?? 1.5); // 行距默认 1.5
   const widths = lines.map((ln) => lineWidth(ln, size, bold, family));
   const w = widths.length ? Math.max(...widths) : 0;
   const x = el.x ?? Math.floor(W / 2);

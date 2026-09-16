@@ -2,9 +2,9 @@
 """定位 pic-flow 项目根目录（含 assets/ layout/ style.json 的那一层）。
 
 流水线脚本原先用 `Path(__file__).parent.parent` 推断项目根，导致脚本必须被
-复制进每个项目才能找到 assets/ 与 fonts/。副本会随时间漂移：项目的 compose.py
+复制进每个项目才能找到 assets/ 与 fonts/。副本会随时间漂移：项目里的副本
 与 skill 的版本各自演化、修复无法互相回流。改为从**被操作的文件**推断项目根后，
-脚本可原地运行（`python3 <skill>/pipeline/compose.py <项目>/layout/block1.json`），
+脚本可原地运行（`python3 <skill>/pipeline/gen_sheets.py <项目>/sheets.json`），
 项目里不再需要脚本副本。
 
 解析优先级：

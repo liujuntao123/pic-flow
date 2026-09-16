@@ -1,4 +1,4 @@
-// 排版几何机检（check_geom.py 的 Canvas 对应实现）：真实字体度量下的
+// 排版几何机检：真实字体度量下的
 // 折行行数 / 行宽越界 / 孤字行 / 越界 + 插图带高占比。
 //   node pipeline/canvas/checks/geom.mjs layout/block1.json [...]
 import path from 'node:path';

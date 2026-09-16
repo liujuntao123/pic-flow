@@ -1,4 +1,4 @@
-// 绘图原语：与 Python `compose.py` 的几何逐一对齐（同一份 layout JSON 应落在同一批像素上）。
+// 绘图原语：几何口径与 lib/geom.mjs、渲染主循环严格一致。
 import { createCanvas, Image } from '@napi-rs/canvas';
 import fs from 'node:fs';
 import { fontStr, charWidth, MARKERS } from './text.mjs';
@@ -178,7 +178,7 @@ export function paintBox(ctx, rect, el, theme) {
   return rect;
 }
 
-/** 逐字绘制段落（每字单独定位，与 Python 版同一套累计宽度）。 */
+/** 逐字绘制段落（每字单独定位，按累计宽度）。 */
 export function paintParagraph(ctx, para, el, theme, box) {
   const sw = el.stroke_width ?? 0;
   const sf = el.stroke_fill ?? '#FFFFFF';

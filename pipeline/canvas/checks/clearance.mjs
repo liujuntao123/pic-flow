@@ -1,4 +1,4 @@
-// 严格净空机检（check_clearance.py 的 Canvas 对应实现，画布像素口径）：
+// 严格净空机检（画布像素口径）：
 // 气泡多边形（含 tail 三角，斜置时按真实旋转四边形）vs 素材墨迹。
 // 红线：压盖 0 px、净空 ≥40 px。
 //   node pipeline/canvas/checks/clearance.mjs layout/block1.json [...]

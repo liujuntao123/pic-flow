@@ -1,7 +1,6 @@
-# Canvas 排版 schema 速查（与 Python 引擎同一份 layout JSON）
+# Canvas 排版 schema 速查
 
-`pipeline/canvas/render.mjs` 与 `pipeline/compose.py` **读同一份 `layout/blockN.json`**，
-字段名与语义完全一致。改造 Python→Canvas 时不需要迁移任何 layout 文件。
+`pipeline/canvas/render.mjs` 读写 `layout/blockN.json`，下述字段名与语义即完整契约。
 
 ## 元素类型
 
@@ -56,29 +55,27 @@ node scripts/canvas/checks/occlusion.mjs layout/block*.json   # 气泡压盖素�
 node scripts/canvas/checks/clearance.mjs layout/block*.json   # 红线口径：压盖必须 0px、净空 ≥40px
 node scripts/canvas/checks/all.mjs        layout/block*.json   # 四条机检一次跑完（统一闸门）
 node scripts/canvas/stitch.mjs output/标题_长图.jpg blocks/final*.png
-node scripts/canvas/parity.mjs layout/block1.json             # 与 Python 引擎逐像素对照（验收用）
 ```
 
-## 正文兜底色（两引擎共同口径）
+## 正文兜底色
 
 未显式指定 `color` 的文字元素，颜色兜底顺序是
 `el.color → el.box.color → style.json 的 text`。
 
-第三级读的是**元素自带的 `box`**，不是「主题 bubble 默认值合并后」的 box ——
+第二级读的是**元素自带的 `box`**，不是「主题 bubble 默认值合并后」的 box ——
 主题 `bubble.color` 是气泡的暖褐色（`#4A2800`），若让它兜底，全图正文与标题都会被染成暖褐。
-这个坑两套引擎都踩过（`compose.py` 与 `render.mjs` 同源写法），已同时修正。
+这个坑曾经踩过，已修正。
 
-## Canvas 版与 Python 版的差异（都是收紧与对齐，不是放宽）
+## 机检口径说明（都是收紧，不是放宽）
 
 1. **斜置元素按真实几何参与判定**：`bubbleQuad` 把气泡（含 tail 三角）按渲染器的旋转方式
-   转成真实四边形，压盖/净空都在这个多边形上量；Python 线（`inkgeom.bubble_quad`）同样如此。
-   曾经两边都拿**旋转外接框**去量，把气泡四角的空白也算成气泡（同一气泡：890px vs 真实 710px）。
+   转成真实四边形，压盖/净空都在这个多边形上量。
+   曾经拿**旋转外接框**去量，把气泡四角的空白也算成气泡（同一气泡：890px vs 真实 710px）。
 2. **`lint` 保持粗估口径**：宽高用
    `width = min(max_width, max(size*1.2, 字数*size*0.62))`、`height = 行数*size*line_height`
    （`line_height` 默认 1.05；只有元素自带 `box` 时才计 `pad`）——这是刻意的：lint 的定位是
    「快检 + 预先暴露潜在重叠」，用真实字体度量去判会让上下相邻、视觉上并不重叠的文本大面积误报。
    **真实折行与行宽**交给 `checks/geom.mjs`，**像素级压盖/净空**交给 `clearance` / `occlusion`。
-   两引擎的 lint 判据（含「每边 <8px 的擦边只算 WARN」）逐块一致。
 3. **`geom` 的行宽判定认「悬挂标点」**：行尾的 `，。！？` 允许溢出 `max_width` 一个字宽
    （避头点的本意），扣掉它们之后仍超宽才算越界；空行不算孤字行。
 4. **四条机检都以非 0 退出表示不通过**：`lint`（hard>0）、`geom`（问题项>0）、

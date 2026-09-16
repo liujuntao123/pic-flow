@@ -23,7 +23,7 @@
      （用 `checks/occlusion.mjs` 可复现；把该气泡上移到 `y≈1165`、`c3d_amalgam` 下移到 `y≈1530`、上方气泡上移到 `y≈340` 即可让 lint/occlusion/clearance 全绿）。
 3. **逐块四图生图与机检链**：
    - 7 张 Sprite Sheet 一次生出 28 张透明 PNG 科学手绘插图，平均硬边仅 0.11 / 4，边缘墨迹仅 2.2%。
-   - `layout_lint` 全部 `hard=0`；插图带高均 ≥55%（`check_geom` 另有若干「自动折行/孤字行」提示）。
+   - `lint` 全部 `hard=0`；插图带高均 ≥55%（`geom` 另有若干「自动折行/孤字行」提示）。
 
 ---
 
@@ -48,7 +48,7 @@ alchemy-mercury/
 
 本工程是历史产物：**排版源码可复现**，但机检链会如实报出以下问题（不是机检误报）：
 
-- `lint`（Canvas `checks/lint.mjs` 与 Python `layout_lint.py` 同判据）：7 个 block 全部 `hard=0`。
+- `lint`（`checks/lint.mjs`）：7 个 block 全部 `hard=0`。
 - `checks/geom.mjs`：若干 block 报「自动折行 / 孤字行」提示（文案与栏宽的历史遗留）。
 - `checks/occlusion.mjs`：`block3` 报 1 处真实压盖（约 710px）；`checks/clearance.mjs` 另有若干气泡净空 <40px。
 - 本目录没有 `fonts/` 软链，两个引擎都会回退到 skill 自带的 `fonts/`（这正是它声明的文楷/快乐体/毛笔三级字阶）。

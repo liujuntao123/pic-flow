@@ -1,5 +1,5 @@
 {
-  "_doc": "逐块四图规格：一个 block = 一次生图 = 4 张插画（2×2 网格，切开后交给 compose.py 排版）。素材命名 blockN 的 a/b/c/d 四格。anchors 里的角色特征三元组会在每个格子被逐字展开。命令：python3 scripts/gen_sheets.py（断点续跑）；单张：--only sheetBlock1；重来：--force。",
+  "_doc": "逐块四图规格：一个 block = 一次生图 = 4 张插画（2×2 网格，切开后交给 Canvas 排版引擎（scripts/render.mjs））。素材命名 blockN 的 a/b/c/d 四格。anchors 里的角色特征三元组会在每个格子被逐字展开。命令：python3 scripts/gen_sheets.py（断点续跑）；单张：--only sheetBlock1；重来：--force。",
 
   "anchors": {
     "ALCHEMIST": "炼丹家固定特征三元组：①清瘦挺拔身形、身披汉晋宽松宽袖青布道袍 ②头束道髻插木簪、蓄飘逸长须 ③腰悬小布囊，神态专注睿智，眼神带有一股探索自然的求真与沉思",

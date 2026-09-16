@@ -1,5 +1,5 @@
 {
-  "_doc": "逐块四图规格：一个 block = 一次生图 = 4 张插画（2×2 网格，切开后交给 compose.py 排版）。默认走这条路线；需要 980~1080px 满铺的全幅大场景才另写 assets.json 走单张。字段说明：anchors 里的角色特征三元组会在每个格子被【逐字展开】——跨格形象一致靠的就是这种一字不差的重复；cells 的 prompt 用 {占位符} 引用 anchors；可选顶层 suffix 覆盖 style.json 的 asset_suffix（留空则用 style.json）。命令：python3 scripts/gen_sheets.py（断点续跑）；只跑其中一张：--only sheetBlock1；强制重来：--force。",
+  "_doc": "逐块四图规格：一个 block = 一次生图 = 4 张插画（2×2 网格，切开后交给 Canvas 排版引擎（scripts/render.mjs））。默认走这条路线；需要 980~1080px 满铺的全幅大场景才另写 assets.json 走单张。字段说明：anchors 里的角色特征三元组会在每个格子被【逐字展开】——跨格形象一致靠的就是这种一字不差的重复；cells 的 prompt 用 {占位符} 引用 anchors；可选顶层 suffix 覆盖 style.json 的 asset_suffix（留空则用 style.json）。命令：python3 scripts/gen_sheets.py（断点续跑）；只跑其中一张：--only sheetBlock1；强制重来：--force。",
 
   "anchors": {
     "LEAD": "主角固定特征三元组：①轮廓体态（如清瘦高挑／魁梧壮硕）②标志性细节（如蓄短须、鬓角两缕散发、束发戴低矮黑布冠）③专属符号（如腰间革带挂一只木质简牍袋、手中长戈）",

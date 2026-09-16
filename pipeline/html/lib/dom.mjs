@@ -1,7 +1,6 @@
 // HTML 排版线的共享工具：字体 @font-face、段落 HTML、DOM 度量、栅格化。
 //
-// 与 Python / Canvas 两条线的关系：读**同一份 layout JSON**。区别只在文字怎么落地 ——
-//   · Python 线：Pillow 逐字定位
+// 与 Canvas 线的关系：读**同一份 layout JSON**。区别只在文字怎么落地 ——
 //   · Canvas 线：Skia 逐字定位
 //   · HTML 线：浏览器排版引擎排版，文字用绝对定位的 DOM 块承载
 //     （= 背景图（插图/气泡/线条）+ 绝对定位文本块）

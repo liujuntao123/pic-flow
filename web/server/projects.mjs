@@ -49,7 +49,7 @@ export function listBlockFiles(layoutDir) {
     .sort((a, b) => blockNumber(a) - blockNumber(b));
 }
 
-/** 原子写：先写临时文件再 rename，避免 Agent / Python 引擎读到半截文件。 */
+/** 原子写：先写临时文件再 rename，避免 Agent / 渲染引擎读到半截文件。 */
 function writeFileAtomic(filePath, content) {
   const tmp = `${filePath}.tmp-${process.pid}-${Date.now()}`;
   fs.writeFileSync(tmp, content, 'utf8');

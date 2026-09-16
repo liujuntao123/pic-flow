@@ -1,4 +1,4 @@
-// 纵向拼接（stitch.py 的 Canvas 对应实现）：
+// 纵向拼接：
 //   node pipeline/canvas/stitch.mjs output/标题_长图.jpg blocks/final1.png blocks/final2.png ...
 // 产物：成品长图 + 550px 宽预览图（同类名 _preview.jpg）。
 import path from 'node:path';

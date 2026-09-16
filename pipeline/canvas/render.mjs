@@ -1,6 +1,6 @@
-// Canvas 渲染引擎（compose.py 的 Canvas 对应实现）。
+// Canvas 渲染引擎（唯一官方排版线）。
 //
-// 支持的元素类型与 schema 与 Python 版**完全一致**：asset / card / text / rule /
+// 支持的元素类型：asset / card / text / rule /
 // barchart / piechart / table / arrow，--debug 输出网格与元素包围盒。
 //
 //   node pipeline/canvas/render.mjs layout/block1.json -o blocks/final1.png [--debug]
@@ -325,7 +325,7 @@ function drawArrow(ctx, el) {
 }
 
 /**
- * @param {object} layout  layout JSON（与 Python 引擎同一份）
+ * @param {object} layout  layout JSON
  * @param {string} outPath 输出路径（.jpg 走 JPEG，其余走 PNG）
  * @param {boolean} debug  画网格与元素包围盒
  * @param {string} rootOverride 项目根
