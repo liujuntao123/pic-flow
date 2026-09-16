@@ -406,9 +406,7 @@ export class CanvasRenderer {
     if (type === 'asset') {
       const assetUrl = el.file?.startsWith('/')
         ? el.file
-        : el.file?.startsWith('library/')
-          ? `/${el.file}`
-          : `${projectUrlBase}/assets/${encodeURIComponent(el.file)}`;
+        : `${projectUrlBase}/assets/${encodeURIComponent(el.file)}`;
 
       const img = await this.loadImage(assetUrl);
       const x = el.x || 0;

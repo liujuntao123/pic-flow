@@ -84,12 +84,6 @@ def main():
         fonts_dst.symlink_to(SKILL_DIR / "fonts", target_is_directory=True)
     except OSError:
         shutil.copytree(SKILL_DIR / "fonts", fonts_dst)
-    library_dst = root / "library"
-    if (SKILL_DIR / "library").exists() and not library_dst.exists():
-        try:
-            library_dst.symlink_to(SKILL_DIR / "library", target_is_directory=True)
-        except OSError:
-            pass
 
     shutil.copy2(LIB / "templates" / f"{args.template}.md", root / "CONTENT.md")
     storyboard = LIB / "templates" / "storyboard.json"

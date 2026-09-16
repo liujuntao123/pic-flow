@@ -335,14 +335,7 @@ const server = http.createServer(async (req, res) => {
       return sendFile(req, res, filePath);
     }
 
-    // 4. 全局素材库代理 /library/*
-    if (pathname.startsWith('/library/')) {
-      const filePath = safeJoin(path.join(REPO_ROOT, 'library'), pathname.slice('/library/'.length));
-      if (!filePath) return sendJson(req, res, 403, { ok: false, error: '非法路径' });
-      return sendFile(req, res, filePath);
-    }
-
-    // 5. 前端静态文件服务 (web/client/*)
+    // 4. 前端静态文件服务 (web/client/*)
     const clientPath = pathname === '/' || pathname === '' ? '/index.html' : pathname;
     const fullClientPath = safeJoin(CLIENT_DIR, clientPath);
     if (fullClientPath && fs.existsSync(fullClientPath) && fs.statSync(fullClientPath).isFile()) {

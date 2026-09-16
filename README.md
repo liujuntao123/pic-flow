@@ -248,7 +248,6 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 | `templates/` | 核心模板（`story.md` 内容骨架 + `storyboard.json` 分镜定义 + `sheets.json` 逐块四图规格） |
 | `layouts/` | 核心故事流布局骨架（`story-flow.json`） |
 | `styles/` | 官方黑白手绘风格包（`bw-sketch.json` 粗黑钢笔墨线 + 橙蓝红文字系统） |
-| `library/` | 手绘气泡素材库（`bubbles_light/` 暖黄轻边 · `bubbles/` · `bubbles_yellow/`）；用作素材时请复制进项目的 `assets/`（见 `library/README.md`） |
 | `references/` | 设计系统详解（`style-guide.md`）、设计方法（`design-principles.md`）、内容质量（`content-quality.md`）、Prompt 指南（`asset-prompts.md`） |
 | `examples/` | 官方实战工程与高清长图成品库（`huangchao-tang-collapse/` · `alchemy-mercury/`） |
 | `fonts/` | 9 款 OFL 开源中文字体（霞鹜文楷 / 站酷快乐体 / 马善政毛笔楷书 / 站酷黄油体 / 站酷小薇 / 小徕手写 / 志莽行书 / 龙藏体 / 站酷庆科黄油） |
