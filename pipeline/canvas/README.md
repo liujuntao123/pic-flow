@@ -1,8 +1,8 @@
 # pic-flow · Canvas 排版线（Node + Skia）
 
-**一句话结论**：可行，且与 Python 线等价 —— 在认证范例 7 块上，两引擎的机检判据逐块一致、
-墨迹像素比 0.996~1.032、平均亮度差 ≤0.9/255；实战范例（微信文章转 1080×14510 长图）
-全程只用 Canvas 线跑通。不需要迁移任何 layout 文件，切换只是换一条命令。
+**一句话结论**：可行，且与 Python 线等价 —— 同一份 layout 在两套引擎下的**折行/落点逐块一致**，
+机检判据逐块一致；墨迹像素比 1.01~1.03、墨迹 IoU 0.88~0.94（残差是字形栅格化差异：Skia vs FreeType），
+平均亮度差 ≤0.5/255。不需要迁移任何 layout 文件，切换只是换一条命令。
 
 与 Python 排版线（`pipeline/compose.py` + `checks/*.py`）**并存**的第二套引擎。
 两套引擎读**同一份 `layout/blockN.json`**、遵守**同一套机检判据**、产出**同一批中间产物**
@@ -18,31 +18,37 @@ pipeline/canvas/
 ├── lib/
 │   ├── text.mjs          # 字体注册、逐字度量、贪心折行（避头点/ASCII 不拆词）
 │   ├── draw.mjs          # 画布与绘图原语：八种气泡、tail 三角、逐字绘制
-│   ├── geom.mjs          # 机检共用几何：包围盒、气泡 rect、tail、墨迹蒙版、距离场
+│   ├── geom.mjs          # 机检共用几何：包围盒、气泡多边形、墨迹蒙版、距离场
+│   ├── cli.mjs           # 统一命令行解析（顺序无关、非法参数报错）
 │   └── paths.mjs         # 项目根推断（对应 roots.py）
 └── checks/
     ├── lint.mjs          # 碰撞 / 越界 / 居中滥用      → hard 必须 0
     ├── geom.mjs          # 真实字体折行 / 行宽 / 孤字 / 插图带高 ≥55%
     ├── occlusion.mjs     # 气泡与素材墨迹压盖（>120px 硬伤）
-    └── clearance.mjs     # 画布口径净空 ≥40px、压盖 0px
+    ├── clearance.mjs     # 画布口径净空 ≥40px、压盖 0px
+    └── all.mjs           # 四条机检的统一闸门（任一不过即非 0 退出）
 ```
 
 ## 依赖
 
 ```bash
-cd <skill 根> && npm install     # 只装 @napi-rs/canvas（预编译 Skia 绑定，无需系统库）
+cd <skill 根> && npm install     # 主依赖只装 @napi-rs/canvas（预编译 Skia 绑定，无需系统库）；
+                                 # devDependencies 里的 playwright-core 只有 HTML 排版线用得上
 ```
 
 ## 用法
 
 ```bash
 node pipeline/canvas/render.mjs layout/block1.json -o blocks/final1.png [--debug] [--scale 2]
+node pipeline/canvas/checks/all.mjs      layout/block1.json   # 四条机检一次跑完
 node pipeline/canvas/checks/lint.mjs      layout/block1.json
 node pipeline/canvas/checks/geom.mjs      layout/block1.json
 node pipeline/canvas/checks/occlusion.mjs layout/block1.json
 node pipeline/canvas/checks/clearance.mjs layout/block1.json
+node pipeline/canvas/preview.mjs blocks/final*.png -o /tmp/preview.jpg -c 4
 node pipeline/canvas/stitch.mjs output/标题_长图.jpg blocks/final1.png blocks/final2.png …
 node pipeline/canvas/parity.mjs examples/huangchao-tang-collapse/layout/block1.json
+#   ↑ 对照产物写到 examples/<项目>/blocks/parity/（已 gitignore），不会污染源码
 ```
 
 项目里的 `scripts/canvas` 是指向本目录的软链（`new_project.py` 自动创建），
@@ -68,14 +74,29 @@ node pipeline/canvas/parity.mjs examples/huangchao-tang-collapse/layout/block1.j
    于是 `node scripts/canvas/render.mjs …` **静默什么都不做、退出码还是 0**。
    统一用 `isMain()`（`realpathSync` 双端比较）—— 这个坑实测吃过一次。
 
-## 两引擎差异（已验证：判据一致，Canvas 侧仅一处收紧）
+## 两引擎差异（实测：折行与判据一致，残差只在字形栅格化）
 
-在官方标杆范例 `examples/huangchao-tang-collapse` 的 7 块上跑同一份 layout 对照：
+在官方标杆范例的 14 个 block 上跑同一份 layout 对照（`parity.mjs` + 四条机检）：
 
 - **折行、行宽、基线**：由**逐字累计宽度 + 同一套贪心折行**决定 → 两引擎折行结果一致。
-- **行距默认值**：`1.4`（与 `compose.py` 的 `el.line_height ?? 1.4` 对齐；曾误用 1.5，导致同块行距差 7%）。
-- **`lint`**：宽高沿用 Python 的粗估口径（`width = min(max_width, max(size*1.2, 字数*size*0.62))`、
-  `height = 行数*size*line_height`，`line_height` 默认 1.05），且只有元素自带 `box` 时才计 `pad` →
-  两引擎 hard/warn **逐块一致**（Canvas 仅多出斜置元素带来的 1 条 WARN）。
-- **唯一的收紧**：旋转元素按**真实旋转外接框**参与碰撞/净空判定，Python 版用未旋转框、
-  会漏判斜置气泡的对角侵入素材。
+  行尾的避头标点允许「悬挂」溢出 `max_width` 一个字宽（这正是避头点的本意，两条线同一实现）。
+- **行距默认值**：`1.5`（`text.mjs` 与 `compose.py` 的 `el.get("line_height", 1.5)`、`SCHEMA.md` 同口径）。
+  曾误写成 1.4 并声称与 Python 对齐，实际 compose.py 一直是 1.5 —— 未显式写 `line_height`
+  的元素在两引擎里行距差 7%，已修正。
+- **pad 口径**：`pad: [纵向, 横向]`。Python 曾把纵向当横向用（`style.json` 的 `[20,28]`
+  渲染成 px=20/py=28），与 `SCHEMA.md`、四条机检、Canvas 引擎全都对不上，已修正。
+- **字体解析**：两引擎都先找 `<项目>/fonts/<名字>`，找不到再退回 **skill 自带的 `fonts/`**。
+  没有这层兜底时（例如仓库自带的 `examples/` 没有 `fonts/` 软链），声明为文楷/快乐体的文字
+  会**静默**渲染成 Noto —— 实测这条修正让双引擎墨迹 IoU 从 0.83 提到 0.91。
+- **机检判据**：`lint`（含「每边 <8px 的擦边只算 WARN」这条）与 `geom` 在两条线上逐块一致；
+  `clearance` / `occlusion` 共用同一张画布墨迹蒙版（`drawAsset` 亲自画一遍）与同一套
+  墨迹判据（alpha > 40 且亮度 < 235）。
+- **唯一的收紧**：斜置气泡按**真实旋转四边形**（含 tail 三角）参与压盖/净空判定 ——
+  用旋转外接框会把气泡四角的空白也算进去（实测同一气泡：外接框 890px vs 真实 710px）。
+
+## 测试
+
+```bash
+npm test          # 渲染冒烟 + 全字体 + 双引擎对照 + 预览↔渲染折行一致性
+                  # 需要 Web 服务在线的那一项在服务未启动时会 SKIP（不会假装通过）
+```

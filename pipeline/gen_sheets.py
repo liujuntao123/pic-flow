@@ -21,6 +21,7 @@ import json
 import os
 import subprocess
 import sys
+from typing import Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -73,7 +74,7 @@ def build_prompt(sheet: dict, suffix: str, anchors: dict) -> str:
     return "\n".join([head, *body, suffix])
 
 
-def load_suffix(override: str | None = None) -> str:
+def load_suffix(override: Optional[str] = None) -> str:
     if override:
         return override
     p = ROOT / "style.json"
@@ -85,7 +86,7 @@ def load_suffix(override: str | None = None) -> str:
     return STYLE_SUFFIX
 
 
-def run_sheet(sheet: dict, suffix: str, anchors: dict, force: bool) -> tuple[str, bool, str]:
+def run_sheet(sheet: dict, suffix: str, anchors: dict, force: bool) -> Tuple[str, bool, str]:
     name = sheet["sheet"]
     cols, rows = sheet["cols"], sheet["rows"]
     cells = sheet["cells"]
@@ -107,8 +108,12 @@ def run_sheet(sheet: dict, suffix: str, anchors: dict, force: bool) -> tuple[str
     else:
         print(f"[have] {name}: sheet 已在，只重切", flush=True)
 
+    # 切分脚本优先用 skill 自带的（项目里没软链 scripts/ 时也能跑）
+    slicer = ROOT / "scripts" / "slice_sheet.py"
+    if not slicer.exists():
+        slicer = Path(__file__).resolve().parent / "slice_sheet.py"
     r = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "slice_sheet.py"), str(sheet_png),
+        [sys.executable, str(slicer), str(sheet_png),
          "--cols", str(cols), "--rows", str(rows), "--names", ",".join(names),
          "--outdir", str(ROOT / "assets"), "--debug"],
         capture_output=True, text=True,

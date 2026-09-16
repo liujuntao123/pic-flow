@@ -4,7 +4,7 @@
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { blockGeom } from '../lib/text.mjs';
-import { elemBox, overlapArea, textWidth, parseArgs } from '../lib/geom.mjs';
+import { elemBox, overlapArea, textWidth, parseArgs, requireFiles } from '../lib/geom.mjs';
 import { findRoot, readJson, readTheme } from '../lib/paths.mjs';
 import { setFonts } from '../lib/text.mjs';
 
@@ -74,7 +74,8 @@ export function lint(path) {
 export { blockGeom, textWidth };
 
 if (isMain(import.meta.url)) {
-  const { files } = parseArgs(process.argv.slice(2));
+  const { files, errors } = parseArgs(process.argv.slice(2));
+  requireFiles(files, errors, '用法：node pipeline/canvas/checks/lint.mjs layout/block1.json [...]');
   let rc = 0;
   for (const f of files) {
     const res = lint(f);

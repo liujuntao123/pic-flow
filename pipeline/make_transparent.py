@@ -13,6 +13,9 @@ from PIL import Image
 
 def process(path: Path, pad=14) -> None:
     img = Image.open(path)
+    if (img.format or "").upper() in ("JPEG", "JPG", "BMP"):
+        print(f"[skip] {path.name}: {img.format} 不支持透明通道（先转成 PNG）")
+        return
     img = img.convert("RGBA")
     a = np.array(img)
     if a[..., 3].min() < 250:

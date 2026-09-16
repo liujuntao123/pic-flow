@@ -56,6 +56,20 @@ export class ProjectDetailComponent {
       clearInterval(this.pollTimer);
       this.pollTimer = null;
     }
+    // 全局监听必须在离开编辑器时摘掉：否则在项目列表页按 Ctrl+S
+    // 仍会用已经过期的编辑器 buffer 覆盖磁盘（实测踩过）。
+    if (this.keydownHandler && window.onkeydown === this.keydownHandler) window.onkeydown = null;
+    if (this.mousemoveHandler && window.onmousemove === this.mousemoveHandler) window.onmousemove = null;
+    if (this.mouseupHandler && window.onmouseup === this.mouseupHandler) window.onmouseup = null;
+    const banner = this.container && this.container.querySelector('#agent-sync-banner');
+    if (banner) banner.remove();
+  }
+
+  /** 任何一次真实修改都要立刻置脏：否则 2.5s 轮询会把正在输入的草稿当成"无改动"覆盖掉。 */
+  markDirty() {
+    if (this.hasUnsavedChanges) return;
+    this.hasUnsavedChanges = true;
+    this.app.updateStatus(false);
   }
 
   startPolling() {
@@ -163,14 +177,29 @@ export class ProjectDetailComponent {
   async saveLayout(autoRender = true) {
     if (!this.layout) return;
     try {
-      const res = await this.app.api.saveBlockLayout(this.project.id, this.currentBlockId, this.layout, autoRender);
+      const res = await this.app.api.saveBlockLayout(
+        this.project.id, this.currentBlockId, this.layout, autoRender, this.lastSavedMtime,
+      );
       this.lastSavedMtime = res.updatedAt;
       this.hasUnsavedChanges = false;
       this.app.updateStatus(true);
-      this.app.toast(`已保存至 layout/${this.currentBlockId}.json${autoRender ? ' (已完成 Canvas 渲染)' : ''}`, 'success');
+      if (res.renderError) {
+        // 保存成功但渲染失败：不能报"已完成渲染"，否则用户会拿着上一版的切片去拼接
+        this.app.toast(`已保存，但 Canvas 渲染失败：${res.renderError}`, 'error');
+      } else {
+        this.app.toast(`已保存至 layout/${this.currentBlockId}.json${autoRender ? ' (已完成 Canvas 渲染)' : ''}`, 'success');
+      }
       const b = this.container.querySelector('#agent-sync-banner');
       if (b) b.remove();
     } catch (err) {
+      if (err.status === 409) {
+        const reload = confirm(`${err.message}\n\n是否立即载入磁盘上的最新版本？（当前编辑内容将丢失）`);
+        if (reload) {
+          await this.loadBlockLayout(this.currentBlockId);
+          this.render();
+        }
+        return;
+      }
       this.app.toast(`保存失败: ${err.message}`, 'error');
     }
   }
@@ -287,14 +316,20 @@ export class ProjectDetailComponent {
       };
     });
 
-    // 新增分块
+    // 新增分块：用「已有最大编号 + 1」，数量法在 block1+block3 这种缺号工程里会撞车
     this.container.querySelector('#btn-add-block').onclick = async () => {
-      const num = this.project.blocks.length + 1;
-      const blockId = `block${num}`;
-      if (confirm(`是否在工程中创建新分块 ${blockId}？`)) {
+      const maxNum = this.project.blocks.reduce((m, b) => {
+        const n = Number(String(b.id).replace(/[^0-9]/g, ''));
+        return Number.isFinite(n) ? Math.max(m, n) : m;
+      }, 0);
+      const blockId = `block${maxNum + 1}`;
+      if (!confirm(`是否在工程中创建新分块 ${blockId}？`)) return;
+      try {
         await this.app.api.createBlock(this.project.id, blockId);
         this.app.toast(`分块 ${blockId} 创建成功！`, 'success');
         this.load(this.project.id, blockId);
+      } catch (err) {
+        this.app.toast(`创建分块失败: ${err.message}`, 'error');
       }
     };
 
@@ -384,7 +419,7 @@ export class ProjectDetailComponent {
   }
 
   bindKeyboardShortcuts() {
-    window.onkeydown = (e) => {
+    this.keydownHandler = (e) => {
       // 避免输入框内部触发
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
@@ -418,6 +453,7 @@ export class ProjectDetailComponent {
         }
       }
     };
+    window.onkeydown = this.keydownHandler;
   }
 
   bindCanvasInteraction() {
@@ -478,7 +514,7 @@ export class ProjectDetailComponent {
       }
     };
 
-    window.onmousemove = (e) => {
+    this.mousemoveHandler = (e) => {
       if (!this.isDragging || this.selectedIndex < 0) return;
       const canvasRect = canvas.getBoundingClientRect();
       const scale = this.zoom;
@@ -515,12 +551,14 @@ export class ProjectDetailComponent {
       }
     };
 
-    window.onmouseup = () => {
+    this.mouseupHandler = () => {
       if (this.isDragging) {
         this.isDragging = false;
         this.recordSnapshot();
       }
     };
+    window.onmousemove = this.mousemoveHandler;
+    window.onmouseup = this.mouseupHandler;
   }
 
   async redrawCanvas() {
@@ -993,6 +1031,7 @@ export class ProjectDetailComponent {
       if (input) {
         input.oninput = () => {
           el[prop] = Number(input.value);
+          this.markDirty();          // 边打边改也要立刻置脏，否则 2.5s 轮询会覆盖草稿
           this.redrawCanvas();
         };
         input.onchange = () => this.recordSnapshot();
@@ -1013,6 +1052,7 @@ export class ProjectDetailComponent {
     if (content) {
       content.oninput = () => {
         el.content = content.value;
+        this.markDirty();
         this.redrawCanvas();
       };
       content.onchange = () => this.recordSnapshot();
@@ -1077,6 +1117,30 @@ export class ProjectDetailComponent {
     if (anchor) anchor.onchange = () => { el.anchor = anchor.value; this.recordSnapshot(); this.redrawCanvas(); };
     const flip = panel.querySelector('#prop-flip');
     if (flip) flip.onchange = () => { el.flip = flip.value === 'true'; this.recordSnapshot(); this.redrawCanvas(); };
+
+    // rule（横线/竖线）属性：曾经只渲染控件不绑事件，改了没反应
+    const ruleVert = panel.querySelector('#prop-rule-vert');
+    if (ruleVert) {
+      ruleVert.onchange = () => {
+        // 注意必须显式比较字符串：el.vertical = "false" 在 JS 里是真值，
+        // 会让横线被渲染成竖线（且 x1/x2 不存在 → 画出看不见的线）
+        el.vertical = ruleVert.value === 'true';
+        this.recordSnapshot();
+        this.redrawCanvas();
+      };
+    }
+    const thickness = panel.querySelector('#prop-thickness');
+    if (thickness) {
+      thickness.oninput = () => { el.thickness = Number(thickness.value); this.markDirty(); this.redrawCanvas(); };
+      thickness.onchange = () => this.recordSnapshot();
+    }
+
+    // card 标签
+    const cardLabel = panel.querySelector('#prop-card-label');
+    if (cardLabel) {
+      cardLabel.oninput = () => { el.label = cardLabel.value; this.markDirty(); this.redrawCanvas(); };
+      cardLabel.onchange = () => this.recordSnapshot();
+    }
 
     // 复制元素
     const dup = panel.querySelector('#prop-duplicate');
@@ -1240,17 +1304,23 @@ export class ProjectDetailComponent {
 
     try {
       const res = await this.app.api.lintBlock(this.project.id, this.currentBlockId);
-      const body = modal.querySelector('#lint-modal-body');
-      const isClean = res.lint?.hard === 0;
+      const body = modal.querySelector('#modal-body') || modal.querySelector('#lint-modal-body');
+      // 四条机检都要算数：只看 lint 的 hard，会在 clearance 报压盖时照样弹「机检通过」
+      const hard = res.lint?.hard ?? 0;
+      const geom = typeof res.geom === 'number' ? res.geom : (res.geom?.error ? 1 : 0);
+      const occl = typeof res.occlusion === 'number' ? res.occlusion : (res.occlusion?.error ? 1 : 0);
+      const clear = typeof res.clearance === 'number' ? res.clearance : (res.clearance?.error ? 1 : 0);
+      const isClean = hard === 0 && geom === 0 && occl === 0 && clear === 0;
+      const summary = `硬伤 Hard ${hard} · 几何 ${geom} · 遮挡 ${occl} · 净空 ${clear}`;
 
       body.innerHTML = `
         <div style="display: flex; gap: 10px; margin-bottom: 16px;">
           <div style="flex: 1; background: ${isClean ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border: 1px solid ${isClean ? '#10b981' : '#ef4444'}; padding: 12px; border-radius: 8px;">
             <div style="font-weight: 700; color: ${isClean ? '#34d399' : '#f87171'}; font-size: 16px;">
-              ${isClean ? '✔ 机检通过 (Hard = 0)' : '✕ 存在硬性违规 (Hard > 0)'}
+              ${isClean ? '✔ 机检通过（四项全绿）' : '✕ 存在未通过项'}
             </div>
             <div style="font-size: 12px; margin-top: 4px;">
-              硬伤 (Hard): ${res.lint?.hard ?? 0} · 提示 (Warn): ${res.lint?.warn ?? 0}
+              ${summary} · 提示 Warn ${res.lint?.warn ?? 0}
             </div>
           </div>
         </div>
@@ -1260,7 +1330,8 @@ export class ProjectDetailComponent {
         </div>
       `;
     } catch (err) {
-      modal.querySelector('#lint-modal-body').textContent = `机检失败: ${err.message}`;
+      const body = modal.querySelector('#lint-modal-body');
+      if (body) body.textContent = `机检失败: ${err.message}`;
     }
   }
 

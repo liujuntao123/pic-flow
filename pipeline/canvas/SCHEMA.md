@@ -52,8 +52,9 @@
 node scripts/canvas/render.mjs layout/block1.json -o blocks/final1.png [--debug]
 node scripts/canvas/checks/lint.mjs      layout/block*.json   # 碰撞/越界/居中滥用，hard 必须 0
 node scripts/canvas/checks/geom.mjs      layout/block*.json   # 真实字体折行/行宽/孤字/插图带高 ≥55%
-node scripts/canvas/checks/occlusion.mjs layout/block*.json   # 气泡压盖素材墨迹 0 px
-node scripts/canvas/checks/clearance.mjs layout/block*.json   # 净空 ≥40px
+node scripts/canvas/checks/occlusion.mjs layout/block*.json   # 气泡压盖素材墨迹 >120px 判硬伤
+node scripts/canvas/checks/clearance.mjs layout/block*.json   # 红线口径：压盖必须 0px、净空 ≥40px
+node scripts/canvas/checks/all.mjs        layout/block*.json   # 四条机检一次跑完（统一闸门）
 node scripts/canvas/stitch.mjs output/标题_长图.jpg blocks/final*.png
 node scripts/canvas/parity.mjs layout/block1.json             # 与 Python 引擎逐像素对照（验收用）
 ```
@@ -67,10 +68,20 @@ node scripts/canvas/parity.mjs layout/block1.json             # 与 Python 引�
 主题 `bubble.color` 是气泡的暖褐色（`#4A2800`），若让它兜底，全图正文与标题都会被染成暖褐。
 这个坑两套引擎都踩过（`compose.py` 与 `render.mjs` 同源写法），已同时修正。
 
-## Canvas 版相对 Python 版的三处差异（都是收紧，不是放宽）
+## Canvas 版与 Python 版的差异（都是收紧与对齐，不是放宽）
 
-1. **旋转元素按真实外接矩形参与碰撞/净空判定**。Python 版用未旋转框，斜置气泡的角可能
-   悄悄插进素材；Canvas 版 `elemBox`/`bubbleRect` 对 `rotate` 做旋转外接，会如实报出来。
-2. **`lint` 用真实字体度量算文本高度**（Python 版用 `size × 1.05` 的粗估），
-   因此同块报出的重叠更多——都是实际存在的重叠。
-3. **`geom` 的插图带高、行宽全部来自 Skia 实际度量**，与渲染像素同一口径。
+1. **斜置元素按真实几何参与判定**：`bubbleQuad` 把气泡（含 tail 三角）按渲染器的旋转方式
+   转成真实四边形，压盖/净空都在这个多边形上量；Python 线（`inkgeom.bubble_quad`）同样如此。
+   曾经两边都拿**旋转外接框**去量，把气泡四角的空白也算成气泡（同一气泡：890px vs 真实 710px）。
+2. **`lint` 保持粗估口径**：宽高用
+   `width = min(max_width, max(size*1.2, 字数*size*0.62))`、`height = 行数*size*line_height`
+   （`line_height` 默认 1.05；只有元素自带 `box` 时才计 `pad`）——这是刻意的：lint 的定位是
+   「快检 + 预先暴露潜在重叠」，用真实字体度量去判会让上下相邻、视觉上并不重叠的文本大面积误报。
+   **真实折行与行宽**交给 `checks/geom.mjs`，**像素级压盖/净空**交给 `clearance` / `occlusion`。
+   两引擎的 lint 判据（含「每边 <8px 的擦边只算 WARN」）逐块一致。
+3. **`geom` 的行宽判定认「悬挂标点」**：行尾的 `，。！？` 允许溢出 `max_width` 一个字宽
+   （避头点的本意），扣掉它们之后仍超宽才算越界；空行不算孤字行。
+4. **四条机检都以非 0 退出表示不通过**：`lint`（hard>0）、`geom`（问题项>0）、
+   `occlusion`（压盖>120px）、`clearance`（压盖>0 或净空<40px）。
+   `checks/all.mjs` 把它们绑成同一个闸门；漏写文件参数会打用法并以 exit 2 退出，
+   不再「静默通过」。

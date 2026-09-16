@@ -3,14 +3,14 @@ import { chromium } from 'playwright-core';
 async function testUiFonts() {
   console.log('测试 Web 页面中的新字体实时切换...');
   const browser = await chromium.launch({
-    executablePath: '/usr/bin/google-chrome',
+    executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
   const page = await browser.newPage();
   await page.setViewportSize({ width: 1440, height: 900 });
 
-  await page.goto('http://127.0.0.1:3100/', { waitUntil: 'networkidle' });
+  await page.goto(`${process.env.BASE_URL || 'http://127.0.0.1:3100'}/`, { waitUntil: 'networkidle' });
   await page.waitForSelector('.project-card');
   await page.click('.project-card:first-child');
   await page.waitForSelector('#canvas-board');

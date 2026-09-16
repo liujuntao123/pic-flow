@@ -101,7 +101,12 @@ def main(path):
             asset_text = {a.get('type'), b.get('type')} == {'asset', 'text'}
             if intentional: continue
             ratio=area/max(1,min((ba[2]-ba[0])*(ba[3]-ba[1]),(bb[2]-bb[0])*(bb[3]-bb[1])))
-            level='WARN' if asset_text or ratio < .12 else 'ERROR'
+            # 真实几何下的轻微擦边（每边 < 8px）视觉上不可见，只预警不打断流水线
+            # （与 Canvas 线 checks/lint.mjs 同一判据，两引擎的 hard/warn 才能逐块一致）
+            dx = min(ba[2], bb[2]) - max(ba[0], bb[0])
+            dy = min(ba[3], bb[3]) - max(ba[1], bb[1])
+            graze = dx < 8 or dy < 8
+            level='WARN' if asset_text or ratio < .12 or graze else 'ERROR'
             print(f'{level} {path} [{i},{j}]: {a.get("type")} overlaps {b.get("type")} ({ratio:.0%})')
             if level=='ERROR': HARD+=1
             else: WARN+=1

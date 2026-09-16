@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 """Generate a 4x4 sprite sheet containing 16 hand-drawn manga dialogue bubbles and burst frames.
 Slices them into clean transparent PNGs and saves them into the pic-flow library.
+
+一次性工具：给 library/bubbles/ 生成 16 个手绘气泡精灵图。
+路径一律从本文件推断（skill 可能装在任意目录，不能写死 ~/.dsh/skills/pic-flow）。
 """
-import json
-import os
 import sys
 from pathlib import Path
+
 import numpy as np
 from PIL import Image
 
-sys.path.insert(0, str(Path.home() / ".dsh" / "skills" / "pic-flow" / "pipeline"))
-from genlib import generate
+SKILL_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(SKILL_DIR / "pipeline"))
+from genlib import generate  # noqa: E402
 
 PROMPT = (
     "一张包含 16 幅互不相干的漫画手绘对话框与爆炸气泡素材的画稿，按 4 列 4 行严格对称网格排布。"
@@ -100,13 +103,13 @@ def slice_and_save(sheet_path: Path, out_dir: Path):
                 ax0, ax1 = int(axx.min()), int(axx.max())
                 carr = carr[ay0:ay1+1, ax0:ax1+1]
             
-            out_img = Image.fromarray(carr, mode="RGBA")
+            out_img = Image.fromarray(carr)
             out_path = out_dir / f"{name}.png"
             out_img.save(out_path)
             print(f"[ok] Saved {name}: {out_img.width}x{out_img.height} -> {out_path}")
 
 def main():
-    sheet_file = Path("/tmp/bubbles_16_sheet.png")
+    sheet_file = Path("/tmp/bubbles_16_sheet.png")  # 原图留档，重切时不重新生图
     if not sheet_file.exists():
         print(f"[gen] Generating 16-bubble sprite sheet via genlib...")
         ok = generate(PROMPT, size="2048x2048", out_path=sheet_file, transparent=False)
@@ -115,7 +118,7 @@ def main():
             sys.exit(1)
         print(f"[ok] Saved sheet to {sheet_file}")
     
-    lib_dir = Path.home() / ".dsh" / "skills" / "pic-flow" / "library" / "bubbles"
+    lib_dir = SKILL_DIR / "library" / "bubbles"
     slice_and_save(sheet_file, lib_dir)
     print(f"[success] All 16 bubbles processed into {lib_dir}")
 

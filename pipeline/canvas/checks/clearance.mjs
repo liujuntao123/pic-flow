@@ -1,9 +1,12 @@
 // 严格净空机检（check_clearance.py 的 Canvas 对应实现，画布像素口径）：
-// 气泡 rect + tail 三角 vs 素材墨迹。红线：压盖 0 px、净空 ≥40 px。
+// 气泡多边形（含 tail 三角，斜置时按真实旋转四边形）vs 素材墨迹。
+// 红线：压盖 0 px、净空 ≥40 px。
 //   node pipeline/canvas/checks/clearance.mjs layout/block1.json [...]
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { bubbleRect, tailTri, inkMask, inkCount, distanceField, fieldAt, parseArgs } from '../lib/geom.mjs';
+import {
+  bubbleQuad, polyInkCount, polyGap, inkMask, distanceField, fieldAt, parseArgs, requireFiles,
+} from '../lib/geom.mjs';
 import { findRoot, readJson, readTheme } from '../lib/paths.mjs';
 import { setFonts } from '../lib/text.mjs';
 
@@ -31,36 +34,22 @@ export async function clearance(file) {
   let bad = 0;
   for (const [i, el] of (data.elements || []).entries()) {
     if (el.type !== 'text' || !el.box) continue;
-    const rect = bubbleRect(el, data.width, theme);
-    const cover = inkCount(mask, rect);
-    const tri = tailTri(el, rect, theme);
+    // 斜置气泡按**真实旋转四边形**（含 tail）判定，不用旋转外接框：
+    // 外接框的四角是气泡外的空白，会把压盖与净空都算错（实测差近一倍）。
+    const { quad, tail } = bubbleQuad(el, data.width, theme);
+    const cover = polyInkCount(mask, quad);
     let tailCover = 0;
     let tipGap = null;
-    if (tri) {
-      const tb = [Math.min(...tri.map((p) => p[0])), Math.min(...tri.map((p) => p[1])),
-        Math.max(...tri.map((p) => p[0])), Math.max(...tri.map((p) => p[1]))];
-      tailCover = inkCount(mask, tb);
-      tipGap = fieldAt(field, tri[2][0], tri[2][1]);
+    if (tail) {
+      tailCover = polyInkCount(mask, tail);
+      tipGap = fieldAt(field, tail[2][0], tail[2][1]);
     }
-    // rect 到墨迹的最近距离（边缘采样 + 四角）
-    let rectGap = Infinity;
-    const xs = [rect[0], rect[2]];
-    const ys = [rect[1], rect[3]];
-    for (const x of xs) for (const y of ys) rectGap = Math.min(rectGap, fieldAt(field, x, y));
-    const stepX = Math.max(1, Math.round((rect[2] - rect[0]) / 24));
-    const stepY = Math.max(1, Math.round((rect[3] - rect[1]) / 24));
-    for (let x = rect[0]; x <= rect[2]; x += stepX) {
-      rectGap = Math.min(rectGap, fieldAt(field, x, rect[1]), fieldAt(field, x, rect[3]));
-    }
-    for (let y = rect[1]; y <= rect[3]; y += stepY) {
-      rectGap = Math.min(rectGap, fieldAt(field, rect[0], y), fieldAt(field, rect[2], y));
-    }
-    if (cover > 0) rectGap = 0;
+    const rectGap = polyGap(field, mask, quad);
     const label = (el.content || '').replace(/\n/g, ' ').slice(0, 16);
     const flags = [];
     if (cover || tailCover) flags.push(`压盖 rect=${cover}px tail=${tailCover}px`);
     if (tipGap !== null && tipGap < MIN_GAP) flags.push(`tail尖净空=${Math.round(tipGap)}px`);
-    if (rectGap < MIN_GAP) flags.push(`rect净空=${Math.round(rectGap)}px`);
+    if (rectGap < MIN_GAP) flags.push(`净空=${Math.round(rectGap)}px`);
     if (flags.length) {
       console.log(`  [${i}] 「${label}」 ${flags.join('  ')}`);
       bad += 1;
@@ -73,7 +62,8 @@ export async function clearance(file) {
 }
 
 if (isMain(import.meta.url)) {
-  const { files } = parseArgs(process.argv.slice(2));
+  const { files, errors } = parseArgs(process.argv.slice(2));
+  requireFiles(files, errors, '用法：node pipeline/canvas/checks/clearance.mjs layout/block1.json [...]');
   let bad = 0;
   for (const f of files) bad += await clearance(f);
   process.exit(bad ? 1 : 0);

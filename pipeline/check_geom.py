@@ -62,6 +62,7 @@ def check(path):
     W, H = data["width"], data["height"]
     print(f"\n=== {path}  {W}x{H} ===")
     img_band = img_area = text_lines = 0
+    problems = 0
     for i, el in enumerate(data["elements"]):
         if el["type"] == "asset":
             p = ROOT / "assets" / el["file"]
@@ -84,7 +85,7 @@ def check(path):
             lines = geo["lines"]
             text_lines += len(lines)
             widths = [width_of(ln, size, bold, family) for ln in lines]
-            lh = size * el.get("line_height", 1.5)
+            lh = geo["lh"]                     # 与渲染同一口径
             bottom = el["y"] + lh * len(lines)
             pad = _compose.el_box(el).get("pad", 0)
             py = pad if isinstance(pad, (int, float)) else pad[0]
@@ -92,22 +93,34 @@ def check(path):
             flag = ""
             if len(lines) != explicit:
                 flag += f"  << 自动折行 {explicit}->{len(lines)}（改文案或加宽 max_width）"
-            orph = ["".join(c for c, _ in ln) for ln in lines if len(ln) <= 2]
+                problems += 1
+            # 空行不算孤字行（显式 \n 留下的空行是作者有意为之）
+            orph = ["".join(c for c, _ in ln) for ln in lines if 0 < len(ln) <= 2]
             if orph:
                 flag += f"  孤字行:{orph}"
+                problems += 1
             print(f"  [text {i}] size={size} lines={len(lines)} "
                   f"y {el['y']}->{bottom:.0f} maxw={max(widths):.0f} panew={max(widths) + 2 * px:.0f}{flag}")
             if bottom + py > H:
                 print(f"      !! 越界 bottom={bottom + py:.0f} > {H}")
+                problems += 1
+            limit = el.get("max_width", 940)
             for k, (w_, ln) in enumerate(zip(widths, lines)):
-                if w_ > el.get("max_width", 940) + 1:
-                    print(f"      !! line{k}: {w_:.0f}px > max_width {el.get('max_width')}  "
-                          f"「{''.join(c for c, _ in ln)}」")
+                # 行尾悬挂标点（避头点）允许溢出一个字宽：只有扣掉它仍然超宽才算越界
+                text = "".join(c for c, _ in ln)
+                tail = len(text)
+                while tail > 0 and text[tail - 1] in _compose.KINSOKU:
+                    tail -= 1
+                core = width_of(ln[:tail], size, bold, family) if tail else 0.0
+                if core > limit + 1:
+                    print(f"      !! line{k}: {w_:.0f}px > max_width {limit}  「{text}」")
+                    problems += 1
     print(f"  插图带高占比 = {img_band / H:.0%}   插图墨迹面积占比 = {img_area / (W * H):.0%}   "
           f"文字总行数 = {text_lines}")
     if img_band / H < 0.55:
         print("  >> 插图带高不足 55%，考虑放大插图或压缩文字")
-    return 0
+        problems += 1
+    return problems
 
 
 if __name__ == "__main__":
@@ -115,5 +128,7 @@ if __name__ == "__main__":
     if not args:
         sys.exit(__doc__)
     _init(args)
-    for a in args:
-        check(a)
+    total = sum(check(a) for a in args)
+    print(f"\n[geom] 问题项 = {total}")
+    # 与 lint / occlusion / clearance 同一口径：有问题就以非 0 退出
+    sys.exit(1 if total else 0)

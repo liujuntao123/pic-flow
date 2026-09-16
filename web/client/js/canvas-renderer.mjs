@@ -16,17 +16,16 @@ const FONT_MAP = {
   serif: '"Noto Serif CJK SC", serif',
 };
 
-// 避头标点（不能出现在行首）
-const NO_HEAD = new Set([
-  '，', '。', '、', '；', '：', '？', '！', '）', '》', '」', '』', '】', '〗', '”', '’', '…', '—',
-  ',', '.', ';', ':', '?', '!', ')', '>', ']', '}',
-]);
+// 避头标点（行尾悬挂）——必须与 pipeline/canvas/lib/text.mjs 的 KINSOKU 逐字一致，
+// 否则同一份 layout 在预览与真正渲染里折行结果不同（预览会骗人）。
+const KINSOKU = '，。！？；：、）】》%”…—』〗';
 
-// 避尾标点（不能出现在行尾）
-const NO_TAIL = new Set([
-  '（', '《', '「', '『', '【', '〖', '“', '‘',
-  '(', '<', '[', '{',
-]);
+// 与渲染引擎同一套默认值（pipeline/canvas/lib/text.mjs；SCHEMA.md 也是这么写的）。
+// 曾经这里写 32 / 9999 / 1.45，而引擎是 40 / 940 / 1.5：
+// 新建的文本元素（不带 max_width）在预览里排成一行，一渲染就折行/换字号。
+const DEFAULT_SIZE = 40;
+const DEFAULT_MAX_WIDTH = 940;
+const DEFAULT_LINE_HEIGHT = 1.5;
 
 export class CanvasRenderer {
   constructor() {
@@ -144,8 +143,8 @@ export class CanvasRenderer {
   layoutTextLines(ctx, el, theme) {
     const content = el.content || '';
     const rawLines = content.split('\n');
-    const maxWidth = el.max_width || 9999;
-    const baseSize = el.size || 32;
+    const maxWidth = el.max_width ?? DEFAULT_MAX_WIDTH;
+    const baseSize = el.size ?? DEFAULT_SIZE;
     const baseFont = el.font || 'body';
     const isBold = Boolean(el.bold);
 
@@ -188,26 +187,31 @@ export class CanvasRenderer {
         }
       }
 
-      // 贪心折行
+      // 贪心折行：与 pipeline/canvas/lib/text.mjs 的 wrapLines 逐分支对齐
+      //  · 行尾避头标点**悬挂**（允许溢出 max_width 一个字宽），不是把上一字拉下来
+      //  · ASCII 单词整体下移，绝不拦腰拆词
+      const isAsciiWord = (ch) => ch.codePointAt(0) < 128 && /[A-Za-z0-9]/.test(ch);
       let curLine = [];
       let curLineWidth = 0;
+      const widthOf = (arr) => arr.reduce((s, c) => s + c.width, 0);
 
       for (let ci = 0; ci < chars.length; ci += 1) {
         const item = chars[ci];
-        // 判断如果加入是否超宽
-        if (curLine.length > 0 && curLineWidth + item.width > maxWidth) {
-          // 避头点处理：如果当前字是避头标点，把前一个字也拉下来
-          if (NO_HEAD.has(item.char) && curLine.length > 1) {
-            const last = curLine.pop();
-            curLineWidth -= last.width;
-            laidOutLines.push({ width: curLineWidth, runs: curLine });
-            curLine = [last, item];
-            curLineWidth = last.width + item.width;
-          } else {
-            laidOutLines.push({ width: curLineWidth, runs: curLine });
-            curLine = [item];
-            curLineWidth = item.width;
+        if (curLine.length > 0 && curLineWidth + item.width > maxWidth && !KINSOKU.includes(item.char)) {
+          if (isAsciiWord(item.char)) {
+            let j = curLine.length;
+            while (j > 0 && isAsciiWord(curLine[j - 1].char)) j -= 1;
+            if (j < curLine.length) {
+              const moved = curLine.slice(j);
+              laidOutLines.push({ width: curLineWidth - widthOf(moved), runs: curLine.slice(0, j) });
+              curLine = moved.concat([item]);
+              curLineWidth = widthOf(curLine);
+              continue;
+            }
           }
+          laidOutLines.push({ width: curLineWidth, runs: curLine });
+          curLine = [item];
+          curLineWidth = item.width;
         } else {
           curLine.push(item);
           curLineWidth += item.width;
@@ -460,8 +464,8 @@ export class CanvasRenderer {
       const x = el.x || 0;
       const y = el.y || 0;
       const align = el.align || 'center';
-      const baseSize = el.size || 32;
-      const lineHeight = baseSize * (el.line_height || 1.45);
+      const baseSize = el.size ?? DEFAULT_SIZE;
+      const lineHeight = baseSize * (el.line_height ?? DEFAULT_LINE_HEIGHT);
       const lines = this.layoutTextLines(ctx, el, theme);
 
       // 计算文本总包围盒
@@ -477,7 +481,8 @@ export class CanvasRenderer {
       // 气泡 / 边框
       let boxRect = null;
       if (el.box) {
-        const pad = el.box.pad || [12, 20]; // [padY, padX]
+        // pad 口径 [纵向, 横向]，元素未给时沿用主题 bubble.pad（与引擎 boxOf 一致）
+        const pad = el.box.pad ?? theme?.bubble?.pad ?? 0;
         const padY = Array.isArray(pad) ? pad[0] : pad;
         const padX = Array.isArray(pad) ? pad[1] : pad;
         boxRect = {

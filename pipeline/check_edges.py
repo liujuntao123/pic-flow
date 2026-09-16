@@ -52,7 +52,13 @@ def measure(path: Path):
 
 def main():
     paths = [Path(p) for p in sys.argv[1:]]
+    if not paths:
+        print(__doc__)
+        return 2
     rows = [r for r in (measure(p) for p in paths) if r]
+    if not rows:
+        print("[error] 没有可测量的素材（文件不存在或全透明）", file=sys.stderr)
+        return 2
     rows.sort(key=lambda r: -r["hard_edges"])
     print(f"{'素材':26s} {'尺寸':>10s} {'上':>5s} {'下':>5s} {'左':>5s} {'右':>5s} {'硬边':>4s} {'边缘墨':>6s}")
     for r in rows:

@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createCanvas, loadImageFile } from './lib/draw.mjs';
+import { parseCli, numFlag } from './lib/cli.mjs';
 
 function isMain(metaUrl) {
   try {
@@ -51,13 +52,16 @@ export async function preview(files, out, { width = 500, cols = 4, gap = 12, lab
 }
 
 if (isMain(import.meta.url)) {
-  const args = process.argv.slice(2);
-  const opt = (flag, dflt) => {
-    const i = args.indexOf(flag);
-    return i >= 0 ? Number(args[i + 1]) : dflt;
-  };
-  const files = args.filter((a, i) => !a.startsWith('-') && !['-w', '-c', '-o'].includes(args[i - 1]));
-  const outIdx = args.indexOf('-o');
-  const out = outIdx >= 0 ? args[outIdx + 1] : 'blocks/preview.jpg';
-  await preview(files, out, { width: opt('-w', 500), cols: opt('-c', 4) });
+  const { files, flags, errors } = parseCli(process.argv.slice(2), {
+    valueFlags: ['-w', '-c', '-o'],
+  });
+  if (errors.length || !files.length) {
+    console.error('用法：node pipeline/canvas/preview.mjs blocks/stage1.png ... [-w 500] [-c 4] [-o out.jpg]');
+    if (errors.length) console.error(`  ${errors.join('；')}`);
+    process.exit(2);
+  }
+  const out = flags.o ?? 'blocks/preview.jpg';
+  const width = numFlag(flags, 'w', 500, { min: 50, max: 4000 });
+  const cols = numFlag(flags, 'c', 4, { min: 1, max: 12 });
+  await preview(files, out, { width, cols });
 }

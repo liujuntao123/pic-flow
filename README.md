@@ -41,8 +41,15 @@ pic-flow 将流水线严格解耦为可控节点：
 
 ## 安装
 
-把它克隆进你正在用的 agent 的技能目录（任选其一）。运行环境需要
-Python 3.8+、Pillow、numpy；**生图功能需配置你自己的 OpenAI Images 兼容
+把它克隆进你正在用的 agent 的技能目录（任选其一）。
+
+运行环境分两档：
+
+- **排版/机检（官方 Canvas 线，推荐）**：Node.js 18+，并在 skill 根目录跑一次
+  `npm install`（只装 `@napi-rs/canvas`；`playwright-core` 是 HTML 排版线的可选依赖）。
+- **生图与 Python 老线**：Python 3.8+、Pillow、numpy。
+
+**生图功能需配置你自己的 OpenAI Images 兼容
 Provider**（见下文「生图 Provider 配置」，skill 不内置任何 Key），不生图可跳过。
 
 **Claude Code**（个人技能装到 `~/.claude/skills/`，或放项目的 `.claude/skills/` 仅对该项目生效）
@@ -95,8 +102,8 @@ python3 scripts/check_edges.py assets/*.png              # 查方图感：硬边
 # 4) 排版：编辑 layout/blockN.json → 机检链 → 双代理对抗审查 → 正式渲染
 python3 scripts/layout_lint.py    layout/block1.json   # 碰撞/越界/居中滥用（hard 必须 = 0）
 python3 scripts/check_geom.py             layout/block1.json   # 真实字体度量：折行/孤行/插图带高
-python3 scripts/check_occlusion.py        layout/block1.json   # 气泡与素材墨迹压盖 0 px
-python3 scripts/check_clearance.py        layout/block1.json   # 画布口径净空 ≥40px
+python3 scripts/check_occlusion.py        layout/block1.json   # 气泡压盖素材墨迹（>120px 判硬伤，≤120px 只提示）
+python3 scripts/check_clearance.py        layout/block1.json   # 红线口径：压盖必须 0px、气泡净空 ≥40px
 python3 scripts/compose.py layout/block1.json -o blocks/stage1.png --debug  # 调试画布
 python3 scripts/compose.py layout/block1.json -o blocks/final1.png          # 正式渲染
 
@@ -106,6 +113,19 @@ python3 scripts/stitch.py output/out.jpg blocks/final*.png
 
 校准循环：看 `stage1.png`（自带 100px 网格坐标与元素包围盒）→ 改 `layout/block1.json`
 → 复渲，直到无碰撞、不断行、关系正确。
+
+命令行的四条机检也可以一次跑完（任一不过即非 0 退出，适合当闸门用）：
+
+```bash
+node scripts/checks/all.mjs layout/block*.json          # 项目里（软链）
+node pipeline/canvas/checks/all.mjs <项目>/layout/block*.json   # 或从 skill 根目录原地跑
+```
+
+自带测试（渲染冒烟 / 全字体 / 双引擎逐像素对照 / 预览↔渲染折行一致性）：
+
+```bash
+npm test        # 需要 Web 服务的那一项在服务未启动时会 SKIP，不会假装通过
+```
 
 **项目目录与产物位置**：项目统一创建在 `~/pic-flow-projects/<项目名>/`；用户不需要预先创建 `pic-flow-projects/`，`new_project.py` 会自动创建父目录。每个项目自包含，最终交付只认该项目下的 `output/`：
 
@@ -138,8 +158,9 @@ PICFLOW_ROOT=<项目> python3 <skill>/pipeline/compose.py layout/block1.json -o 
 同时提供了一套基于 Canvas 的**可视化人机共创 Web 页面**，支持在浏览器中自由拖拽修改位置、实时改文字、所见即所得调试与机检，并与 Agent 保持同来源文件双向同步：
 
 ```bash
-# 启动可视化控制台（本地 127.0.0.1:3100 或公网隧道 grok-picflow.aizhi.site）
-npm run web
+# 在 skill 根目录启动可视化控制台（本地 http://127.0.0.1:3100，或公网隧道 grok-picflow.aizhi.site）
+# 注意：Web 服务属于 skill 本体，必须在 skill 根目录跑；项目目录里没有 package.json。
+cd <skill 根> && npm run web
 ```
 
 - **项目管理**：自动扫描并管理 `~/pic-flow-projects/` 与示例项目，展示分块数、封面图、更新时间，支持一键新建长图工程。
@@ -151,10 +172,14 @@ npm run web
   - **一体化工具链**：集成机检（Lint/Geom/Occlusion/Clearance）与全长图拼接导出。
 
 ```bash
-# 命令行日常排版与机检（基于 Canvas）
-node pipeline/canvas/render.mjs layout/block1.json -o blocks/final1.png
-node pipeline/canvas/checks/lint.mjs layout/block*.json
-node pipeline/canvas/stitch.mjs output/长图.jpg blocks/final*.png
+# 命令行日常排版与机检（基于 Canvas）—— 任选一种路径写法：
+#  a) 在项目里（脚手架已把 skill 的脚本软链到 <项目>/scripts/）
+node scripts/render.mjs layout/block1.json -o blocks/final1.png
+node scripts/checks/all.mjs layout/block*.json          # 四条机检一次跑，任一不过即非 0 退出
+node scripts/stitch.mjs output/长图.jpg blocks/final*.png
+#  b) 在 skill 根目录，直接原地操作任意项目
+node pipeline/canvas/render.mjs <项目>/layout/block1.json -o <项目>/blocks/final1.png
+node pipeline/canvas/checks/all.mjs <项目>/layout/block*.json
 ```
 
 ### 生图 Provider 配置（用户自备）
@@ -201,18 +226,31 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 | 《血菊残，大唐笑容已泛黄：黄巢起义始末》（1080 × 18780px） | 历史讲述（story × story-flow × bw-sketch） | 全套工程源码与成品：`examples/huangchao-tang-collapse/` |
 | 《为什么古人相信水银能炼出长生不老药？》（1080 × 18760px） | 知识科普（story × story-flow × bw-sketch） | 全套工程源码与成品：`examples/alchemy-mercury/` |
 
-官方示例库收录了历史讲述与知识科普两大题材的工业级实战范例，遵循去卡片化画卷感、零遮挡排版与全套机器质检链（hard=0、压盖 0px、净空 ≥40px）。其完整保留了分镜规划（`storyboard.json`）、逐块四图素材与生成清单（`sheets.json`、`assets/`）、声明式排版布局（`layout/`）以及高清成品长图与移动端缩略图，可逐字节高精复现。
+官方示例库收录了历史讲述与知识科普两大题材的工业级实战范例：完整保留了分镜规划（`storyboard.json`）、逐块四图素材与生成清单（`sheets.json`、`assets/`）、声明式排版布局（`layout/`）以及高清成品长图与移动端缩略图。
+
+**关于这两套示例的实测状态（用机检链可自行复现）**：
+
+- `lint`：14 个 block 全部 `hard=0`。
+- `geom`：多数 block 报「自动折行 / 孤字行」提示（文案与栏宽的历史遗留，不影响渲染正确性）。
+- `clearance` / `occlusion`：仍有若干处气泡净空 <40px、以及 `alchemy-mercury/layout/block3.json` 的 1 处真实压盖（约 710px，`〖水银不仅流动聚散由心…〗` 气泡压到 `c3d_amalgam.png` 的墨迹）。这是**版面内容**问题，机检如实报出；要修的话把该气泡上移到 `y≈1165`、`c3d_amalgam` 下移到 `y≈1530`、并把上方 block2 气泡上移到 `y≈340`，即可让 `lint`/`occlusion`/`clearance` 全绿（`geom` 还剩 1 处「自动折行」提示，属文案层面）。注意这会改变已提交的 `blocks/final3.png` 与长图成品。
+- 示例工程里没有 `fonts/` 软链，两个引擎都会回退到 skill 自带的 `fonts/`（这正是它们声明的文楷/快乐体/毛笔三级字阶）；若把示例单独拷出仓库，请一并带上 skill 的 `fonts/`。
+- 因此示例的成品图**不是**「逐字节可复现」的：用当前引擎重渲版式完全一致，但字形栅格化（Skia vs 历史版本）会有亚像素差异，属预期行为。
 
 ## 目录结构
 
 | 目录 | 内容 |
 |---|---|
-| `pipeline/` | 生图线（`gen_sheets.py` 逐块四图 / `slice_sheet.py` 切分 / `gen_all.py` 单张 / `check_edges.py` 方图感机检）、排版线（`compose.py` 渲染引擎 / `layout_lint.py` · `check_geom.py` · `check_occlusion.py` · `check_clearance.py` 机检链 / `stitch.py` 拼接）、`new_project.py` 脚手架 |
+| `pipeline/` | 生图线（`gen_sheets.py` 逐块四图 / `slice_sheet.py` 切分 / `gen_all.py` 单张 / `check_edges.py` 方图感机检）、排版线（`compose.py` 渲染引擎 / `layout_lint.py` · `check_geom.py` · `check_occlusion.py` · `check_clearance.py` 机检链 / `stitch.py` 拼接，共用 `inkgeom.py` 的真实几何）、`new_project.py` 脚手架 |
+| `pipeline/canvas/` | **官方 Canvas/Node/Skia 排版线**：`render.mjs` · `stitch.mjs` · `preview.mjs` · `parity.mjs`（双引擎逐像素对照）· `checks/`（`lint` `geom` `occlusion` `clearance` + `all.mjs` 四检闸门）· `lib/` |
+| `pipeline/html/` | 可选的第三条线：Canvas 出背景图 + 浏览器排版文字（Playwright 栅格化） |
+| `web/` | 可视化人机共创工作台（`server/` 本地服务 + `client/` Canvas 编辑器），`npm run web` |
+| `tests/` | 测试：`npm test`（渲染冒烟 / 全字体 / 双引擎对照 / 预览↔渲染折行一致性），以及 Playwright 端到端脚本 |
 | `templates/` | 核心模板（`story.md` 内容骨架 + `storyboard.json` 分镜定义 + `sheets.json` 逐块四图规格） |
 | `layouts/` | 核心故事流布局骨架（`story-flow.json`） |
 | `styles/` | 官方黑白手绘风格包（`bw-sketch.json` 粗黑钢笔墨线 + 橙蓝红文字系统） |
+| `library/` | 手绘气泡素材库（`bubbles_light/` 暖黄轻边 · `bubbles/` · `bubbles_yellow/`）；用作素材时请复制进项目的 `assets/`（见 `library/README.md`） |
 | `references/` | 设计系统详解（`style-guide.md`）、设计方法（`design-principles.md`）、内容质量（`content-quality.md`）、Prompt 指南（`asset-prompts.md`） |
 | `examples/` | 官方实战工程与高清长图成品库（`huangchao-tang-collapse/` · `alchemy-mercury/`） |
-| `fonts/` | OFL 开源中文字体（霞鹜文楷 / 站酷快乐体 / 马善政毛笔楷书） |
+| `fonts/` | 9 款 OFL 开源中文字体（霞鹜文楷 / 站酷快乐体 / 马善政毛笔楷书 / 站酷黄油体 / 站酷小薇 / 小徕手写 / 志莽行书 / 龙藏体 / 站酷庆科黄油） |
 
 skill 的完整工作指引见 [SKILL.md](SKILL.md)。

@@ -2,8 +2,21 @@
 // 机检全部建立在这里的几何上，保证「渲染什么就检查什么」。
 import path from 'node:path';
 import fs from 'node:fs';
-import { Image } from '@napi-rs/canvas';
+import { createCanvas } from './draw.mjs';
 import { blockGeom, charWidth } from './text.mjs';
+import { parseCli } from './cli.mjs';
+
+/**
+ * 全局统一的「墨迹」判据：像素不透明（alpha > 40）且不是近白的浅色（亮度 < 235）。
+ * `clearance`（净空）与 `occlusion`（压盖）必须用同一判据，否则同一份 layout
+ * 会在两条机检里得出不同结论（曾经一条用 alpha>24、另一条用 alpha>40 && 亮度<235）。
+ */
+export const INK_ALPHA = 40;
+export const INK_LUMA = 235;
+
+export function isInk(r, g, b, a) {
+  return a > INK_ALPHA && (0.299 * r + 0.587 * g + 0.114 * b) < INK_LUMA;
+}
 
 export function padPair(pad) {
   return Array.isArray(pad) ? [pad[1], pad[0]] : [pad, pad];
@@ -62,15 +75,26 @@ export function elemBox(el, root, W, theme) {
     let h = el.height;
     if (fs.existsSync(p)) {
       const sz = pngSize(p);
-      if (h != null) w = (sz.w * h) / sz.h;
-      else if (w != null) h = (sz.h * w) / sz.w;
-      else [w, h] = [sz.w, sz.h];
+      if (sz) {
+        if (h != null) w = (sz.w * h) / sz.h;
+        else if (w != null) h = (sz.h * w) / sz.w;
+        else [w, h] = [sz.w, sz.h];
+      }
     }
     w = w ?? 360;
     h = h ?? 360;
     const a = el.anchor ?? 'cc';
     const left = a[0] === 'c' ? el.x - w / 2 : a[0] === 'r' ? el.x - w : el.x;
     const top = a[1] === 'c' ? el.y - h / 2 : a[1] === 'b' ? el.y - h : el.y;
+    if (el.rotate) {
+      // 斜置素材按旋转外接框判定（与 render 的 rotateLayer 同一圆心：锚点）
+      const rad = (el.rotate * Math.PI) / 180;
+      const cx = left + w / 2;
+      const cy = top + h / 2;
+      const rw = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
+      const rh = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
+      return [cx - rw / 2, cy - rh / 2, cx + rw / 2, cy + rh / 2];
+    }
     return [left, top, left + w, top + h];
   }
   if (t === 'card') return [el.x, el.y, el.x + el.width, el.y + el.height];
@@ -92,16 +116,45 @@ export function elemBox(el, root, W, theme) {
     return [el.cx - el.r, el.cy - el.r, el.cx + el.r + 40 + legend, el.cy + el.r];
   }
   if (t === 'arrow') {
+    // 与 layout_lint.py 同口径：按 direction 决定箭头朝哪边长，不能一律当右下
     const l = el.length;
-    return [el.x - 12, el.y - 12, el.x + l + 12, el.y + l + 12];
+    const down = (el.direction ?? 'down') === 'down' || el.direction === 'right';
+    return down
+      ? [el.x - 12, el.y - 12, el.x + l + 12, el.y + l + 12]
+      : [el.x - l - 12, el.y - l - 12, el.x + 12, el.y + 12];
   }
   return null;
 }
 
-/** 只读 PNG 头部拿尺寸（不解码像素，快）。 */
+/**
+ * 只读文件头拿图片尺寸（不解码像素，快）。
+ *
+ * 以前这里无条件按 PNG 解析（读 offset 16/20）——素材换成 JPEG 时会读出一对
+ * 垃圾数字，机检与 lint 的包围盒随之全错，且不报错。现在按魔数分派，
+ * 认不出来就返回 null，由调用方回落到默认值并告警。
+ */
 export function pngSize(p) {
   const b = fs.readFileSync(p);
-  return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  // PNG: \x89PNG\r\n\x1a\n + IHDR
+  if (b.length > 24 && b.readUInt32BE(0) === 0x89504e47) {
+    return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  }
+  // JPEG: FFD8 ... 逐段找 SOF
+  if (b.length > 4 && b[0] === 0xff && b[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) { i += 1; continue; }
+      const marker = b[i + 1];
+      const len = b.readUInt16BE(i + 2);
+      const isSOF = (marker >= 0xc0 && marker <= 0xc3)
+        || (marker >= 0xc5 && marker <= 0xc7)
+        || (marker >= 0xc9 && marker <= 0xcb)
+        || (marker >= 0xcd && marker <= 0xcf);
+      if (isSOF) return { w: b.readUInt16BE(i + 7), h: b.readUInt16BE(i + 5) };
+      i += 2 + len;
+    }
+  }
+  return null;
 }
 
 export function overlapArea(a, b) {
@@ -129,7 +182,7 @@ export function tailTri(el, rect, theme) {
   return [[x1, cy - 16], [x1, cy + 16], [x1 + th, cy]];
 }
 
-/** 气泡 rect（含 pad），与 drawText 里 paintBox 的入参一致。 */
+/** 气泡 rect（含 pad），与 drawText 里 paintBox 的入参一致（未旋转的轴对齐框）。 */
 export function bubbleRect(el, W, theme) {
   const box = boxOf(el, theme);
   const geo = blockGeom(el, W, box);
@@ -151,51 +204,118 @@ export function bubbleRect(el, W, theme) {
   return [x0, y0, x1, y1];
 }
 
+function rotateAbout([x, y], cx, cy, a) {
+  const dx = x - cx;
+  const dy = y - cy;
+  return [cx + dx * Math.cos(a) - dy * Math.sin(a), cy + dx * Math.sin(a) + dy * Math.cos(a)];
+}
+
 /**
- * 素材墨迹蒙版（画布分辨率，Float32 便于下采样）。
+ * 气泡的**真实**多边形（含 tail 三角），像素级机检用这个而不是旋转外接框。
+ *
+ * 为什么：render 的旋转是「把整层绕文本中心转」，所以气泡与 tail 都跟着转。
+ * 用旋转外接矩形去数压盖，会把四角多出来的空白也算成气泡 —— 实测官方范例里
+ * 同一个斜置气泡，外接框报 890px 压盖，真实四边形只有 480px（差近一倍）。
+ *
+ * @returns {{quad: number[][], tail: number[][]|null, center: number[]}}
+ */
+export function bubbleQuad(el, W, theme) {
+  const box = boxOf(el, theme);
+  const geo = blockGeom(el, W, box);
+  const [px, py] = padPair(box.pad ?? 0);
+  const rect = [geo.left - px, geo.top - py,
+    geo.left + geo.w + px, geo.top + geo.height + py];
+  // 旋转中心 = 文本块中心（不含 pad），与 render.mjs / compose.py 的 rotateLayer 一致
+  const cx = geo.left + geo.w / 2;
+  const cy = geo.top + geo.height / 2;
+  const a = ((el.rotate ?? 0) * Math.PI) / 180;
+  const corners = [[rect[0], rect[1]], [rect[2], rect[1]], [rect[2], rect[3]], [rect[0], rect[3]]];
+  const tail = tailTri(el, rect, theme);
+  if (!a) return { quad: corners, tail, center: [cx, cy] };
+  return {
+    quad: corners.map((p) => rotateAbout(p, cx, cy, a)),
+    tail: tail ? tail.map((p) => rotateAbout(p, cx, cy, a)) : null,
+    center: [cx, cy],
+  };
+}
+
+/** 多边形外接矩形。 */
+export function polyAABB(poly) {
+  const xs = poly.map((p) => p[0]);
+  const ys = poly.map((p) => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}
+
+/** 多边形覆盖到的墨迹像素数（把多边形栅格化成蒙版再与墨迹蒙版求交）。 */
+export function polyInkCount(mask, poly) {
+  const [x0, y0, x1, y1] = polyAABB(poly).map((v) => Math.round(v));
+  const w = Math.max(1, x1 - x0);
+  const h = Math.max(1, y1 - y0);
+  const c = createCanvas(w, h);
+  const ctx = c.getContext('2d');
+  ctx.beginPath();
+  poly.forEach(([x, y], i) => (i ? ctx.lineTo(x - x0, y - y0) : ctx.moveTo(x - x0, y - y0)));
+  ctx.closePath();
+  ctx.fillStyle = '#000000';
+  ctx.fill();
+  const d = ctx.getImageData(0, 0, w, h).data;
+  let n = 0;
+  for (let y = 0; y < h; y += 1) {
+    const gy = y0 + y;
+    if (gy < 0 || gy >= mask.H) continue;
+    for (let x = 0; x < w; x += 1) {
+      if (d[(y * w + x) * 4 + 3] < 128) continue;
+      const gx = x0 + x;
+      if (gx < 0 || gx >= mask.W) continue;
+      if (mask.data[gy * mask.W + gx]) n += 1;
+    }
+  }
+  return n;
+}
+
+/** 多边形到最近墨迹的距离：先判相交，再沿边按 1px 采样查距离场。 */
+export function polyGap(field, mask, poly) {
+  if (polyInkCount(mask, poly) > 0) return 0;
+  let best = Infinity;
+  for (let i = 0; i < poly.length; i += 1) {
+    const [ax, ay] = poly[i];
+    const [bx, by] = poly[(i + 1) % poly.length];
+    const steps = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay)));
+    for (let s = 0; s <= steps; s += 1) {
+      const t = s / steps;
+      best = Math.min(best, fieldAt(field, ax + (bx - ax) * t, ay + (by - ay) * t));
+      if (best === 0) return 0;
+    }
+  }
+  return best;
+}
+
+/**
+ * 素材墨迹蒙版（画布分辨率）。
  * 返回 { W, H, data: Uint8Array }，data[i] = 1 表示该画布像素上有素材墨迹。
+ *
+ * 关键：这里**复用渲染器的 drawAsset**（同一个缩放 / flip / opacity / rotate 路径），
+ * 而不是自己再实现一遍变换 —— 否则 `flip: true` 或 `rotate` 的素材会出现
+ * 「渲染在左边、机检在右边」的口径漂移（蒙版与像素对不上，净空检查全失真）。
  */
 export async function inkMask(root, layout) {
   const W = layout.width;
   const H = layout.height;
-  const mask = new Uint8Array(W * H);
+  const { drawAsset } = await import('../render.mjs');   // 动态引入：避开 render → geom 的静态环
+  const canvas = createCanvas(W, H);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   for (const el of layout.elements || []) {
     if (el.type !== 'asset') continue;
-    const p = path.join(root, 'assets', el.file);
+    const p = path.join(root, 'assets', el.file || '');
     if (!fs.existsSync(p)) continue;
-    const img = new Image();
-    img.src = fs.readFileSync(p);
-    await img.decode();
-    const src = img.width && img.height ? img : null;
-    if (!src) continue;
-    let w = el.width;
-    let h = el.height;
-    if (h != null) w = (img.width * h) / img.height;
-    else if (w != null) h = (img.height * w) / img.width;
-    else {
-      w = img.width;
-      h = img.height;
-    }
-    const a = el.anchor ?? 'cc';
-    const left = Math.round(a[0] === 'c' ? el.x - w / 2 : a[0] === 'r' ? el.x - w : el.x);
-    const top = Math.round(a[1] === 'c' ? el.y - h / 2 : a[1] === 'b' ? el.y - h : el.y);
-    // 用离屏画布按目标尺寸重采样一次，再读 alpha（与渲染同一采样路径）
-    const { createCanvas } = await import('./draw.mjs');
-    const cw = Math.max(1, Math.round(w));
-    const ch = Math.max(1, Math.round(h));
-    const c = createCanvas(cw, ch);
-    const ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0, cw, ch);
-    const data = ctx.getImageData(0, 0, cw, ch).data;
-    for (let y = 0; y < ch; y += 1) {
-      const gy = top + y;
-      if (gy < 0 || gy >= H) continue;
-      for (let x = 0; x < cw; x += 1) {
-        const gx = left + x;
-        if (gx < 0 || gx >= W) continue;
-        if (data[(y * cw + x) * 4 + 3] > 24) mask[gy * W + gx] = 1;
-      }
-    }
+    await drawAsset(canvas, ctx, root, el, true);   // 缺失素材画占位框（与 render 同口径）
+  }
+  const rgba = ctx.getImageData(0, 0, W, H).data;
+  const mask = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i += 1) {
+    if (isInk(rgba[i * 4], rgba[i * 4 + 1], rgba[i * 4 + 2], rgba[i * 4 + 3])) mask[i] = 1;
   }
   return { W, H, data: mask };
 }
@@ -269,10 +389,28 @@ export function rectGapFast(field, mask, rect) {
   return best;
 }
 
+/**
+ * 机检脚本的通用参数解析（走统一 cli.mjs，顺序无关、未知参数会报错）。
+ * 无位置参数时返回空 files —— 调用方必须报用法并以非 0 退出，
+ * 否则 `node checks/lint.mjs`（漏了文件参数）会「静默通过」，把机检链变成摆设。
+ */
 export function parseArgs(argv, { allowMany = true } = {}) {
-  const debug = argv.includes('--debug');
-  const rest = argv.filter((a) => !a.startsWith('--'));
-  return { debug, files: allowMany ? rest : rest.slice(0, 1), rest };
+  const { files, flags, errors } = parseCli(argv, { boolFlags: ['--debug'] });
+  return {
+    debug: Boolean(flags.debug),
+    files: allowMany ? files : files.slice(0, 1),
+    errors,
+    rest: files,
+  };
+}
+
+/** 机检脚本的统一入口守卫：参数不合法就打用法并非 0 退出。 */
+export function requireFiles(files, errors, usage) {
+  if (errors.length || !files.length) {
+    console.error(usage);
+    if (errors.length) console.error(`  ${errors.join('；')}`);
+    process.exit(2);
+  }
 }
 
 export function textWidth(line, el, theme) {

@@ -7,6 +7,8 @@
 //   · 只有字形栅格化（Skia vs FreeType）会有亚像素差异
 import { GlobalFonts, createCanvas } from '@napi-rs/canvas';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export const MARKERS = { '【': ['】', 'hl'], '『': ['』', 'quote'], '〖': ['〗', 'warn'] };
 export const KINSOKU = '，。！？；：、）】》%”…—』〗';
@@ -14,6 +16,12 @@ export const KINSOKU = '，。！？；：、）】》%”…—』〗';
 // 与 compose.py 的 fallback 保持同一口径（Noto CJK），保证两引擎字形族一致
 const FONT_REG = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc';
 const FONT_BOLD = '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc';
+
+// skill 自带的 fonts/：项目里没软链 fonts/ 时（例如仓库自带的 examples/）用它兜底。
+// 没有这层兜底时，`fonts/LXGWWenKai-Regular.ttf` 解析不到文件会**静默**退到 Noto，
+// 官方范例遂以非声明字体渲染（实测：范例的快乐体标题全变成思源黑体）。
+// pipeline/canvas/lib/text.mjs -> skill 根（三层）
+const SKILL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 const state = { root: null, families: {}, registered: new Map() };
 let measureCtx = null;
@@ -49,8 +57,14 @@ export function setFonts(root, fonts) {
   state.families.noto = [FONT_REG, FONT_BOLD];
 }
 
+/** 相对路径按项目根解析；项目里没有该字体文件时退回 skill 自带的 fonts/。 */
 function resolve(p) {
-  return p && !p.startsWith('/') && state.root ? `${state.root}/${p}` : p;
+  if (!p || p.startsWith('/')) return p;
+  const local = state.root ? `${state.root}/${p}` : p;
+  if (fs.existsSync(local)) return local;
+  const fallback = path.join(SKILL_ROOT, p);
+  if (fs.existsSync(fallback)) return fallback;
+  return local;
 }
 
 /** 字体文件 -> 已注册的 CSS family 名（每个文件只注册一次）。 */
@@ -176,7 +190,7 @@ export function blockGeom(el, W, families) {
   const family = el.font ?? 'body';
   const maxW = el.max_width ?? 940;
   const lines = wrapLines(chars, size, bold, maxW, family);
-  const lh = size * (el.line_height ?? 1.4); // 与 compose.py 一致
+  const lh = size * (el.line_height ?? 1.5); // 与 compose.py `el.get("line_height", 1.5)` 一致
   const widths = lines.map((ln) => lineWidth(ln, size, bold, family));
   const w = widths.length ? Math.max(...widths) : 0;
   const x = el.x ?? Math.floor(W / 2);

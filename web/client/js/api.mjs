@@ -2,48 +2,57 @@
  * pic-flow Web API 客户端封装
  */
 
+/** 服务端的 HttpError：带上 status，调用方据此区分 409（版本冲突）等情况。 */
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
+async function readJson(res, fallback) {
+  let json = null;
+  try {
+    json = await res.json();
+  } catch {
+    throw new ApiError(`${fallback}（HTTP ${res.status}）`, res.status);
+  }
+  if (!json.ok) throw new ApiError(json.error || fallback, res.status);
+  return json.data;
+}
+
 export const api = {
   async getProjects() {
-    const res = await fetch('/api/projects');
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '获取项目列表失败');
-    return json.data;
+    return readJson(await fetch('/api/projects'), '获取项目列表失败');
   },
 
   async createProject(data) {
-    const res = await fetch('/api/projects', {
+    return readJson(await fetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '创建项目失败');
-    return json.data;
+    }), '创建项目失败');
   },
 
   async getProjectDetail(projectId) {
-    const res = await fetch(`/api/projects/${projectId}`);
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '获取项目详情失败');
-    return json.data;
+    return readJson(await fetch(`/api/projects/${projectId}`), '获取项目详情失败');
   },
 
   async getBlockLayout(projectId, blockId) {
-    const res = await fetch(`/api/projects/${projectId}/layout/${blockId}?t=${Date.now()}`);
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '获取分块布局失败');
-    return json.data;
+    return readJson(await fetch(`/api/projects/${projectId}/layout/${blockId}?t=${Date.now()}`), '获取分块布局失败');
   },
 
-  async saveBlockLayout(projectId, blockId, layout, autoRender = true) {
-    const res = await fetch(`/api/projects/${projectId}/layout/${blockId}`, {
+  /**
+   * @param {string} [expectedUpdatedAt] 上次读到的文件版本；与磁盘不一致时服务端回 409，
+   *   避免把 Agent / 另一个窗口刚写的内容覆盖掉（远端可能已改）。
+   */
+  async saveBlockLayout(projectId, blockId, layout, autoRender = true, expectedUpdatedAt = null) {
+    return readJson(await fetch(`/api/projects/${projectId}/layout/${blockId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layout, autoRender }),
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '保存分块失败');
-    return json.data;
+      body: JSON.stringify({ layout, autoRender, expectedUpdatedAt }),
+    }), '保存分块失败');
   },
 
   async checkBlockMtime(projectId, blockId) {
@@ -54,38 +63,25 @@ export const api = {
   },
 
   async renderBlock(projectId, blockId, debug = false, scale = 1) {
-    const res = await fetch(`/api/projects/${projectId}/render/${blockId}?debug=${debug}&scale=${scale}`, {
+    return readJson(await fetch(`/api/projects/${projectId}/render/${blockId}?debug=${debug}&scale=${scale}`, {
       method: 'POST',
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '渲染分块失败');
-    return json.data;
+    }), '渲染分块失败');
   },
 
   async stitchProject(projectId) {
-    const res = await fetch(`/api/projects/${projectId}/stitch`, {
-      method: 'POST',
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '拼接长图失败');
-    return json.data;
+    return readJson(await fetch(`/api/projects/${projectId}/stitch`, { method: 'POST' }), '拼接长图失败');
   },
 
   async lintBlock(projectId, blockId) {
-    const res = await fetch(`/api/projects/${projectId}/lint/${blockId}`);
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '运行机检失败');
-    return json.data;
+    return readJson(await fetch(`/api/projects/${projectId}/lint/${blockId}`), '运行机检失败');
   },
 
   async createBlock(projectId, blockId) {
-    const res = await fetch(`/api/projects/${projectId}/blocks`, {
+    return readJson(await fetch(`/api/projects/${projectId}/blocks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ blockId }),
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '创建分块失败');
-    return json.data;
+    }), '创建分块失败');
   },
 };
+

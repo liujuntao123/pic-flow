@@ -9,13 +9,16 @@
     "dev": "node web/server/index.mjs",
     "render": "node pipeline/canvas/render.mjs",
     "compose": "node pipeline/canvas/render.mjs",
+    "preview": "node pipeline/canvas/preview.mjs",
     "lint": "node pipeline/canvas/checks/lint.mjs",
     "geom": "node pipeline/canvas/checks/geom.mjs",
     "occlusion": "node pipeline/canvas/checks/occlusion.mjs",
     "clearance": "node pipeline/canvas/checks/clearance.mjs",
+    "check": "node pipeline/canvas/checks/all.mjs",
     "stitch": "node pipeline/canvas/stitch.mjs",
     "parity": "node pipeline/canvas/parity.mjs",
-    "check:all": "node pipeline/canvas/checks/lint.mjs && node pipeline/canvas/checks/geom.mjs"
+    "html": "node pipeline/html/render.mjs",
+    "test": "node tests/run.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.100"

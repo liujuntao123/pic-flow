@@ -2,8 +2,8 @@
 
 * **题材类型**：知识科普（深度科学史 × 思想史与认识论）
 * **题材来源**：知乎科普长文《科普丨为什么古人相信水银等物质可以炼出长生不老药？》
-* **成品长图**：`output/水银与长生_古人为何迷信金石炼丹_长图.jpg`（**1080 × 18760 px**）
-* **全景预览**：`output/水银与长生_古人为何迷信金石炼丹_长图_preview.jpg`（**540 × 9380 px**）
+* **成品长图**：`水银与长生_古人为何迷信金石炼丹_长图.jpg`（**1080 × 18760 px**，位于本目录根）
+* **全景预览**：`水银与长生_古人为何迷信金石炼丹_长图_preview.jpg`（**540 × 9380 px**，同上）
 
 ---
 
@@ -19,10 +19,11 @@
    - `ending`（科学真谛：承认错误的制度）：科学最伟大的进步在于把“承认自己可能会错”制度化，理性警句收束。
 2. **去容器化画卷感**：
    - 彻底打破卡片框束缚，文字直排底色，快乐体/文楷/毛笔字自然分层。
-   - 气泡与主体墨迹零压盖（`check_occlusion` 0px），保留安全负空间（`check_clearance` ≥40px）。
+   - 气泡与主体轮廓之间保留负空间；其中 `block3` 的 1 处气泡与 `c3d_amalgam.png` 墨迹有约 710px 压盖
+     （用 `checks/occlusion.mjs` 可复现；把该气泡上移到 `y≈1165`、`c3d_amalgam` 下移到 `y≈1530`、上方气泡上移到 `y≈340` 即可让 lint/occlusion/clearance 全绿）。
 3. **逐块四图生图与机检链**：
    - 7 张 Sprite Sheet 一次生出 28 张透明 PNG 科学手绘插图，平均硬边仅 0.11 / 4，边缘墨迹仅 2.2%。
-   - 全部通过 `layout_lint.py`（hard=0）、`check_geom.py`（插图带高均 ≥55%）。
+   - `layout_lint` 全部 `hard=0`；插图带高均 ≥55%（`check_geom` 另有若干「自动折行/孤字行」提示）。
 
 ---
 
@@ -30,9 +31,8 @@
 
 ```
 alchemy-mercury/
-├── output/
-│   ├── 水银与长生_古人为何迷信金石炼丹_长图.jpg        # 1080x18760px 高清成品长图
-│   └── 水银与长生_古人为何迷信金石炼丹_长图_preview.jpg  # 540x9380px 移动端预览
+├── 水银与长生_古人为何迷信金石炼丹_长图.jpg          # 1080x18760px 高清成品长图
+├── 水银与长生_古人为何迷信金石炼丹_长图_preview.jpg   # 540x9380px 移动端预览
 ├── storyboard.json                                  # 7 块分镜规划
 ├── style.json                                       # 风格与三色语义配置
 ├── sheets.json                                      # 逐块四图生图规格与防漂移锚点
@@ -40,4 +40,21 @@ alchemy-mercury/
 ├── layout/                                          # block1.json ~ block7.json
 ├── assets/                                          # 28 张标准化透明 PNG 插图
 └── blocks/                                          # final1.png ~ final7.png
+```
+
+---
+
+## 实测状态（用机检链自行复现）
+
+本工程是历史产物：**排版源码可复现**，但机检链会如实报出以下问题（不是机检误报）：
+
+- `lint`（Canvas `checks/lint.mjs` 与 Python `layout_lint.py` 同判据）：7 个 block 全部 `hard=0`。
+- `checks/geom.mjs`：若干 block 报「自动折行 / 孤字行」提示（文案与栏宽的历史遗留）。
+- `checks/occlusion.mjs`：`block3` 报 1 处真实压盖（约 710px）；`checks/clearance.mjs` 另有若干气泡净空 <40px。
+- 本目录没有 `fonts/` 软链，两个引擎都会回退到 skill 自带的 `fonts/`（这正是它声明的文楷/快乐体/毛笔三级字阶）。
+- 因此成品图**不是**逐字节可复现：用当前引擎重渲，版式一致、字形栅格化有亚像素差异。
+
+```bash
+# 在 skill 根目录复现（<项目> 指向本目录）
+node pipeline/canvas/checks/all.mjs <项目>/layout/block*.json
 ```

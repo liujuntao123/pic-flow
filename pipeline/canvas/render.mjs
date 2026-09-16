@@ -15,6 +15,7 @@ import {
 } from './lib/draw.mjs';
 import { setFonts, layoutParagraph, fontStr, blockGeom } from './lib/text.mjs';
 import { findRoot, readJson, readTheme } from './lib/paths.mjs';
+import { parseCli, numFlag } from './lib/cli.mjs';
 
 /** 入口守卫：项目里 scripts/canvas 是软链，import.meta.url 与 argv[1] 不同名，
  *  必须用 realpath 比较，否则 `node scripts/canvas/render.mjs ...` 会静默什么都不做。 */
@@ -102,7 +103,9 @@ function rotateLayer(layer, deg, cx, cy, canvas, ctx) {
   ctx.restore();
 }
 
-async function drawAsset(canvas, ctx, root, el, allowMissing) {
+/** 画一张素材（含 scale / flip / opacity / rotate），返回其画布包围盒。
+ *  导出给机检复用：净空/压盖蒙版必须与渲染走同一条变换路径。 */
+export async function drawAsset(canvas, ctx, root, el, allowMissing) {
   const img = await loadAsset(root, el);
   if (!img) {
     if (!allowMissing) throw new Error(`素材缺失：assets/${el.file}`);
@@ -446,17 +449,19 @@ export async function render(layout, outPath, debug = false, rootOverride, scale
 }
 
 async function main() {
-  const args = process.argv.slice(2);
-  const debug = args.includes('--debug');
-  const si = args.indexOf('--scale');
-  const scale = si >= 0 ? Number(args[si + 1]) || 1 : 1;
-  let rest = args.filter((a) => a !== '--debug');
-  if (si >= 0) rest = rest.filter((a, i) => i !== si && i !== si + 1);
-  const layoutPath = rest[0];
-  const oi = rest.indexOf('-o');
-  const out = oi >= 0 ? rest[oi + 1] : 'blocks/out.png';
-  const layout = readJson(layoutPath);
-  await render(layout, out, debug, findRoot(layoutPath), scale);
+  const { files, flags, errors } = parseCli(process.argv.slice(2), {
+    valueFlags: ['-o', '--out', '--scale'], boolFlags: ['--debug'],
+  });
+  if (errors.length || !files.length) {
+    console.error(`用法：node pipeline/canvas/render.mjs layout/block1.json -o blocks/final1.png [--debug] [--scale 2]`);
+    if (errors.length) console.error(`  ${errors.join('；')}`);
+    process.exit(2);
+  }
+  const debug = Boolean(flags.debug);
+  const scale = numFlag(flags, 'scale', 1, { min: 1, max: 4 });
+  const layout = readJson(files[0]);
+  const out = flags.out ?? flags.o ?? 'blocks/out.png';
+  await render(layout, out, debug, findRoot(files[0]), scale);
 }
 
 if (isMain(import.meta.url)) await main();

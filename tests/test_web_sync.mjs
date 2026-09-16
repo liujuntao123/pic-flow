@@ -6,7 +6,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..');
 
-const BASE_URL = 'http://127.0.0.1:3100';
+const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:3100';
+
+let restoreCtx = null;
+
+/** 还原示例工程：测试一旦中途失败也必须把仓库恢复原状（否则 git 里会留下脏文件）。 */
+function restore(diskPath, originalLayout, projectId) {
+  // 写回测试开始前读到的原始字节，避免「重新序列化」造成格式差异
+  fs.writeFileSync(diskPath, originalLayout, 'utf8');
+  // 自动渲染会覆盖 blocks/final1.png（这是**被 git 跟踪**的示例产物），
+  // 所以连它一起还原；不要在这里重新渲染（新引擎的像素与仓库里的旧产物本就不同）。
+  const png = path.join(path.dirname(path.dirname(diskPath)), 'blocks', 'final1.png');
+  if (restoreCtx && restoreCtx.pngBytes && fs.existsSync(png)) {
+    fs.writeFileSync(png, restoreCtx.pngBytes);
+  }
+  restoreCtx = null;
+  return Promise.resolve();
+}
 
 async function runTests() {
   console.log('=== 开始测试 pic-flow Canvas Web 与数据双向同步 ===\n');
@@ -31,12 +47,22 @@ async function runTests() {
   // 3. 读取 block1.json
   const block1Res = await fetch(`${BASE_URL}/api/projects/${targetProject.id}/layout/block1`).then((r) => r.json());
   if (!block1Res.ok || !block1Res.data.layout) throw new Error('读取 block1 失败');
-  const originalLayout = block1Res.data.layout;
-  const originalElements = [...originalLayout.elements];
+  const diskPath = path.join(targetProject.path, 'layout', 'block1.json');
+  const pngPath = path.join(targetProject.path, 'blocks', 'final1.png');
+  // 保存会触发自动渲染、覆盖 blocks/final1.png（被 git 跟踪的示例产物），
+  // 所以必须在任何写操作**之前**把两个文件的原始字节都备份下来。
+  const originalLayout = fs.readFileSync(diskPath, 'utf8');
+  restoreCtx = {
+    diskPath,
+    originalLayout,
+    projectId: targetProject.id,
+    pngBytes: fs.existsSync(pngPath) ? fs.readFileSync(pngPath) : null,
+  };
+  const originalElements = [...block1Res.data.layout.elements];
   console.log(`[PASS] 成功读取 block1 布局，原始元素数量: ${originalElements.length}`);
 
   // 4. 用户在 Web 界面修改：修改第一个文字的 content 和坐标
-  const modifiedLayout = JSON.parse(JSON.stringify(originalLayout));
+  const modifiedLayout = JSON.parse(JSON.stringify(block1Res.data.layout));
   const testMarkerText = `【测试标题】用户在 Web 页面可视化修改 - ${Date.now()}`;
   modifiedLayout.elements[0].content = testMarkerText;
   modifiedLayout.elements[0].x = 555;
@@ -53,7 +79,6 @@ async function runTests() {
   console.log(`[PASS] Web 保存成功，返回 updatedAt: ${saveRes.data.updatedAt}`);
 
   // 5. 验证磁盘文件内容是否真实更新
-  const diskPath = path.join(targetProject.path, 'layout', 'block1.json');
   const diskContent = JSON.parse(fs.readFileSync(diskPath, 'utf8'));
   if (diskContent.elements[0].content !== testMarkerText) {
     throw new Error('磁盘文件未更新为用户的修改！');
@@ -89,9 +114,8 @@ async function runTests() {
 
   // 8. 还原原始内容，保持代码干净
   console.log('[INFO] 恢复 block1 原始文件内容...');
-  fs.writeFileSync(diskPath, JSON.stringify(originalLayout, null, 2), 'utf8');
-  await fetch(`${BASE_URL}/api/projects/${targetProject.id}/render/block1`, { method: 'POST' });
-  console.log('[PASS] 原始数据已复原');
+  restore(diskPath, originalLayout, targetProject.id);
+  console.log('[PASS] 原始数据已复原（layout 与 blocks/final1.png 均按原始字节写回）');
 
   // 9. 测试机检 API
   console.log('[INFO] 测试分块机检 API...');
@@ -102,7 +126,11 @@ async function runTests() {
   console.log('\n🎉 所有端到端测试与双向同步测试全部通过！');
 }
 
-runTests().catch((err) => {
+runTests().catch(async (err) => {
   console.error('\n❌ 测试失败:', err);
+  if (restoreCtx) {
+    console.error('[INFO] 测试中断，正在还原示例工程...');
+    try { await restore(restoreCtx.diskPath, restoreCtx.originalLayout, restoreCtx.projectId); } catch {}
+  }
   process.exit(1);
 });

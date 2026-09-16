@@ -41,8 +41,8 @@ def main():
     args = ap.parse_args()
 
     root = Path(args.project_dir).resolve()
-    if root.exists() and any(root.iterdir()):
-        sys.exit(f"error: {root} 已存在且非空")
+    if root.exists() and (not root.is_dir() or any(root.iterdir())):
+        sys.exit(f"error: {root} 已存在且非空（或不是目录）")
 
     for d in ("assets", "blocks", "layout", "output", "scripts"):
         (root / d).mkdir(parents=True, exist_ok=True)
@@ -120,7 +120,7 @@ def main():
     print("        2) python3 scripts/gen_sheets.py      # 每块一次生图出 4 张插画，自动切开")
     print("           python3 scripts/gen_all.py         # 仅全幅大场景走单张（assets.json）")
     print("        3) python3 scripts/make_transparent.py assets/*.png")
-    print("        4) python3 check_edges.py assets/*.png   # 查方图感（硬边数应趋近 0）")
+    print("        4) python3 scripts/check_edges.py assets/*.png   # 查方图感（硬边数应趋近 0）")
     print("  排版/机检（Canvas 官方默认方案）：")
     print("        node scripts/render.mjs layout/block1.json -o blocks/final1.png [--debug]")
     print("        node scripts/checks/lint.mjs  layout/block1.json")
@@ -129,7 +129,7 @@ def main():
     print("        node scripts/checks/clearance.mjs layout/block1.json")
     print("        node scripts/stitch.mjs output/标题_长图.jpg blocks/final*.png")
     print("  可视化修改与项目管理 Web 控制台：")
-    print("        npm run web   # 或在 pic-flow 目录执行 node web/server/index.mjs")
+    print("        cd " + str(SKILL_DIR) + " && npm run web   # Web 控制台属于 skill 本体，须在 skill 根目录启动")
 
 
 if __name__ == "__main__":

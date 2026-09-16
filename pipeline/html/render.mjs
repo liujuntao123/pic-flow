@@ -14,6 +14,7 @@ import { render as renderCanvas } from '../canvas/render.mjs';
 import { findRoot, readJson, readTheme } from '../canvas/lib/paths.mjs';
 import { setFonts } from '../canvas/lib/text.mjs';
 import { fontFaceCss, textLayer, measureDom, withPage } from './lib/dom.mjs';
+import { parseCli, numFlag } from '../canvas/lib/cli.mjs';
 
 function isMain(metaUrl) {
   try {
@@ -91,19 +92,21 @@ export async function renderHtml(layoutPath, outPng, opts = {}) {
 }
 
 async function main() {
-  const args = process.argv.slice(2);
-  const opt = (flag, dflt) => {
-    const i = args.indexOf(flag);
-    return i >= 0 ? args[i + 1] : dflt;
-  };
-  const files = args.filter((a, i) => !a.startsWith('-') && !['-o', '--html', '--scale'].includes(args[i - 1]));
-  const out = opt('-o', 'blocks/out.png');
-  const scale = Number(opt('--scale', 1)) || 1;
+  const { files, flags, errors } = parseCli(process.argv.slice(2), {
+    valueFlags: ['-o', '--html', '--scale'],
+  });
+  if (errors.length || !files.length) {
+    console.error('用法：node pipeline/html/render.mjs layout/block1.json -o blocks/html1.png [--html out.html] [--scale 2]');
+    if (errors.length) console.error(`  ${errors.join('；')}`);
+    process.exit(2);
+  }
+  const out = flags.o ?? 'blocks/out.png';
+  const scale = numFlag(flags, 'scale', 1, { min: 1, max: 4 });
   for (const f of files) {
     const target = files.length > 1
       ? path.join(path.dirname(out), `${path.basename(f, '.json')}${path.extname(out) || '.png'}`)
       : out;
-    await renderHtml(f, target, { htmlOut: opt('--html', undefined), scale });
+    await renderHtml(f, target, { htmlOut: flags.html, scale });
   }
 }
 

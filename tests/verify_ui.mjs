@@ -4,7 +4,7 @@ import path from 'node:path';
 async function verify() {
   console.log('启动 Chrome 浏览器进行 UI 验证...');
   const browser = await chromium.launch({
-    executablePath: '/usr/bin/google-chrome',
+    executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
@@ -28,7 +28,7 @@ async function verify() {
 
   // 1. 访问首页（项目管理）
   console.log('访问 http://127.0.0.1:3100/ ...');
-  await page.goto('http://127.0.0.1:3100/', { waitUntil: 'networkidle' });
+  await page.goto(`${process.env.BASE_URL || 'http://127.0.0.1:3100'}/`, { waitUntil: 'networkidle' });
 
   await page.waitForSelector('.project-card');
   console.log('项目列表已加载！');

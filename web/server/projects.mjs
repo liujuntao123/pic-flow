@@ -15,6 +15,47 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '../..');
 
+/** 带 HTTP 状态码的错误：路由层据此回 4xx/5xx，而不是一律 500。 */
+export class HttpError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
+/** 只允许 blockN / 自定的安全块名（禁止 ../、/ 与绝对路径）。 */
+const BLOCK_ID_RE = /^[A-Za-z0-9_-]+$/;
+/** 只匹配 block<数字>.json：草稿文件（block1_bind.json、block_bind.json）不是分块。 */
+export const BLOCK_FILE_RE = /^block(\d+)\.json$/;
+
+export function blockNumber(name) {
+  const m = BLOCK_FILE_RE.exec(name);
+  return m ? Number(m[1]) : null;
+}
+
+function assertBlockId(blockId) {
+  const raw = String(blockId ?? '').replace(/\.json$/, '');
+  if (!BLOCK_ID_RE.test(raw)) {
+    throw new HttpError(400, `非法分块名：${blockId}（只允许字母数字、_ 和 -）`);
+  }
+  return raw;
+}
+
+/** 列表里所有分块文件（只认 block<数字>.json，按数字排序）。 */
+export function listBlockFiles(layoutDir) {
+  if (!fs.existsSync(layoutDir)) return [];
+  return fs.readdirSync(layoutDir)
+    .filter((f) => BLOCK_FILE_RE.test(f))
+    .sort((a, b) => blockNumber(a) - blockNumber(b));
+}
+
+/** 原子写：先写临时文件再 rename，避免 Agent / Python 引擎读到半截文件。 */
+function writeFileAtomic(filePath, content) {
+  const tmp = `${filePath}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, content, 'utf8');
+  fs.renameSync(tmp, filePath);
+}
+
 /**
  * 默认扫描的项目目录列表
  */
@@ -47,6 +88,27 @@ export function encodeProjectId(fullPath) {
 
 export function decodeProjectId(projectId) {
   return Buffer.from(projectId, 'base64url').toString('utf8');
+}
+
+/**
+ * 项目 ID 白名单校验：解码后的路径必须**真的是一个 pic-flow 项目**。
+ * 否则 `Lw`（base64url 的 "/"）之类可以指向任意目录，配合 assets/blocks 静态代理
+ * 就能读任意文件。
+ */
+export function assertProjectPath(projectId) {
+  let projectPath;
+  try {
+    projectPath = decodeProjectId(projectId);
+  } catch {
+    throw new HttpError(400, '无效的项目 ID');
+  }
+  if (!projectPath || !path.isAbsolute(projectPath)) {
+    throw new HttpError(400, '无效的项目 ID');
+  }
+  if (!fs.existsSync(projectPath) || !isPicFlowProject(projectPath)) {
+    throw new HttpError(404, '项目不存在或不是 pic-flow 工程');
+  }
+  return path.resolve(projectPath);
 }
 
 /**
@@ -126,22 +188,22 @@ export function getProjectSummary(projectPath) {
   let blocks = [];
   if (fs.existsSync(layoutDir)) {
     try {
-      const files = fs.readdirSync(layoutDir);
-      blocks = files
-        .filter((f) => f.startsWith('block') && f.endsWith('.json'))
-        .sort((a, b) => {
-          const numA = parseInt(a.replace(/[^0-9]/g, '') || '0', 10);
-          const numB = parseInt(b.replace(/[^0-9]/g, '') || '0', 10);
-          return numA - numB;
-        });
+      blocks = listBlockFiles(layoutDir);
       blockCount = blocks.length;
     } catch {}
   }
 
-  // 读取预览图：优先 output/*preview*.jpg，再找 output/*.jpg，再找 blocks/final1.png
+  // 读取预览图：优先项目根的长图（成品的真实位置）、再 output/*preview*、
+  // 再 output/*.jpg、最后 blocks/final1.png。
   let previewUrl = null;
+  const rootImgs = fs.existsSync(projectPath) ? fs.readdirSync(projectPath) : [];
+  const longImg = rootImgs.find((f) => /长图.*_preview\.(jpe?g|png)$/i.test(f))
+    || rootImgs.find((f) => /长图.*\.(jpe?g|png)$/i.test(f));
+  if (longImg) {
+    previewUrl = `/api/projects/${id}/root/${encodeURIComponent(longImg)}`;
+  }
   const outputDir = path.join(projectPath, 'output');
-  if (fs.existsSync(outputDir)) {
+  if (!previewUrl && fs.existsSync(outputDir)) {
     try {
       const outs = fs.readdirSync(outputDir);
       const prevFile = outs.find((f) => f.includes('preview') && /\.(jpe?g|png)$/i.test(f));
@@ -202,13 +264,7 @@ export function getProjectDetail(projectPath) {
   const blocks = [];
 
   if (fs.existsSync(layoutDir)) {
-    const files = fs.readdirSync(layoutDir)
-      .filter((f) => f.startsWith('block') && f.endsWith('.json'))
-      .sort((a, b) => {
-        const numA = parseInt(a.replace(/[^0-9]/g, '') || '0', 10);
-        const numB = parseInt(b.replace(/[^0-9]/g, '') || '0', 10);
-        return numA - numB;
-      });
+    const files = listBlockFiles(layoutDir);
 
     for (const f of files) {
       const blockId = f.replace('.json', '');
@@ -225,7 +281,7 @@ export function getProjectDetail(projectPath) {
       } catch {}
 
       // 检查渲染块是否存在
-      const blockNum = blockId.replace(/[^0-9]/g, '');
+      const blockNum = blockNumber(f);
       const finalPng = `final${blockNum}.png`;
       const stagePng = `stage${blockNum}.png`;
       const blocksDir = path.join(projectPath, 'blocks');
@@ -339,13 +395,35 @@ export function getProjectDetail(projectPath) {
 }
 
 /**
+ * 校验 layout 结构：至少要是「带数字 width/height 与 elements 数组」的对象。
+ * 不校验的话 `{"layout": null}` 会把 block 文件写成字面量 null（实测被这样毁过一块）。
+ */
+export function validateLayout(layout) {
+  if (!layout || typeof layout !== 'object' || Array.isArray(layout)) {
+    throw new HttpError(400, 'layout 必须是对象');
+  }
+  if (!Number.isFinite(layout.width) || !Number.isFinite(layout.height)) {
+    throw new HttpError(400, 'layout.width / layout.height 必须是数字');
+  }
+  if (!Array.isArray(layout.elements)) {
+    throw new HttpError(400, 'layout.elements 必须是数组');
+  }
+  for (const [i, el] of layout.elements.entries()) {
+    if (!el || typeof el !== 'object' || typeof el.type !== 'string') {
+      throw new HttpError(400, `layout.elements[${i}] 缺少 type`);
+    }
+  }
+  return layout;
+}
+
+/**
  * 读取某个 block 的 raw layout
  */
 export function getBlockLayout(projectPath, blockId) {
-  const normBlockId = blockId.endsWith('.json') ? blockId : `${blockId}.json`;
+  const normBlockId = `${assertBlockId(blockId)}.json`;
   const filePath = path.join(projectPath, 'layout', normBlockId);
   if (!fs.existsSync(filePath)) {
-    throw new Error(`分块文件不存在: ${normBlockId}`);
+    throw new HttpError(404, `分块文件不存在: ${normBlockId}`);
   }
   const raw = fs.readFileSync(filePath, 'utf8');
   const stat = fs.statSync(filePath);
@@ -359,22 +437,36 @@ export function getBlockLayout(projectPath, blockId) {
 
 /**
  * 保存某个 block 的 raw layout 并可选自动重绘
+ *
+ * @param {string} [expectedUpdatedAt] 客户端读到的文件版本（ISO 时间）。
+ *   与磁盘当前 mtime 不一致 = 磁盘已被 Agent / 别的窗口改过，返回 409 让用户裁决，
+ *   否则「人机双向同步」会变成「后写的人无声覆盖前一个人」。
  */
-export async function saveBlockLayout(projectPath, blockId, layout, autoRender = true) {
-  const normBlockId = blockId.endsWith('.json') ? blockId : `${blockId}.json`;
+export async function saveBlockLayout(projectPath, blockId, layout, autoRender = true, expectedUpdatedAt = null) {
+  const normBlockId = `${assertBlockId(blockId)}.json`;
   const layoutDir = path.join(projectPath, 'layout');
   fs.mkdirSync(layoutDir, { recursive: true });
   const filePath = path.join(layoutDir, normBlockId);
+  validateLayout(layout);
 
-  // 格式化为与原有一致的 2 格缩进 JSON
-  const jsonStr = JSON.stringify(layout, null, 2);
-  fs.writeFileSync(filePath, jsonStr, 'utf8');
+  if (expectedUpdatedAt && fs.existsSync(filePath)) {
+    const diskStat = fs.statSync(filePath);
+    if (Math.abs(diskStat.mtimeMs - new Date(expectedUpdatedAt).getTime()) > 1000) {
+      throw new HttpError(409, '磁盘上的 layout 已被外部修改（Agent / 另一个窗口），请先重载再保存');
+    }
+  }
+
+  // 格式化为与原有一致的 2 格缩进 JSON；原子落盘避免读到半截文件
+  const jsonStr = `${JSON.stringify(layout, null, 2)}\n`;
+  if (typeof jsonStr !== 'string') throw new HttpError(400, 'layout 无法序列化');
+  writeFileAtomic(filePath, jsonStr);
   const stat = fs.statSync(filePath);
 
   let renderedFile = null;
   let renderedUrl = null;
+  let renderError = null;
   if (autoRender) {
-    const blockNum = normBlockId.replace(/[^0-9]/g, '') || '1';
+    const blockNum = blockNumber(normBlockId) ?? 1;
     const outPng = path.join(projectPath, 'blocks', `final${blockNum}.png`);
     try {
       await render(layout, outPng, false, projectPath, 1);
@@ -382,6 +474,9 @@ export async function saveBlockLayout(projectPath, blockId, layout, autoRender =
       const id = encodeProjectId(projectPath);
       renderedUrl = `/api/projects/${id}/blocks/${encodeURIComponent(renderedFile)}?t=${Date.now()}`;
     } catch (err) {
+      // 不能静默吞掉：否则 UI 报「已保存并渲染完成」，而 blocks/ 里还是上一版，
+      // 拼接出来的长图会悄悄用旧的切片。
+      renderError = err.message;
       console.error(`[saveBlockLayout] 自动渲染失败:`, err);
     }
   }
@@ -392,7 +487,15 @@ export async function saveBlockLayout(projectPath, blockId, layout, autoRender =
     updatedAt: stat.mtime.toISOString(),
     renderedFile,
     renderedUrl,
+    renderError,
   };
+}
+
+/** 渲染倍率只允许 1~4（负数/超大值会产出垃圾图或直接崩 Skia）。 */
+function clampScale(scale) {
+  const n = Number(scale);
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(4, Math.round(n * 100) / 100);
 }
 
 /**
@@ -400,12 +503,12 @@ export async function saveBlockLayout(projectPath, blockId, layout, autoRender =
  */
 export async function renderBlock(projectPath, blockId, debug = false, scale = 1) {
   const { layout } = getBlockLayout(projectPath, blockId);
-  const normBlockId = blockId.endsWith('.json') ? blockId : `${blockId}.json`;
-  const blockNum = normBlockId.replace(/[^0-9]/g, '') || '1';
+  const normBlockId = `${assertBlockId(blockId)}.json`;
+  const blockNum = blockNumber(normBlockId) ?? 1;
   const outPngName = debug ? `stage${blockNum}.png` : `final${blockNum}.png`;
   const outPng = path.join(projectPath, 'blocks', outPngName);
 
-  await render(layout, outPng, debug, projectPath, scale);
+  await render(layout, outPng, debug, projectPath, clampScale(scale));
   const id = encodeProjectId(projectPath);
   return {
     ok: true,
@@ -424,18 +527,13 @@ export async function stitchProject(projectPath) {
   const outputDir = path.join(projectPath, 'output');
   fs.mkdirSync(outputDir, { recursive: true });
 
-  // 获取所有分块并排序
-  const blockFiles = fs.readdirSync(layoutDir)
-    .filter((f) => f.startsWith('block') && f.endsWith('.json'))
-    .sort((a, b) => {
-      const numA = parseInt(a.replace(/[^0-9]/g, '') || '0', 10);
-      const numB = parseInt(b.replace(/[^0-9]/g, '') || '0', 10);
-      return numA - numB;
-    });
+  // 获取所有分块并排序（只认 block<数字>.json：block1_bind.json 这类草稿不是分块，
+  // 否则它们会被当成数字块，拼出一张长度翻倍还夹着草稿的长图）
+  const blockFiles = listBlockFiles(layoutDir);
 
   const inputPngs = [];
   for (const bf of blockFiles) {
-    const num = bf.replace(/[^0-9]/g, '');
+    const num = blockNumber(bf);
     const finalPng = path.join(blocksDir, `final${num}.png`);
     const stagePng = path.join(blocksDir, `stage${num}.png`);
     if (fs.existsSync(finalPng)) {
@@ -451,7 +549,7 @@ export async function stitchProject(projectPath) {
   }
 
   if (inputPngs.length === 0) {
-    throw new Error('未找到可供拼接的分块渲染图');
+    throw new HttpError(400, '未找到可供拼接的分块渲染图');
   }
 
   const safeTitle = summary.title.replace(/[\\/:*?"<>|]/g, '_');
@@ -472,13 +570,25 @@ export async function stitchProject(projectPath) {
 }
 
 /**
- * 运行某个分块的机检
+ * 机检串行队列：四条机检靠 console.log 收集日志，而 console.log 是全局的。
+ * 两个请求重叠时补丁会互相覆盖，甚至把 console.log 永久留成旧闭包 —— 用队列串行化。
  */
+let lintQueue = Promise.resolve();
+
+/** 运行某个分块的机检（串行执行，日志捕获不会串台） */
 export async function lintBlock(projectPath, blockId) {
-  const normBlockId = blockId.endsWith('.json') ? blockId : `${blockId}.json`;
+  const run = () => lintBlockInner(projectPath, blockId);
+  const next = lintQueue.then(run, run);
+  // 队列本身不因单次失败而断掉
+  lintQueue = next.then(() => undefined, () => undefined);
+  return next;
+}
+
+async function lintBlockInner(projectPath, blockId) {
+  const normBlockId = `${assertBlockId(blockId)}.json`;
   const filePath = path.join(projectPath, 'layout', normBlockId);
   if (!fs.existsSync(filePath)) {
-    throw new Error(`分块文件不存在: ${normBlockId}`);
+    throw new HttpError(404, `分块文件不存在: ${normBlockId}`);
   }
 
   // 捕获机检日志
@@ -491,33 +601,35 @@ export async function lintBlock(projectPath, blockId) {
 
   // 1. 静态布局 Lint
   let lintRes = { hard: 0, warn: 0 };
-  try {
-    lintRes = lint(filePath);
-  } catch (err) {
-    lintRes = { hard: 1, warn: 0, error: err.message };
-  }
-
-  // 2. 排版几何机检 Geom
   let geomRes = null;
-  try {
-    geomRes = checkGeom(filePath);
-  } catch (err) {
-    geomRes = { error: err.message };
-  }
-
-  // 3. 遮挡与净空检查
   let occlusionRes = null;
-  try {
-    occlusionRes = await occlusion(filePath);
-  } catch (err) {
-    occlusionRes = { error: err.message };
-  }
-
   let clearanceRes = null;
   try {
-    clearanceRes = await clearance(filePath);
-  } catch (err) {
-    clearanceRes = { error: err.message };
+    try {
+      lintRes = lint(filePath);
+    } catch (err) {
+      lintRes = { hard: 1, warn: 0, error: err.message };
+    }
+
+    // 2. 排版几何机检 Geom
+    try {
+      geomRes = checkGeom(filePath);
+    } catch (err) {
+      geomRes = { error: err.message };
+    }
+
+    // 3. 遮挡与净空检查
+    try {
+      occlusionRes = await occlusion(filePath);
+    } catch (err) {
+      occlusionRes = { error: err.message };
+    }
+
+    try {
+      clearanceRes = await clearance(filePath);
+    } catch (err) {
+      clearanceRes = { error: err.message };
+    }
   } finally {
     console.log = origLog;
   }
@@ -536,12 +648,20 @@ export async function lintBlock(projectPath, blockId) {
  * 新建项目
  */
 export async function createProject({ dirName, title, template = 'story', style = 'bw-sketch', layout = 'story-flow' }) {
-  if (!dirName) throw new Error('目录名不能为空');
-  const safeDirName = dirName.replace(/[\\/:*?"<>|]/g, '_');
+  const name = String(dirName ?? '').trim();
+  if (!name) throw new HttpError(400, '目录名不能为空');
+  if (!/^[A-Za-z0-9._-]+$/.test(name) || name === '.' || name === '..') {
+    throw new HttpError(400, '目录名只允许中划线、下划线、点与字母数字（且不能是 . / ..）');
+  }
+  const safeDirName = name.replace(/[\\/:*?"<>|]/g, '_');
   const targetDir = path.resolve(process.env.HOME || '/home/box', 'pic-flow-projects', safeDirName);
+  const projectsRoot = path.resolve(process.env.HOME || '/home/box', 'pic-flow-projects');
+  if (path.relative(projectsRoot, targetDir).startsWith('..')) {
+    throw new HttpError(400, '目标目录必须位于 ~/pic-flow-projects/ 内');
+  }
 
   if (fs.existsSync(targetDir) && fs.readdirSync(targetDir).length > 0) {
-    throw new Error(`目标目录已存在且非空: ${targetDir}`);
+    throw new HttpError(409, `目标目录已存在且非空: ${targetDir}`);
   }
 
   const scriptPath = path.resolve(REPO_ROOT, 'pipeline', 'new_project.py');

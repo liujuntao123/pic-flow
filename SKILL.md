@@ -43,7 +43,7 @@ cd ~/pic-flow-projects/<主题名>
 # 1. 规划分镜：
 #    先填 storyboard.json（四元组：role/density/focal/notes 视觉任务），
 #    再按 CONTENT.md 编写 sheets.json（逐块四图规格）与 layout/blockN.json。
-#    铁律：视觉面积 ≥60%，文字精炼为 4~8 行，严禁卡片囚笼，留足 60~90px 负空间通风口。
+#    铁律：视觉面积基线 ≥60%（机检代理指标：插图带高 ≥55%），文字精炼为 4~8 行，严禁卡片囚笼，留足 60~90px 负空间通风口。
 
 # 2. 生成素材：一个 block 一次生图出 4 张插画（默认路线）
 #    画风由 style.json 的 asset_suffix 控制；角色特征三元组写进 sheets.json 的 anchors，
@@ -61,8 +61,9 @@ python3 scripts/check_edges.py assets/*.png              # 查方图感：硬边
 # 4. 排版 + 机检链 + 双代理对抗闭环质检（核心质量护城河，每块必过，Canvas 方案为官方默认）
 node scripts/checks/lint.mjs layout/block1.json      # 碰撞/越界/居中滥用，hard 必须 = 0
 node scripts/checks/geom.mjs layout/block1.json      # 真实字体度量：自动折行/行宽越界/孤字/插图带高
-node scripts/checks/occlusion.mjs layout/block1.json # 气泡与素材墨迹压盖 0 px
-node scripts/checks/clearance.mjs layout/block1.json # 画布口径净空：气泡底缘与主体轮廓 ≥40px
+node scripts/checks/occlusion.mjs layout/block1.json # 气泡压盖素材墨迹（>120px 判硬伤，≤120px 只提示）
+node scripts/checks/clearance.mjs layout/block1.json # 红线口径：压盖必须 0px、气泡净空 ≥40px
+node scripts/checks/all.mjs   layout/block1.json # 四条机检一次跑完，任一不过即非 0 退出
 node scripts/render.mjs layout/block1.json -o blocks/stage1.png --debug
 #   → 启动独立质检子代理（Review Agent，如 gemini-3.8-flash-high）进行地毯式审查：
 #      - 像素级零遮挡：气泡底色/描边/文字绝不压盖主体面容轮廓或关键结构线（保留 ≥40px 负空间）
@@ -75,11 +76,12 @@ node scripts/render.mjs layout/block1.json -o blocks/final1.png
 #   → read_image 终验
 
 # 5. 拼接
-node scripts/stitch.mjs "output/标题_长图.jpg" blocks/final*.png 按序
+node scripts/stitch.mjs "output/标题_长图.jpg" blocks/final*.png
 
 # 6. 可视化 Web 控制台（人机共创与交互式微调）
-npm run web                                          # 启动 Web 可视化编辑器（本地 127.0.0.1:3100 或公网隧道）
+cd <skill 根> && npm run web                         # 启动 Web 可视化编辑器（本地 127.0.0.1:3100 或公网隧道）
 #   → 支持在浏览器中直接对文字内容、字阶、气泡、插图位置进行所见即所得的拖拽与修改
+#     注意：Web 服务属于 skill 本体，必须在 **skill 根目录**启动（项目目录里没有 package.json）
 #   → 用户保存后直接回写 layout/*.json 并自动复渲；Agent 外部修改后用户刷新即可无缝查看最新效果
 ```
 
@@ -104,7 +106,8 @@ npm run web                                          # 启动 Web 可视化编�
 | 素材 | `make_transparent.py` | 透明通道与四向紧致裁边正常 |
 | 排版 | `layout_lint.py` | 碰撞、越界、居中滥用，hard = 0 |
 | 排版 | `check_geom.py` | 无自动折行/行宽越界/孤字；插图带高 ≥55% |
-| 排版 | `check_occlusion.py` · `check_clearance.py` | 压盖 0 px；气泡净空 ≥40px |
+| 排版 | `check_clearance.py` | 红线：压盖必须 0 px、气泡净空 ≥40px |
+| 排版 | `check_occlusion.py` | 压盖面积 >120px 判硬伤（≤120px 属边缘擦碰，只提示） |
 
 随后进入对抗审查：
 
@@ -124,7 +127,7 @@ npm run web                                          # 启动 Web 可视化编�
   `font: body|title|brush`（或 style.json 自定义族）。
 - 三种语义高亮：`【关键词】`橙 ｜ `『引语』`蓝 ｜ `〖强信息〗`红毛笔+8%。
 - `asset`：单边/双边缩放（`width` / `height` / `width`+`height` 自定义比例）、`anchor`、`rotate`、`flip`、`opacity`、越界出血。
-- `box` 气泡/标签：程序化 `box`（八种 style）或直接引用 `library/bubbles_light/` 中的真实手绘暖黄气泡精灵图素材（`#F6A83C` 亮黄内胆 + 轻盈细黑钢笔线框，内配 `#4A2800` 深棕字，极具半小时手绘质感）。
+- `box` 气泡/标签：程序化 `box`（八种 style）；也可以用 `library/bubbles_light/` 的真实手绘暖黄气泡精灵图（暖黄内胆 + 轻盈细黑钢笔线框，配 `#4A2800` 深棕字）——**精灵图要先复制进项目的 `assets/`**，引擎只从 `<项目>/assets/` 取素材，然后写成 `{"type":"asset","file":"bubble_04_oval_tail_right.png",...}`，文字另行叠放。
 - `card`：仅用于特殊对照结构，常规叙事与科普严禁滥用 card 包裹正文。
 - `rule`：横线；`{vertical:true,x,y1,y2}` 竖线（时间线中轴/分栏隔断）。
 - 元素按数组顺序层叠；文字/气泡可 `rotate`。
@@ -146,9 +149,9 @@ npm run web                                          # 启动 Web 可视化编�
   气泡主体置于上方纯净负空间中（保留 ≥40px 缓冲），长 tail 负责视线牵引。
 - **声源物理闭环**：气泡 tail 必须严格对应发话实体的实际物理空间坐标。
 - **自然叙事收束**：收尾严禁生硬打上形式化框框大标题；让核心洞见与总结结论直接作为收尾视觉主角。
-- **节奏由差异制造**：相邻块的主体方位/图文方向/密度至少一项不同；块高随论述张弛浮动（2600~3600px，大字号与宽留白首选 3000~3600px），不等高均分；全图连续居中构图 ≤2 块；张力峰值落在 55%~70% 进度。
+- **节奏由差异制造**：相邻块的主体方位/图文方向/密度至少一项不同；块高随论述张弛浮动（大字号与宽留白首选 3000~3600px；官方范例实测 2580~2720px），不等高均分；全图连续居中构图 ≤2 块；张力峰值落在 55%~70% 进度。
 - **宽广垂直留白（Vertical Breathing）**：段落间净空留白保留 80~140px，正文与大插图留白 120~200px，绝不挤压画面。
-- **字号阶梯大字阶标准**：总标题 52~60px、节标题 42~48px、正文 32~36px（行距 1.45~1.5）、气泡字 28~32px（搭配 #4A2800 墨色与暖黄底）、毛笔金句 40~46px，确保 550px 移动端预览一目了然。
+- **字号阶梯大字阶标准**：总标题 52~60px、节标题 42~48px、正文 32~36px（行距 1.45~1.5）、气泡字 28~32px（官方范例实测 26~28px；统一搭配 #4A2800 墨色与暖黄底）、毛笔金句 40~46px，确保 550px 移动端预览一目了然。
 - **语义色彩语法**：严格沿用 style.json 语义色，全图主色相 ≤4，色温跟随张力起伏，禁止装饰用色。
 - **连续性系统**：块间用一种贯穿机制缝合（进度提示行/章节编号/贯穿元素三选一，全图唯一）。
 
@@ -196,9 +199,13 @@ npm run web                                          # 启动 Web 可视化编�
 - `pipeline/` 素材线：`new_project.py` 脚手架 · `gen_sheets.py` 逐块四图生图 · `slice_sheet.py` 精灵图切分 ·
   `gen_all.py` 单张全幅 · `genlib.py` 上游链 · `make_transparent.py` 标准化 · `check_edges.py` 方图感机检
 - `pipeline/` 排版线（Python 引擎）：`compose.py` 渲染引擎 · `layout_lint.py` · `check_geom.py` ·
-  `check_occlusion.py` · `check_clearance.py` · `stitch.py` 拼接
+  `check_occlusion.py` · `check_clearance.py` · `stitch.py` 拼接 · `inkgeom.py` 机检共用真实几何
 - `pipeline/canvas/` 排版线（**Canvas/Node 引擎，与 Python 线并存、同一份 layout**）：
   `render.mjs`（对应 compose.py）· `stitch.mjs` · `preview.mjs` 便携预览 · `parity.mjs` 双引擎逐像素对照 ·
-  `checks/{lint,geom,occlusion,clearance}.mjs` 同一套机检判据 · `SCHEMA.md` · `README.md`
+  `checks/{lint,geom,occlusion,clearance}.mjs` 同一套机检判据 · `checks/all.mjs` 四检统一闸门 ·
+  `lib/cli.mjs` 统一命令行解析 · `SCHEMA.md` · `README.md`
+- `web/` 可视化人机共创控制台（`npm run web`，须在 skill 根目录启动）· `tests/` 测试（`npm test`）
+- 机检链的退出码即闸门：`lint`(hard>0) / `geom`(问题项>0) / `occlusion`(压盖>120px) /
+  `clearance`(压盖>0 或净空<40px) 任一非 0 即不通过，`checks/all.mjs` 把它们绑在一起
   （两条排版线读同一份 layout、产出同一批产物，可逐块互换；详见 `pipeline/canvas/README.md`）
   （脚本与字体都是软链，可原地运行，勿删 skill 目录）

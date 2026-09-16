@@ -40,6 +40,10 @@ except ImportError:  # 脚本被单独复制进 <项目>/scripts/ 时，roots.py
 # 显式覆盖：环境变量 PICFLOW_ROOT。
 ROOT = find_root(sys.argv[1] if len(sys.argv) > 1 else None)
 FONT_DIR = ROOT / "fonts"
+# skill 自带的 fonts/：项目里没有软链 fonts/ 时（例如仓库自带的 examples/）用它兜底。
+# 没有这层兜底，`fonts/LXGWWenKai-Regular.ttf` 会静默退到 Noto，
+# 官方范例就以非声明字体渲染（实测：范例的快乐体标题全变成思源黑体）。
+SKILL_FONTS = Path(__file__).resolve().parent.parent / "fonts"
 FONT_REG = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
 FONT_BOLD = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
 SC = 2
@@ -56,16 +60,28 @@ _fonts = {}
 THEME = {}
 
 
+def resolve_font(p):
+    """相对/项目内字体路径 -> 真实文件：项目里没有就退回 skill 的 fonts/。"""
+    p = Path(p)
+    if p.is_absolute():
+        if p.exists():
+            return p
+        alt = SKILL_FONTS / p.name
+        return alt if alt.exists() else p
+    cand = ROOT / p
+    if cand.exists():
+        return cand
+    alt = SKILL_FONTS / p.name
+    return alt if alt.exists() else cand
+
+
 def apply_theme(theme):
     """Merge style-pack: text colors, bubble defaults, font family overrides."""
     THEME.clear()
     THEME.update(theme or {})
     for fam, pair in (THEME.get("fonts") or {}).items():
         reg, bold = pair if isinstance(pair, (list, tuple)) else (pair, pair)
-        reg, bold = Path(reg), Path(bold)
-        if not reg.is_absolute():
-            reg, bold = ROOT / reg, ROOT / bold
-        FAMILIES[fam] = (reg, bold)
+        FAMILIES[fam] = (resolve_font(reg), resolve_font(bold))
 
 
 def el_box(el):
@@ -75,6 +91,7 @@ def el_box(el):
 
 def font(size, bold, family="body"):
     reg, bold_path = FAMILIES.get(family, FAMILIES["body"])
+    reg, bold_path = resolve_font(reg), resolve_font(bold_path)
     path = (bold_path if bold_path.exists() else reg) if bold else reg
     if not path.exists():
         path, bold = Path(FONT_REG), False
@@ -195,7 +212,9 @@ def block_geom(draw, el, W):
     align = el.get("align", "center")
     left = x - w / 2 if align == "center" else (x if align == "left" else x - w)
     pad = el_box(el).get("pad", 0)
-    px, py = (pad, pad) if isinstance(pad, (int, float)) else pad
+    # pad 口径：[纵向, 横向]（SCHEMA.md / style.json / 四条机检与 Canvas 引擎一致）。
+    # 曾误写成 `px, py = pad`（把纵向当横向），使所有带 box 的文字气泡左右窄、上下厚。
+    px, py = (pad, pad) if isinstance(pad, (int, float)) else (pad[1], pad[0])
     return {"lines": lines, "lh": lh, "w": w, "size": size, "bold": bold,
             "family": family, "left": left, "top": el.get("y", 0), "px": px, "py": py}
 
