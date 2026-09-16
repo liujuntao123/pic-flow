@@ -64,6 +64,12 @@ function editorBehaviors(online) {
     { skipIf: online ? null : `Web 服务未启动（${BASE_URL}），先跑 npm run web` });
 }
 
+/** 编辑器交互回归（需要 Web 服务在线）：HiDPI 热区 / 快捷键 / 剧本 markdown。 */
+function editorUx(online) {
+  run('编辑器交互回归（热区·快捷键·markdown）', process.execPath, ['tests/test_editor_ux.mjs'],
+    { skipIf: online ? null : `Web 服务未启动（${BASE_URL}），先跑 npm run web` });
+}
+
 function serverOnline() {
   try {
     const r = spawnSync(process.execPath, ['-e', `
@@ -88,6 +94,7 @@ const online = serverOnline();
 if (!online) console.log(`[INFO] 未检测到 Web 服务（${BASE_URL}），跳过依赖它的两项\n`);
 previewParity(online);
 editorBehaviors(online);
+editorUx(online);
 
 const failed = results.filter((r) => r.status === 'FAIL');
 const skipped = results.filter((r) => r.status === 'SKIP');

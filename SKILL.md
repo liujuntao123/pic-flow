@@ -1,7 +1,7 @@
 ---
 name: pic-flow
-description: 半小时黑白手绘叙事与科普长图流水线：聚焦 story × story-flow × bw-sketch 黄金组合，实现「逐块四图生图 → 声明式程序排版 → 机检链 + 双代理对抗闭环质检 → 无缝拼接」。纯白底色 + 粗黑钢笔墨线 + 橙蓝红语义文字系统，专攻事件叙事、逻辑博弈、科学原理、商业案例复盘与深度科普长图。
-whenToUse: 用户想制作"长图 / 科普长图 / 漫画长图 / 叙事长图 / 商业复盘长图 / 科学原理解析长图 / 一图读懂 / 公众号与小红书图文"，或提到"用黑白手绘漫画风格做长图"时使用。
+description: 半小时黑白手绘叙事与科普长图流水线：聚焦 story × story-flow × bw-sketch 黄金组合，实现「逐块四图生图 → 声明式程序排版 → 机检链 + 双代理对抗闭环质检 → 无缝拼接」。纯白底色 + 粗黑钢笔墨线 + 橙蓝红语义文字系统，专攻事件叙事、逻辑博弈、科学原理、商业案例复盘与深度科普长图。只要用户想制作"长图 / 科普长图 / 漫画长图 / 叙事长图 / 商业复盘长图 / 科学原理解析长图 / 一图读懂"，或要为公众号与小红书配图文，或提到"用黑白手绘漫画风格做长图"，即使没有明确说出"长图"二字也应使用本技能。
+compatibility: 需要 Python 3（Pillow、numpy）与 Node.js 18+；Canvas 渲染线首次使用前须在 skill 根目录 npm install（@napi-rs/canvas 预编译 Skia 绑定，无需系统库）。生图上游由用户自配：~/.config/pic-flow/providers.json 或 PICFLOW_IMAGE_* 环境变量。
 ---
 
 # pic-flow：黑白手绘长图流水线
@@ -31,9 +31,13 @@ whenToUse: 用户想制作"长图 / 科普长图 / 漫画长图 / 叙事长图 /
 
 锁定后直接进入脚手架创建工程。
 
-## 快速开始（五步）
+## 快速开始
 
 ```bash
+# 前置（仅首次）：在 skill 根目录安装 Canvas 渲染线依赖（@napi-rs/canvas 预编译 Skia 绑定，无需系统库）
+# 后面所有 node scripts/*.mjs 命令（机检/渲染/拼接/Web 控制台）都依赖它
+cd <本skill目录> && npm install
+
 # 0. 脚手架：生成独立自包含项目（脚本与字体软链 + 默认 story × story-flow × bw-sketch 骨架）
 #    标准项目根：~/pic-flow-projects/<主题名>/
 #    产物位置：assets/ 生成素材 · sheets/ 精灵图原图 · blocks/ 渲染块 · output/ 拼接成品长图（唯一交付物）
@@ -73,7 +77,7 @@ node scripts/render.mjs layout/block1.json -o blocks/stage1.png --debug
 #      - 执行中心压缩打分（1-10分制，7.0~8.5 工业基线），硬性碰撞或文字被遮直接驳回！
 #   → 改 layout 坐标/重绘素材 → 复渲确认 → 评审代理给出【PERFECT PASS】后出正式稿：
 node scripts/render.mjs layout/block1.json -o blocks/final1.png
-#   → read_image 终验
+#   → 对正式稿做一次读图终验（遮挡、留白、跨块一致性，人眼/读图确认后才算交付）
 
 # 5. 拼接
 node scripts/stitch.mjs "output/标题_长图.jpg" blocks/final*.png

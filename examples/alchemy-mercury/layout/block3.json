@@ -80,7 +80,7 @@
       "type": "asset",
       "file": "c3c_sublimation.png",
       "x": 280,
-      "y": 1480,
+      "y": 1536,
       "height": 400,
       "anchor": "cc"
     },
@@ -88,7 +88,7 @@
       "type": "asset",
       "file": "c3d_amalgam.png",
       "x": 780,
-      "y": 1480,
+      "y": 1536,
       "height": 380,
       "anchor": "cc",
       "content": "『水银流动聚散由心，\n更能钻入金铜形成【汞齐】！』",
@@ -97,8 +97,8 @@
     {
       "type": "text",
       "content": "『水银不仅流动聚散由心，\n更能钻入金铜之中，形成神奇【汞齐】！』",
-      "x": 780,
-      "y": 1180,
+      "x": 605,
+      "y": 1219,
       "size": 26,
       "bold": true,
       "align": "center",
@@ -113,31 +113,31 @@
           10,
           16
         ],
-        "tail": "bl"
+        "tail": "none"
       }
     },
     {
       "type": "rule",
       "x1": 140,
       "x2": 940,
-      "y": 1720,
+      "y": 1798,
       "color": "#EFECE6"
     },
     {
       "type": "text",
       "content": "在没有原子概念的古人眼中，这种转化太具冲击力了：\n鲜红坚硬的石头消失了，变成能滚动的活金属，随后还能复归原貌！\n这绝不是普通的死物，\n而是拥有一种〖变化而不灭、死而复生〗的造化神力！\n而‘长生’，不正是肉体经历一次脱胎换骨的根本转化吗？",
-      "x": 540,
-      "y": 1800,
+      "x": 556,
+      "y": 1878,
       "size": 32,
       "align": "center",
       "max_width": 960,
-      "line_height": 1.6
+      "line_height": 2
     },
     {
       "type": "text",
       "content": "『变化而不亡，正是长生的至高形态』",
       "x": 540,
-      "y": 2520,
+      "y": 2420,
       "size": 36,
       "bold": true,
       "align": "center",

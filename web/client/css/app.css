@@ -713,6 +713,142 @@ body {
   image-rendering: auto;
 }
 
+/* 空格按住进入平移模式：抓手光标 */
+.canvas-viewport.panning,
+.canvas-viewport.panning:active {
+  cursor: grab;
+}
+
+/* 框选矩形 */
+.marquee-box {
+  position: absolute;
+  border: 1px solid var(--accent-blue);
+  background: rgba(59, 130, 246, 0.08);
+  pointer-events: none;
+  z-index: 40;
+  border-radius: 2px;
+}
+
+/* 画布内文本编辑覆盖层（底色由 JS 按画布底色内联设置，不透明，防止下层重影） */
+#inline-text-editor {
+  margin: 0;
+  border: none;
+  outline: 2px solid var(--accent-blue);
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  caret-color: #2563eb;
+  z-index: 50;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.25);
+}
+
+/* 剧本分镜 markdown 正文 */
+.md-body {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.75;
+  word-break: break-word;
+}
+.md-body h1,
+.md-body h2,
+.md-body h3,
+.md-body h4 {
+  color: #fff;
+  margin: 18px 0 8px;
+  line-height: 1.4;
+}
+.md-body h1 { font-size: 17px; }
+.md-body h2 { font-size: 15px; }
+.md-body h3 { font-size: 13.5px; }
+.md-body h4 { font-size: 13px; }
+.md-body h1:first-child { margin-top: 0; }
+.md-body p { margin: 6px 0; }
+.md-body ul,
+.md-body ol { margin: 6px 0; padding-left: 20px; }
+.md-body li { margin: 3px 0; }
+.md-body blockquote {
+  margin: 8px 0;
+  padding: 6px 12px;
+  border-left: 3px solid var(--accent);
+  background: rgba(249, 115, 22, 0.06);
+  color: var(--text-secondary);
+  border-radius: 0 6px 6px 0;
+}
+.md-body blockquote p { margin: 2px 0; }
+.md-body code {
+  background: #27272a;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fbbf24;
+}
+.md-body pre {
+  background: #18181b;
+  border: 1px solid var(--border-color);
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.md-body pre code { background: none; padding: 0; }
+.md-body hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 14px 0;
+}
+.md-body a { color: #60a5fa; }
+.md-body strong { color: #fff; }
+.md-body table { border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+.md-body th,
+.md-body td { border: 1px solid var(--border-color); padding: 4px 8px; }
+.md-body th { background: #18181b; color: #fff; }
+
+/* 剧本中可点击跳转的 Block 标题 */
+.md-body .md-block-link {
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: -8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.md-body .md-block-link:hover {
+  background: rgba(249, 115, 22, 0.12);
+  color: var(--accent);
+}
+.md-body .md-block-link::after {
+  content: ' ↪';
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.md-body .md-block-link:hover::after { opacity: 1; }
+
+/* 快捷键速查表 */
+.shortcut-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.shortcut-row kbd {
+  font-family: inherit;
+  background: #27272a;
+  border: 1px solid #3f3f46;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 2px 8px;
+  color: #fff;
+  white-space: nowrap;
+  font-size: 11.5px;
+}
+.shortcut-row span { color: var(--text-secondary); }
+
 /* 右侧栏：属性检查器 */
 .editor-sidebar-right {
   width: var(--inspector-w);

@@ -25,8 +25,8 @@
     {
       "type": "text",
       "content": "『烧之愈久，变化愈妙！\n此物定藏有肉身长生的秘钥！』",
-      "x": 760,
-      "y": 360,
+      "x": 567,
+      "y": 396,
       "size": 26,
       "bold": true,
       "align": "center",
@@ -37,15 +37,18 @@
         "style": "fill",
         "bg": "#F6A83C",
         "color": "#4A2800",
-        "pad": [10, 16],
-        "tail": "bl"
+        "pad": [
+          10,
+          16
+        ],
+        "tail": "br"
       }
     },
     {
       "type": "asset",
       "file": "c1a_furnace_smoke.png",
       "x": 280,
-      "y": 660,
+      "y": 725,
       "height": 380,
       "anchor": "cc"
     },
@@ -53,7 +56,7 @@
       "type": "asset",
       "file": "c1b_alchemist_look.png",
       "x": 780,
-      "y": 660,
+      "y": 725,
       "height": 380,
       "anchor": "cc"
     },
@@ -61,14 +64,14 @@
       "type": "rule",
       "x1": 140,
       "x2": 940,
-      "y": 890,
+      "y": 995,
       "color": "#EFECE6"
     },
     {
       "type": "text",
       "content": "如果只用一句轻飘飘的『古人愚昧迷信』打发，解释太廉价了。\n真正令人惊叹的真相是：\n【他们的观察里有真实的化学反应，但理论解释框架彻底错了】！",
-      "x": 540,
-      "y": 950,
+      "x": 545,
+      "y": 1081,
       "size": 32,
       "align": "center",
       "max_width": 980,
@@ -77,8 +80,8 @@
     {
       "type": "text",
       "content": "『以凡人之躯，\n真能借金石化为不朽？』",
-      "x": 280,
-      "y": 1150,
+      "x": 273,
+      "y": 1307,
       "size": 26,
       "bold": true,
       "align": "center",
@@ -89,23 +92,26 @@
         "style": "outline",
         "bg": "#FFFFFF",
         "color": "#2F2A26",
-        "pad": [10, 16],
+        "pad": [
+          10,
+          16
+        ],
         "tail": "bc"
       }
     },
     {
       "type": "asset",
       "file": "c1c_emperor_eat.png",
-      "x": 280,
-      "y": 1490,
+      "x": 273,
+      "y": 1653,
       "height": 380,
       "anchor": "cc"
     },
     {
       "type": "asset",
       "file": "c1d_question_mark.png",
-      "x": 780,
-      "y": 1490,
+      "x": 782,
+      "y": 1662,
       "height": 380,
       "anchor": "cc"
     },
@@ -113,14 +119,15 @@
       "type": "rule",
       "x1": 140,
       "x2": 940,
-      "y": 1730,
-      "color": "#EFECE6"
+      "y": 2014,
+      "color": "#EFECE6",
+      "x": -25
     },
     {
       "type": "text",
       "content": "在一口燃烧千年的丹炉里，\n交织着〖真实实验、深刻误读、宇宙信念与制度力量〗。\n让我们抛弃现代人的傲慢优越感，\n还原两千年前这套高度自洽的认知闭环！",
-      "x": 540,
-      "y": 1810,
+      "x": 545,
+      "y": 2083,
       "size": 32,
       "align": "center",
       "max_width": 940,

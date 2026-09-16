@@ -110,7 +110,7 @@ def main():
         encoding="utf-8")
     (root / "README.md").write_text(
         f"# {args.title}\n\n模板 {args.template} × 风格 {args.style} × 布局 {args.layout}\n"
-        "流程详见 CONTENT.md 与 skill「pic-flow」（~/.dsh/skills/pic-flow/SKILL.md）。\n",
+        f"流程详见 CONTENT.md 与 skill「pic-flow」（{SKILL_DIR}/SKILL.md）。\n",
         encoding="utf-8")
     print(f"[new_project] 已创建 {root}")
     print(f"  内容模板={args.template}  风格={args.style}  布局={args.layout}")
@@ -122,6 +122,7 @@ def main():
     print("        3) python3 scripts/make_transparent.py assets/*.png")
     print("        4) python3 scripts/check_edges.py assets/*.png   # 查方图感（硬边数应趋近 0）")
     print("  排版/机检（Canvas 官方默认方案）：")
+    print("        （首次先在 skill 根目录 npm install，装 @napi-rs/canvas）")
     print("        node scripts/render.mjs layout/block1.json -o blocks/final1.png [--debug]")
     print("        node scripts/checks/lint.mjs  layout/block1.json")
     print("        node scripts/checks/geom.mjs  layout/block1.json")

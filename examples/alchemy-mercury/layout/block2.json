@@ -26,7 +26,7 @@
       "type": "asset",
       "file": "c2a_decay_vs_gold.png",
       "x": 540,
-      "y": 590,
+      "y": 610,
       "height": 400,
       "anchor": "cc"
     },
@@ -34,14 +34,14 @@
       "type": "rule",
       "x1": 140,
       "x2": 940,
-      "y": 810,
+      "y": 849,
       "color": "#EFECE6"
     },
     {
       "type": "text",
       "content": "黄金却截然相反：『黄金入火，百炼不消；埋之，毕天不朽！』\n既然它在烈火中反复煅烧毫发无损，深埋地下历经千年不腐不锈，\n便证明它体内蕴含着超自然的【永恒坚固之性】！",
       "x": 540,
-      "y": 870,
+      "y": 900,
       "size": 32,
       "align": "center",
       "max_width": 980,
@@ -51,7 +51,7 @@
       "type": "text",
       "content": "『夫金丹之为物，\n盖【假求于外物以自坚固】！』",
       "x": 280,
-      "y": 1050,
+      "y": 1103,
       "size": 26,
       "bold": true,
       "align": "center",
@@ -72,21 +72,22 @@
     {
       "type": "asset",
       "file": "c2b_gehong.png",
-      "x": 280,
-      "y": 1400,
-      "height": 400,
+      "x": 258,
+      "y": 1421,
+      "height": 358,
       "anchor": "cc",
-      "max_width": 540
+      "max_width": 540,
+      "width": 378
     },
     {
       "type": "text",
       "content": "葛洪的核心推论极为直白：\n铜青涂在脚底，能让皮肉在水中不易腐坏；\n外物既然能改变肉体状态，\n那么把不朽的金石吃进身体，\n人的骨肉自然也能分享这种〖百炼不朽〗的坚固！",
-      "x": 520,
-      "y": 1240,
+      "x": 464,
+      "y": 1204,
       "size": 30,
       "align": "left",
-      "max_width": 520,
-      "line_height": 1.6
+      "max_width": 564,
+      "line_height": 2
     },
     {
       "type": "rule",

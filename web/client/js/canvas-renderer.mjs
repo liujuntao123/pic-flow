@@ -27,6 +27,17 @@ const DEFAULT_SIZE = 40;
 const DEFAULT_MAX_WIDTH = 940;
 const DEFAULT_LINE_HEIGHT = 1.5;
 
+// 拥有真实粗体字面的字体族：'bold ' 前缀会选中 700 字面（真字形，锐利）。
+// 引擎侧（text.mjs DEFAULT_FONTS）bold=换用独立粗体文件，没有粗体文件的字体
+// 一律回退常规体；浏览器若对这些字体仍发 'bold ' 前缀，会触发**合成粗体**
+// （把字形轮廓描边加粗）——低倍率缩放下发糊，且与最终 PNG 不一致。
+// 这就是「画布上加粗的字看起来很模糊」的根源。
+const HAS_REAL_BOLD = {
+  body: true,      // LXGWWenKai-Medium 注册为 700 字面
+  sans: true,      // Noto Sans CJK 自带 Bold
+  serif: true,     // Noto Serif CJK 自带 Bold
+};
+
 export class CanvasRenderer {
   constructor() {
     this.imageCache = new Map();
@@ -35,10 +46,19 @@ export class CanvasRenderer {
   }
 
   async ensureFontsLoaded() {
-    if (document.fonts) {
+    if (!document.fonts) return;
+    // canvas 不会自动触发 @font-face 下载，必须显式 load 每个族（含 bold 变体），
+    // 否则首次渲染会用回退字体度量排版，字体到位后画面也不重绘。
+    try {
+      const probes = [];
+      for (const stack of Object.values(FONT_MAP)) {
+        probes.push(document.fonts.load(`40px ${stack}`, '常'));
+        probes.push(document.fonts.load(`bold 40px ${stack}`, '常'));
+      }
+      await Promise.all(probes);
       await document.fonts.ready;
-      this.fontsLoaded = true;
-    }
+    } catch {}
+    this.fontsLoaded = true;
   }
 
   /**
@@ -130,11 +150,24 @@ export class CanvasRenderer {
   }
 
   /**
-   * 字体字符串构造
+   * 字体字符串构造。
+   * bold 只对有真实 700 字面的字体族生效（选中真字形）；其余族省略前缀回退常规体，
+   * 与引擎「无粗体文件回退常规」的口径一致，同时避免合成粗体的发糊描边。
    */
   getFontString(size, bold, fontType = 'body') {
     const family = FONT_MAP[fontType] || FONT_MAP.body;
-    return `${bold ? 'bold ' : ''}${Math.round(size)}px ${family}`;
+    const realBold = Boolean(bold) && Boolean(HAS_REAL_BOLD[fontType]);
+    return `${realBold ? 'bold ' : ''}${Math.round(size)}px ${family}`;
+  }
+
+  /** 字体族 CSS 栈（画布内联编辑器的覆盖层 textarea 与画布字形保持一致） */
+  getFontFamily(fontType = 'body') {
+    return FONT_MAP[fontType] || FONT_MAP.body;
+  }
+
+  /** 该字体族是否有真实粗体字面（决定 bold 是否生效，与引擎口径一致） */
+  isRealBoldFont(fontType = 'body') {
+    return Boolean(HAS_REAL_BOLD[fontType]);
   }
 
   /**
@@ -454,6 +487,8 @@ export class CanvasRenderer {
         index,
         element: el,
         box: [drawX, drawY, drawX + w, drawY + h],
+        // 素材的 rotate 是绕锚点 (x, y) 旋转（与上方 ctx.translate(x,y)→rotate 的口径一致）
+        rot: el.rotate ? { cx: x, cy: y, deg: el.rotate } : null,
         center: [x, y],
         width: w,
         height: h,
@@ -528,10 +563,38 @@ export class CanvasRenderer {
         ? [boxRect.x, boxRect.y, boxRect.x + boxRect.width, boxRect.y + boxRect.height]
         : [textLeft, textTop, textLeft + maxLineWidth, textTop + totalHeight];
 
+      // 命中数据：无气泡的文本按「实际每一行的行框」命中，而不是整个包围盒。
+      // 多行段落行长参差（尤其居中对齐）：按包围盒命中时，短行两侧的大量空白
+      // 会拦截视觉上不重叠的下方元素，表现为「元素点了选不中」。
+      let hitLines = null;
+      if (!boxRect) {
+        hitLines = [];
+        lines.forEach((line, li) => {
+          if (line.width <= 0) return;
+          let lx = textLeft;
+          if (align === 'center') lx = x - line.width / 2;
+          else if (align === 'right') lx = x - line.width;
+          hitLines.push({ x: lx, y: textTop + li * lineHeight, w: line.width, h: lineHeight });
+        });
+      }
+
+      // 行宽框架：宽度 = max_width（折行宽度），高度 = 内容自适应高度。
+      // 选中框与缩放手柄画在框架上 —— 拖手柄即改行宽且精确跟手；
+      // 命中热区仍按实际行框（hitLines），两者职责分离。
+      const wrapWidth = el.max_width ?? DEFAULT_MAX_WIDTH;
+      let frameLeft = x;
+      if (align === 'center') frameLeft = x - wrapWidth / 2;
+      else if (align === 'right') frameLeft = x - wrapWidth;
+      const frame = [frameLeft, textTop, frameLeft + wrapWidth, textTop + totalHeight];
+
       return {
         index,
         element: el,
         box: finalBox,
+        frame,
+        hitLines,
+        // 旋转信息：命中检测需把屏幕点逆旋转回元素坐标再比对包围盒
+        rot: el.rotate ? { cx: textLeft + maxLineWidth / 2, cy: textTop + totalHeight / 2, deg: el.rotate } : null,
         center: [textLeft + maxLineWidth / 2, textTop + totalHeight / 2],
         width: finalBox[2] - finalBox[0],
         height: finalBox[3] - finalBox[1],
@@ -624,6 +687,11 @@ export class CanvasRenderer {
 
     canvas.width = Math.round(W * scale * dpr);
     canvas.height = Math.round(H * scale * dpr);
+    // CSS 显示尺寸必须显式锁为 W×H 的缩放尺寸：只改 width/height 属性时，
+    // HiDPI 屏（dpr>1）会把画布按属性像素再放大 dpr 倍显示，鼠标坐标换算
+    // 全部偏移 dpr 倍 —— 表现为「画布热区错位，元素点了选不中」。
+    canvas.style.width = `${Math.round(W * scale)}px`;
+    canvas.style.height = `${Math.round(H * scale)}px`;
 
     ctx.save();
     ctx.scale(scale * dpr, scale * dpr);
@@ -661,18 +729,59 @@ export class CanvasRenderer {
 
     const hitBoxes = [];
     const elements = layout.elements || [];
+    // 选中参数兼容单个索引与索引数组（多选）；最后一个为主选中（唯一显示变换手柄）
+    const selArr = Array.isArray(selectedIndex)
+      ? selectedIndex.filter((i) => Number.isInteger(i) && i >= 0 && i < elements.length)
+      : (Number.isInteger(selectedIndex) && selectedIndex >= 0 && selectedIndex < elements.length
+        ? [selectedIndex] : []);
+    const primary = selArr.length > 0 ? selArr[selArr.length - 1] : -1;
+    const hiddenIndex = options.hiddenIndex ?? -1;
 
     for (let i = 0; i < elements.length; i += 1) {
       const el = elements[i];
-      const isSelected = i === selectedIndex;
+      if (i === hiddenIndex) {
+        // 画布内编辑中：元素本体不可见（透明绘制保持几何与命中数据），
+        // 文字由覆盖层 textarea 实时呈现
+        ctx.save();
+        ctx.globalAlpha = 0;
+        hitBoxes.push(await this.drawElement(ctx, el, i, projectUrlBase, theme, false));
+        ctx.restore();
+        continue;
+      }
+      const isSelected = i === primary;
       const res = await this.drawElement(ctx, el, i, projectUrlBase, theme, isSelected);
       hitBoxes.push(res);
     }
 
-    // 绘制选中元素的包围盒与交互手柄
-    if (selectedIndex >= 0 && selectedIndex < hitBoxes.length) {
-      const target = hitBoxes[selectedIndex];
-      this.drawTransformHandles(ctx, target);
+    // 多选时非主选元素画轻量轮廓，主选中画变换框与手柄；
+    // 画布内编辑中的主选只留轻量轮廓（文字本体由编辑框呈现，手柄反而是干扰）
+    for (const i of selArr) {
+      if (i === primary) continue;
+      if (hitBoxes[i]) this.drawSelectionOutline(ctx, hitBoxes[i], scale);
+    }
+    if (primary >= 0 && hitBoxes[primary]) {
+      if (primary === hiddenIndex) this.drawSelectionOutline(ctx, hitBoxes[primary], scale);
+      else this.drawTransformHandles(ctx, hitBoxes[primary]);
+    }
+
+    // 拖拽对齐参考线（元素边缘/中线 + 画布边/居中线），随移动实时显示
+    const guides = options.guides;
+    if (guides && ((guides.v && guides.v.length) || (guides.h && guides.h.length))) {
+      ctx.save();
+      ctx.strokeStyle = '#F43F5E';
+      ctx.lineWidth = Math.max(1, 1 / scale);
+      ctx.setLineDash([5 / scale, 5 / scale]);
+      ctx.beginPath();
+      for (const gx of guides.v || []) {
+        ctx.moveTo(gx, 0);
+        ctx.lineTo(gx, H);
+      }
+      for (const gy of guides.h || []) {
+        ctx.moveTo(0, gy);
+        ctx.lineTo(W, gy);
+      }
+      ctx.stroke();
+      ctx.restore();
     }
 
     ctx.restore();
@@ -680,67 +789,166 @@ export class CanvasRenderer {
   }
 
   /**
-   * 绘制变换框与手柄
+   * 多选中非主选元素的轻量选中轮廓（区分于主选的蓝框+手柄）
+   */
+  drawSelectionOutline(ctx, target, scale = 1) {
+    const [x0, y0, x1, y1] = target.frame || target.box;
+    ctx.save();
+    if (target.rot && target.rot.deg) {
+      ctx.translate(target.rot.cx, target.rot.cy);
+      ctx.rotate((target.rot.deg * Math.PI) / 180);
+      ctx.translate(-target.rot.cx, -target.rot.cy);
+    }
+    ctx.strokeStyle = '#60A5FA';
+    ctx.lineWidth = Math.max(1, 1.5 / scale);
+    ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+    ctx.restore();
+  }
+
+  /**
+   * 各元素类型可用的缩放手柄（绘制与命中共用同一份口径）：
+   *  · text: 行宽框架上的手柄 —— 拖拽改折行宽度 max_width，高度随内容自适应。
+   *    居中对齐两侧对称生长用左右两个；左对齐只有右缘是行宽边界；右对齐反之。
+   *  · rule: 沿线方向两个 —— 拉长/缩短线段端点
+   *  · asset / card: 全部 8 个 —— 角手柄等比缩放，边手柄单轴伸缩
+   */
+  handlesFor(el) {
+    if (el.type === 'text') {
+      const align = el.align || 'center';
+      if (align === 'center') return ['e', 'w'];
+      return [align === 'left' ? 'e' : 'w'];
+    }
+    if (el.type === 'rule') return el.vertical ? ['n', 's'] : ['e', 'w'];
+    return ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+  }
+
+  /** 8 向手柄在包围盒（文本优先用行宽框架）上的位置 */
+  handlePositions(target) {
+    const [x0, y0, x1, y1] = target.frame || target.box;
+    const mx = (x0 + x1) / 2;
+    const my = (y0 + y1) / 2;
+    return {
+      nw: [x0, y0], n: [mx, y0], ne: [x1, y0], e: [x1, my],
+      se: [x1, y1], s: [mx, y1], sw: [x0, y1], w: [x0, my],
+    };
+  }
+
+  /**
+   * 命中一个变换手柄（须先排除拖拽移动），返回手柄 id 或 null。
+   * 旋转元素的包围盒/手柄是跟着元素转的：先把命中点逆旋转回元素坐标系再比对。
+   */
+  findHandle(target, canvasX, canvasY, zoom = 1) {
+    if (!target) return null;
+    const [px, py] = this.toElementPoint(target, canvasX, canvasY);
+    const radius = Math.min(24, 10 / Math.max(0.01, zoom));
+    const positions = this.handlePositions(target);
+    let best = null;
+    let bestD = Infinity;
+    for (const id of this.handlesFor(target.element)) {
+      const [hx, hy] = positions[id];
+      const d = Math.hypot(px - hx, py - hy);
+      if (d <= radius && d < bestD) {
+        best = id;
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  /**
+   * 绘制变换框与手柄（按元素类型过滤；旋转元素的手柄跟随旋转）
    */
   drawTransformHandles(ctx, target) {
-    const [x0, y0, x1, y1] = target.box;
+    const el = target.element;
+    // 文本用行宽框架做选中框（拖手柄改行宽），其余元素用实际包围盒
+    const [x0, y0, x1, y1] = target.frame || target.box;
     const w = x1 - x0;
     const h = y1 - y0;
 
     ctx.save();
+    if (target.rot && target.rot.deg) {
+      ctx.translate(target.rot.cx, target.rot.cy);
+      ctx.rotate((target.rot.deg * Math.PI) / 180);
+      ctx.translate(-target.rot.cx, -target.rot.cy);
+    }
+
     // 选中蓝框
     ctx.strokeStyle = '#2563EB';
     ctx.lineWidth = 2.5;
     ctx.strokeRect(x0, y0, w, h);
 
-    // 绘制手柄
+    // 绘制该类型可用的手柄
     const handleSize = 8;
-    const handles = [
-      [x0, y0, 'nw'],
-      [x0 + w / 2, y0, 'n'],
-      [x1, y0, 'ne'],
-      [x1, y0 + h / 2, 'e'],
-      [x1, y1, 'se'],
-      [x0 + w / 2, y1, 's'],
-      [x0, y1, 'sw'],
-      [x0, y0 + h / 2, 'w'],
-    ];
-
+    const positions = this.handlePositions(target);
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#2563EB';
     ctx.lineWidth = 2;
-
-    for (const [hx, hy] of handles) {
+    for (const id of this.handlesFor(el)) {
+      const [hx, hy] = positions[id];
       ctx.fillRect(hx - handleSize / 2, hy - handleSize / 2, handleSize, handleSize);
       ctx.strokeRect(hx - handleSize / 2, hy - handleSize / 2, handleSize, handleSize);
     }
+    ctx.restore();
 
-    // 标签：显示类型与坐标
-    const el = target.element;
+    // 标签：显示类型与坐标（不随元素旋转，保持可读）
     const info = `${el.type} (${Math.round(el.x ?? x0)}, ${Math.round(el.y ?? y0)}) ${Math.round(w)}×${Math.round(h)}`;
+    ctx.save();
     ctx.font = 'bold 12px sans-serif';
     const tagW = ctx.measureText(info).width + 12;
     ctx.fillStyle = '#2563EB';
     ctx.fillRect(x0, y0 - 22, tagW, 20);
     ctx.fillStyle = '#FFFFFF';
     ctx.fillText(info, x0 + 6, y0 - 7);
-
     ctx.restore();
   }
 
   /**
-   * 命中检测（从上往下点选）
+   * 把屏幕命中点逆旋转回元素自身坐标系（元素 rotate 时包围盒是未旋转矩形）
    */
-  hitTest(hitBoxes, canvasX, canvasY) {
-    // 优先反序遍历（最顶层元素优先命中）
+  toElementPoint(item, px, py) {
+    if (!item.rot || !item.rot.deg) return [px, py];
+    const rad = (-item.rot.deg * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const dx = px - item.rot.cx;
+    const dy = py - item.rot.cy;
+    return [item.rot.cx + dx * cos - dy * sin, item.rot.cy + dx * sin + dy * cos];
+  }
+
+  /**
+   * 单点命中一个 hitBox：无气泡文本按行框，其余按包围盒
+   */
+  hitOne(item, canvasX, canvasY, pad) {
+    const [px, py] = this.toElementPoint(item, canvasX, canvasY);
+    if (item.hitLines && item.hitLines.length > 0) {
+      return item.hitLines.some(
+        (r) => px >= r.x - pad && px <= r.x + r.w + pad && py >= r.y - pad && py <= r.y + r.h + pad,
+      );
+    }
+    const [x0, y0, x1, y1] = item.box;
+    return px >= x0 - pad && px <= x1 + pad && py >= y0 - pad && py <= y1 + pad;
+  }
+
+  /**
+   * 命中检测（从上往下点选）。
+   * @param {number} [zoom=1] 当前视图缩放：命中容差按屏幕像素恒定（低倍率下窄元素才点得中）
+   */
+  hitTest(hitBoxes, canvasX, canvasY, zoom = 1) {
+    const hits = this.hitTestAll(hitBoxes, canvasX, canvasY, zoom);
+    return hits.length > 0 ? hits[0] : -1;
+  }
+
+  /**
+   * 命中检测全量版：返回该点从顶到底命中的所有元素（供 Alt+点击轮换穿透选择）
+   */
+  hitTestAll(hitBoxes, canvasX, canvasY, zoom = 1) {
+    // 容差 ≈ 屏幕上 6px，换算回画布坐标；钳制避免高倍率下容差膨胀
+    const pad = Math.min(12, 6 / Math.max(0.01, zoom));
+    const hits = [];
     for (let i = hitBoxes.length - 1; i >= 0; i -= 1) {
       const item = hitBoxes[i];
-      const [x0, y0, x1, y1] = item.box;
-      const pad = 6;
-      if (canvasX >= x0 - pad && canvasX <= x1 + pad && canvasY >= y0 - pad && canvasY <= y1 + pad) {
-        return item.index;
-      }
+      if (this.hitOne(item, canvasX, canvasY, pad)) hits.push(item.index);
     }
-    return -1;
+    return hits;
   }
 }

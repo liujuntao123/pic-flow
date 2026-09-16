@@ -17,6 +17,11 @@ class App {
   async init() {
     console.log('[App] 初始化 pic-flow Canvas Studio...');
     this.bindHeaderEvents();
+    // canvas 不触发 @font-face 下载，必须显式加载完再首渲染，
+    // 否则首屏会用回退字体度量排版（字体到位后也不重绘）
+    try {
+      await this.renderer.ensureFontsLoaded();
+    } catch {}
     await this.loadProjects();
   }
 
