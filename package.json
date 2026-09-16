@@ -16,7 +16,6 @@
     "clearance": "node pipeline/canvas/checks/clearance.mjs",
     "check": "node pipeline/canvas/checks/all.mjs",
     "stitch": "node pipeline/canvas/stitch.mjs",
-    "html": "node pipeline/html/render.mjs",
     "test": "node tests/run.mjs"
   },
   "dependencies": {

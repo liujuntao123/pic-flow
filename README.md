@@ -46,7 +46,7 @@ pic-flow 将流水线严格解耦为可控节点：
 运行环境分两档：
 
 - **排版/机检（官方 Canvas 线，推荐）**：Node.js 18+，并在 skill 根目录跑一次
-  `npm install`（只装 `@napi-rs/canvas`；`playwright-core` 是 HTML 排版线的可选依赖）。
+  `npm install`（只装 `@napi-rs/canvas`；`playwright-core` 供 Playwright 端到端测试使用）。
 - **生图线（素材生成与标准化）**：Python 3.8+、Pillow、numpy。
 
 **生图功能需配置你自己的 OpenAI Images 兼容
@@ -242,7 +242,6 @@ $EDITOR ~/.config/pic-flow/providers.json   # 填入你自己的 base 与 key
 |---|---|
 | `pipeline/` | 生图线（Python：`gen_sheets.py` 逐块四图 / `slice_sheet.py` 切分 / `gen_all.py` 单张 / `make_transparent.py` 标准化 / `check_edges.py` 方图感机检 / `roots.py` 项目根推断）、`new_project.py` 脚手架 |
 | `pipeline/canvas/` | **唯一官方排版线（Node/Skia）**：`render.mjs` · `stitch.mjs` · `preview.mjs` · `checks/`（`lint` `geom` `occlusion` `clearance` + `all.mjs` 四检闸门）· `lib/` |
-| `pipeline/html/` | 可选的第三条线：Canvas 出背景图 + 浏览器排版文字（Playwright 栅格化） |
 | `web/` | 可视化人机共创工作台（`server/` 本地服务 + `client/` Canvas 编辑器），`npm run web` |
 | `tests/` | 测试：`npm test`（渲染冒烟 / 全字体 / 预览↔渲染折行一致性），以及 Playwright 端到端脚本 |
 | `templates/` | 核心模板（`story.md` 内容骨架 + `storyboard.json` 分镜定义 + `sheets.json` 逐块四图规格） |

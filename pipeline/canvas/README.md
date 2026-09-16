@@ -27,7 +27,7 @@ pipeline/canvas/
 
 ```bash
 cd <skill 根> && npm install     # 主依赖只装 @napi-rs/canvas（预编译 Skia 绑定，无需系统库）；
-                                 # devDependencies 里的 playwright-core 只有 HTML 排版线用得上
+                                 # devDependencies 里的 playwright-core 供 Playwright 端到端测试使用
 ```
 
 ## 用法

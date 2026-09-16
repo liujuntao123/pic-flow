@@ -73,7 +73,7 @@ export function drawPoly(ctx, pts, fill, stroke, lineWidth = 3) {
 }
 
 /**
- * 气泡/标签底板。与 compose.paint_box 的八种形制一一对应。
+ * 气泡/标签底板（八种形制）。
  *   fill | pill | outline | sketch | ink | stamp | burst | marker
  * box.tail: bl|bc|br|tl|tc|tr|lc|rc —— 小三角指向发话实体。
  */

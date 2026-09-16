@@ -332,9 +332,7 @@ function drawArrow(ctx, el) {
  * @param {number} scale   输出倍率：1 = layout 坐标口径（默认）；2 = 超采样 2 倍出图
  */
 /**
- * @param {object} opts.paint 只画某类图层的过滤：元素类型或 'text'/其它。
- *   缺省 = 全画。HTML 排版线用 `paint: (t) => t !== 'text'` 只出背景层（插图/气泡/线条），
- *   文字交给浏览器渲染 —— 这就是「背景图 + 绝对定位文本块」里的背景图。
+ * @param {object} opts.paint 只画某类图层的过滤：元素类型或 'text'/其它，缺省 = 全画。
  */
 export async function render(layout, outPath, debug = false, rootOverride, scale = 1, opts = {}) {
   const root = rootOverride || findRoot(outPath || process.cwd());
