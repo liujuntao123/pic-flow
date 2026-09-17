@@ -28,6 +28,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from genlib import STYLE_SUFFIX, generate  # noqa: E402
 from roots import find_root  # noqa: E402
+from slice_sheet import slice_sheet  # noqa: E402
 
 ROOT = find_root(Path.cwd())
 
@@ -108,20 +109,16 @@ def run_sheet(sheet: dict, suffix: str, anchors: dict, force: bool) -> Tuple[str
     else:
         print(f"[have] {name}: sheet 已在，只重切", flush=True)
 
-    # 切分脚本优先用 skill 自带的（项目里没软链 scripts/ 时也能跑）
-    slicer = ROOT / "scripts" / "slice_sheet.py"
-    if not slicer.exists():
-        slicer = Path(__file__).resolve().parent / "slice_sheet.py"
-    r = subprocess.run(
-        [sys.executable, str(slicer), str(sheet_png),
-         "--cols", str(cols), "--rows", str(rows), "--names", ",".join(names),
-         "--outdir", str(ROOT / "assets"), "--debug"],
-        capture_output=True, text=True,
-    )
-    sys.stdout.write(r.stdout)
-    if r.returncode != 0:
-        sys.stderr.write(r.stderr)
-        return name, False, f"切分告警/失败（exit {r.returncode}）"
+    # 进程内直接切分，消除子进程开销与参数序列化
+    try:
+        res = slice_sheet(sheet_png, cols, rows, names, outdir=ROOT / "assets", debug=True)
+        for item in res["report"]:
+            if item.get("status") == "ok":
+                print(f"  [ok] {item['name']}: {item['size'][0]}x{item['size'][1]} (格子 {item['cell'][0]}x{item['cell'][1]}, 墨迹占比 {item['fill']})", flush=True)
+        if not res["ok"]:
+            return name, False, f"切分告警: {'; '.join(res['problems'])}"
+    except Exception as e:
+        return name, False, f"切分异常: {e}"
     return name, True, "ok"
 
 

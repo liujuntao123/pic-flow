@@ -335,6 +335,13 @@ const server = http.createServer(async (req, res) => {
       return sendFile(req, res, filePath);
     }
 
+    // 3.5 同构排版与渲染核心 /core/*
+    if (pathname.startsWith('/core/')) {
+      const filePath = safeJoin(path.join(REPO_ROOT, 'pipeline/canvas/lib/core'), pathname.slice('/core/'.length));
+      if (!filePath) return sendJson(req, res, 403, { ok: false, error: '非法路径' });
+      return sendFile(req, res, filePath);
+    }
+
     // 4. 前端静态文件服务 (web/client/*)
     const clientPath = pathname === '/' || pathname === '' ? '/index.html' : pathname;
     const fullClientPath = safeJoin(CLIENT_DIR, clientPath);

@@ -5,10 +5,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { render } from '../../pipeline/canvas/render.mjs';
 import { stitch } from '../../pipeline/canvas/stitch.mjs';
-import { lint } from '../../pipeline/canvas/checks/lint.mjs';
-import { checkGeom } from '../../pipeline/canvas/checks/geom.mjs';
-import { occlusion } from '../../pipeline/canvas/checks/occlusion.mjs';
-import { clearance } from '../../pipeline/canvas/checks/clearance.mjs';
+import { inspectLayout } from '../../pipeline/canvas/checks/inspect.mjs';
 
 const execFileAsync = promisify(execFile);
 const __filename = fileURLToPath(import.meta.url);
@@ -569,78 +566,27 @@ export async function stitchProject(projectPath) {
   };
 }
 
-/**
- * 机检串行队列：四条机检靠 console.log 收集日志，而 console.log 是全局的。
- * 两个请求重叠时补丁会互相覆盖，甚至把 console.log 永久留成旧闭包 —— 用队列串行化。
- */
-let lintQueue = Promise.resolve();
-
-/** 运行某个分块的机检（串行执行，日志捕获不会串台） */
+/** 运行某个分块的机检（直接调用深模块，返回结构化诊断与格式化日志） */
 export async function lintBlock(projectPath, blockId) {
-  const run = () => lintBlockInner(projectPath, blockId);
-  const next = lintQueue.then(run, run);
-  // 队列本身不因单次失败而断掉
-  lintQueue = next.then(() => undefined, () => undefined);
-  return next;
-}
-
-async function lintBlockInner(projectPath, blockId) {
   const normBlockId = `${assertBlockId(blockId)}.json`;
   const filePath = path.join(projectPath, 'layout', normBlockId);
   if (!fs.existsSync(filePath)) {
     throw new HttpError(404, `分块文件不存在: ${normBlockId}`);
   }
 
-  // 捕获机检日志
-  const logs = [];
-  const origLog = console.log;
-  console.log = (...args) => {
-    logs.push(args.join(' '));
-    origLog(...args);
-  };
-
-  // 1. 静态布局 Lint
-  let lintRes = { hard: 0, warn: 0 };
-  let geomRes = null;
-  let occlusionRes = null;
-  let clearanceRes = null;
-  try {
-    try {
-      lintRes = lint(filePath);
-    } catch (err) {
-      lintRes = { hard: 1, warn: 0, error: err.message };
-    }
-
-    // 2. 排版几何机检 Geom
-    try {
-      geomRes = checkGeom(filePath);
-    } catch (err) {
-      geomRes = { error: err.message };
-    }
-
-    // 3. 遮挡与净空检查
-    try {
-      occlusionRes = await occlusion(filePath);
-    } catch (err) {
-      occlusionRes = { error: err.message };
-    }
-
-    try {
-      clearanceRes = await clearance(filePath);
-    } catch (err) {
-      clearanceRes = { error: err.message };
-    }
-  } finally {
-    console.log = origLog;
-  }
-
+  const report = await inspectLayout(filePath, { verbose: true, root: projectPath });
   return {
     blockId: normBlockId.replace('.json', ''),
-    lint: lintRes,
-    geom: geomRes,
-    occlusion: occlusionRes,
-    clearance: clearanceRes,
-    logs,
+    ok: report.ok,
+    hard: report.hard,
+    warn: report.warn,
+    lint: report.summary.lint,
+    geom: report.summary.geom.problems,
+    occlusion: report.summary.occlusion.bad,
+    clearance: report.summary.clearance.bad,
+    summary: report.summary,
+    diagnostics: report.diagnostics,
+    logs: report.logs,
   };
 }
 

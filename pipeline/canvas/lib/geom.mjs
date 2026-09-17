@@ -2,9 +2,11 @@
 // 机检全部建立在这里的几何上，保证「渲染什么就检查什么」。
 import path from 'node:path';
 import fs from 'node:fs';
-import { createCanvas } from './draw.mjs';
+import { createCanvas, drawAsset } from './draw.mjs';
 import { blockGeom, charWidth } from './text.mjs';
-import { parseCli } from './cli.mjs';
+import { parseCli, parseArgs, requireFiles } from './cli.mjs';
+
+export { parseArgs, requireFiles };
 
 /**
  * 全局统一的「墨迹」判据：像素不透明（alpha > 40）且不是近白的浅色（亮度 < 235）。
@@ -301,7 +303,6 @@ export function polyGap(field, mask, poly) {
 export async function inkMask(root, layout) {
   const W = layout.width;
   const H = layout.height;
-  const { drawAsset } = await import('../render.mjs');   // 动态引入：避开 render → geom 的静态环
   const canvas = createCanvas(W, H);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = true;
@@ -387,30 +388,6 @@ export function rectGapFast(field, mask, rect) {
     for (const y of [Math.round(y0), Math.round(y1)]) best = Math.min(best, fieldAt(field, x, y));
   }
   return best;
-}
-
-/**
- * 机检脚本的通用参数解析（走统一 cli.mjs，顺序无关、未知参数会报错）。
- * 无位置参数时返回空 files —— 调用方必须报用法并以非 0 退出，
- * 否则 `node checks/lint.mjs`（漏了文件参数）会「静默通过」，把机检链变成摆设。
- */
-export function parseArgs(argv, { allowMany = true } = {}) {
-  const { files, flags, errors } = parseCli(argv, { boolFlags: ['--debug'] });
-  return {
-    debug: Boolean(flags.debug),
-    files: allowMany ? files : files.slice(0, 1),
-    errors,
-    rest: files,
-  };
-}
-
-/** 机检脚本的统一入口守卫：参数不合法就打用法并非 0 退出。 */
-export function requireFiles(files, errors, usage) {
-  if (errors.length || !files.length) {
-    console.error(usage);
-    if (errors.length) console.error(`  ${errors.join('；')}`);
-    process.exit(2);
-  }
 }
 
 export function textWidth(line, el, theme) {

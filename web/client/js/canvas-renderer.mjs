@@ -1,7 +1,33 @@
 /**
  * pic-flow 浏览器端 Canvas 渲染与几何计算引擎
- * 与 Node/Skia 后端 (pipeline/canvas/lib) 口径完全一致
+ * 核心排版度量与矢量绘制逻辑委托给同构核心 (/core/index.mjs)，
+ * 保证与 Node/Skia 引擎 (pipeline/canvas/lib) 口径完全一致。
  */
+import {
+  MARKERS,
+  KINSOKU,
+  DEFAULT_SIZE,
+  DEFAULT_MAX_WIDTH,
+  DEFAULT_LINE_HEIGHT,
+  parseContent,
+  charMetrics,
+  padPair,
+  charColor,
+  wrapLines,
+  paintBox,
+  drawBarChart,
+  drawPieChart,
+  drawTable,
+  drawArrow,
+} from '/core/index.mjs';
+
+export {
+  MARKERS,
+  KINSOKU,
+  DEFAULT_SIZE,
+  DEFAULT_MAX_WIDTH,
+  DEFAULT_LINE_HEIGHT,
+};
 
 const FONT_MAP = {
   body: 'LXGWWenKai, "Noto Sans CJK SC", sans-serif',
@@ -15,17 +41,6 @@ const FONT_MAP = {
   sans: '"Noto Sans CJK SC", sans-serif',
   serif: '"Noto Serif CJK SC", serif',
 };
-
-// 避头标点（行尾悬挂）——必须与 pipeline/canvas/lib/text.mjs 的 KINSOKU 逐字一致，
-// 否则同一份 layout 在预览与真正渲染里折行结果不同（预览会骗人）。
-const KINSOKU = '，。！？；：、）】》%”…—』〗';
-
-// 与渲染引擎同一套默认值（pipeline/canvas/lib/text.mjs；SCHEMA.md 也是这么写的）。
-// 曾经这里写 32 / 9999 / 1.45，而引擎是 40 / 940 / 1.5：
-// 新建的文本元素（不带 max_width）在预览里排成一行，一渲染就折行/换字号。
-const DEFAULT_SIZE = 40;
-const DEFAULT_MAX_WIDTH = 940;
-const DEFAULT_LINE_HEIGHT = 1.5;
 
 // 拥有真实粗体字面的字体族：'bold ' 前缀会选中 700 字面（真字形，锐利）。
 // 引擎侧（text.mjs DEFAULT_FONTS）bold=换用独立粗体文件，没有粗体文件的字体
@@ -92,61 +107,17 @@ export class CanvasRenderer {
   }
 
   /**
-   * 解析带语义高亮的文本串
-   * 【关键词】橙 / 『引语』蓝 / 〖强信息〗红毛笔
+   * 解析带语义高亮的文本串（委托同构核心 parseContent）
    */
   parseTokens(text) {
-    const tokens = [];
-    let i = 0;
-    const n = text.length;
-
-    while (i < n) {
-      if (text.slice(i, i + 1) === '【') {
-        const end = text.indexOf('】', i + 1);
-        if (end !== -1) {
-          tokens.push({ type: 'hl', text: text.slice(i + 1, end) });
-          i = end + 1;
-          continue;
-        }
-      }
-      if (text.slice(i, i + 1) === '『') {
-        const end = text.indexOf('』', i + 1);
-        if (end !== -1) {
-          tokens.push({ type: 'quote', text: text.slice(i + 1, end) });
-          i = end + 1;
-          continue;
-        }
-      }
-      if (text.slice(i, i + 1) === '〖') {
-        const end = text.indexOf('〗', i + 1);
-        if (end !== -1) {
-          tokens.push({ type: 'warn', text: text.slice(i + 1, end) });
-          i = end + 1;
-          continue;
-        }
-      }
-
-      // 普通字符
-      let nextSpecial = n;
-      for (const m of ['【', '『', '〖', '\n']) {
-        const idx = text.indexOf(m, i);
-        if (idx !== -1 && idx < nextSpecial) nextSpecial = idx;
-      }
-
-      if (nextSpecial === i) {
-        if (text[i] === '\n') {
-          tokens.push({ type: 'newline', text: '\n' });
-          i += 1;
-          continue;
-        }
-        tokens.push({ type: 'normal', text: text[i] });
-        i += 1;
-      } else {
-        tokens.push({ type: 'normal', text: text.slice(i, nextSpecial) });
-        i = nextSpecial;
-      }
-    }
-    return tokens;
+    const raw = parseContent(text);
+    return raw.map(([char, style]) => {
+      if (char === '\n') return { type: 'newline', text: '\n' };
+      if (style === 'hl') return { type: 'hl', text: char };
+      if (style === 'quote') return { type: 'quote', text: char };
+      if (style === 'warn') return { type: 'warn', text: char };
+      return { type: 'normal', text: char };
+    });
   }
 
   /**
@@ -171,230 +142,42 @@ export class CanvasRenderer {
   }
 
   /**
-   * 排版多行文本（带避头点与换行）
+   * 排版多行文本（委托同构核心 wrapLines，保证避头点、ASCII词保护与 Node 引擎 100% 一致）
    */
   layoutTextLines(ctx, el, theme) {
     const content = el.content || '';
-    const rawLines = content.split('\n');
+    const chars = parseContent(content);
     const maxWidth = el.max_width ?? DEFAULT_MAX_WIDTH;
     const baseSize = el.size ?? DEFAULT_SIZE;
     const baseFont = el.font || 'body';
     const isBold = Boolean(el.bold);
 
-    const laidOutLines = [];
+    const measureChar = (ch, sz, b, f) => {
+      ctx.font = this.getFontString(sz, b, f);
+      return ctx.measureText(ch).width;
+    };
 
-    for (const rawLine of rawLines) {
-      if (!rawLine) {
-        laidOutLines.push({ width: 0, runs: [] });
-        continue;
-      }
+    const lines = wrapLines(chars, baseSize, isBold, maxWidth, baseFont, measureChar);
 
-      const tokens = this.parseTokens(rawLine);
-      // 展平成单个有样式的字块
-      const chars = [];
-      for (const tok of tokens) {
-        const tokType = tok.type;
-        const text = tok.text;
-        for (let c = 0; c < text.length; c += 1) {
-          const char = text[c];
-          let cSize = baseSize;
-          let cFont = baseFont;
-          let cBold = isBold;
-          let cColor = el.color || el.box?.color || theme?.text || '#333333';
-
-          if (tokType === 'hl') {
-            cColor = el.hl_color || theme?.hl_color || '#E8842B';
-            cBold = true;
-          } else if (tokType === 'quote') {
-            cColor = el.quote_color || theme?.quote_color || '#2E7CB8';
-            cBold = true;
-          } else if (tokType === 'warn') {
-            cColor = el.warn_color || theme?.warn_color || '#D4483B';
-            cFont = 'brush';
-            cSize = Math.round(baseSize * 1.08);
-          }
-
-          ctx.font = this.getFontString(cSize, cBold, cFont);
-          const w = ctx.measureText(char).width;
-          chars.push({ char, width: w, size: cSize, font: cFont, bold: cBold, color: cColor });
-        }
-      }
-
-      // 贪心折行：与 pipeline/canvas/lib/text.mjs 的 wrapLines 逐分支对齐
-      //  · 行尾避头标点**悬挂**（允许溢出 max_width 一个字宽），不是把上一字拉下来
-      //  · ASCII 单词整体下移，绝不拦腰拆词
-      const isAsciiWord = (ch) => ch.codePointAt(0) < 128 && /[A-Za-z0-9]/.test(ch);
-      let curLine = [];
-      let curLineWidth = 0;
-      const widthOf = (arr) => arr.reduce((s, c) => s + c.width, 0);
-
-      for (let ci = 0; ci < chars.length; ci += 1) {
-        const item = chars[ci];
-        if (curLine.length > 0 && curLineWidth + item.width > maxWidth && !KINSOKU.includes(item.char)) {
-          if (isAsciiWord(item.char)) {
-            let j = curLine.length;
-            while (j > 0 && isAsciiWord(curLine[j - 1].char)) j -= 1;
-            if (j < curLine.length) {
-              const moved = curLine.slice(j);
-              laidOutLines.push({ width: curLineWidth - widthOf(moved), runs: curLine.slice(0, j) });
-              curLine = moved.concat([item]);
-              curLineWidth = widthOf(curLine);
-              continue;
-            }
-          }
-          laidOutLines.push({ width: curLineWidth, runs: curLine });
-          curLine = [item];
-          curLineWidth = item.width;
-        } else {
-          curLine.push(item);
-          curLineWidth += item.width;
-        }
-      }
-
-      if (curLine.length > 0) {
-        laidOutLines.push({ width: curLineWidth, runs: curLine });
-      }
-    }
-
-    return laidOutLines;
+    return lines.map((line) => {
+      let lineWidth = 0;
+      const runs = line.map(([char, st]) => {
+        const [font, bold, size] = charMetrics(baseFont, isBold, baseSize, st);
+        const color = charColor(el, st, theme, el.box);
+        ctx.font = this.getFontString(size, bold, font);
+        const width = ctx.measureText(char).width;
+        lineWidth += width;
+        return { char, width, size, font, bold, color };
+      });
+      return { width: lineWidth, runs };
+    });
   }
 
   /**
-   * 绘制气泡底板 (八种 style + 8 向 tail)
+   * 绘制气泡底板 (委托同构核心 paintBox，保证 8 种样式与 8 向 tail 逐像素一致)
    */
   drawBox(ctx, rect, box, theme) {
-    const { x, y, width: w, height: h } = rect;
-    const style = box.style || 'fill';
-    const bg = box.bg || theme?.bubble?.bg || '#F6A83C';
-    const borderColor = box.border_color || theme?.bubble?.border_color || '#333333';
-    const borderWidth = box.border ?? (style === 'outline' || style === 'sketch' ? 3 : 2);
-    const radius = box.radius ?? 16;
-
-    ctx.save();
-
-    if (style === 'fill' || style === 'pill') {
-      const r = style === 'pill' ? h / 2 : radius;
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, r);
-      ctx.fillStyle = bg;
-      ctx.fill();
-    } else if (style === 'outline') {
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, radius);
-      ctx.fillStyle = bg || '#FFFFFF';
-      ctx.fill();
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = borderWidth;
-      ctx.stroke();
-    } else if (style === 'sketch') {
-      // 双线手绘框
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, radius);
-      ctx.fillStyle = bg || '#FFFFFF';
-      ctx.fill();
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.roundRect(x - 3, y - 3, w + 6, h + 6, radius + 2);
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    } else if (style === 'ink') {
-      // 墨底白字
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, radius);
-      ctx.fillStyle = bg || '#262626';
-      ctx.fill();
-    } else if (style === 'stamp') {
-      // 印章
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, radius);
-      ctx.fillStyle = bg || 'rgba(212, 72, 59, 0.08)';
-      ctx.fill();
-      ctx.strokeStyle = borderColor || '#D4483B';
-      ctx.lineWidth = borderWidth || 3;
-      ctx.stroke();
-    } else if (style === 'marker') {
-      // 荧光马克笔底色
-      ctx.fillStyle = bg || 'rgba(246, 168, 60, 0.35)';
-      ctx.fillRect(x, y + h * 0.45, w, h * 0.55);
-    } else if (style === 'burst') {
-      // 爆炸齿
-      const cx = x + w / 2;
-      const cy = y + h / 2;
-      const rx = w / 2 + 18;
-      const ry = h / 2 + 14;
-      const points = 16;
-      ctx.beginPath();
-      for (let i = 0; i < points * 2; i += 1) {
-        const ang = (i * Math.PI) / points;
-        const rad = i % 2 === 0 ? 1 : 0.82;
-        const px = cx + Math.cos(ang) * rx * rad;
-        const py = cy + Math.sin(ang) * ry * rad;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.fillStyle = bg;
-      ctx.fill();
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = borderWidth;
-      ctx.stroke();
-    }
-
-    // 绘制气泡 tail 小三角
-    if (box.tail && box.tail !== 'none') {
-      const tailLen = box.tail_len || 20;
-      const t = box.tail;
-      ctx.beginPath();
-
-      if (t === 'bl') {
-        ctx.moveTo(x + 24, y + h);
-        ctx.lineTo(x + 12, y + h + tailLen);
-        ctx.lineTo(x + 44, y + h);
-      } else if (t === 'bc') {
-        ctx.moveTo(x + w / 2 - 12, y + h);
-        ctx.lineTo(x + w / 2, y + h + tailLen);
-        ctx.lineTo(x + w / 2 + 12, y + h);
-      } else if (t === 'br') {
-        ctx.moveTo(x + w - 44, y + h);
-        ctx.lineTo(x + w - 12, y + h + tailLen);
-        ctx.lineTo(x + w - 24, y + h);
-      } else if (t === 'tl') {
-        ctx.moveTo(x + 24, y);
-        ctx.lineTo(x + 12, y - tailLen);
-        ctx.lineTo(x + 44, y);
-      } else if (t === 'tc') {
-        ctx.moveTo(x + w / 2 - 12, y);
-        ctx.lineTo(x + w / 2, y - tailLen);
-        ctx.lineTo(x + w / 2 + 12, y);
-      } else if (t === 'tr') {
-        ctx.moveTo(x + w - 44, y);
-        ctx.lineTo(x + w - 12, y - tailLen);
-        ctx.lineTo(x + w - 24, y);
-      } else if (t === 'lc') {
-        ctx.moveTo(x, y + h / 2 - 12);
-        ctx.lineTo(x - tailLen, y + h / 2);
-        ctx.lineTo(x, y + h / 2 + 12);
-      } else if (t === 'rc') {
-        ctx.moveTo(x + w, y + h / 2 - 12);
-        ctx.lineTo(x + w + tailLen, y + h / 2);
-        ctx.lineTo(x + w, y + h / 2 + 12);
-      }
-
-      ctx.closePath();
-      ctx.fillStyle = bg;
-      ctx.fill();
-      if (style === 'outline' || style === 'sketch' || style === 'stamp') {
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = borderWidth;
-        ctx.stroke();
-      }
-    }
-
-    ctx.restore();
+    paintBox(ctx, [rect.x, rect.y, rect.x + rect.width, rect.y + rect.height], { box }, theme);
   }
 
   /**
@@ -656,6 +439,59 @@ export class CanvasRenderer {
         center: [x + width / 2, y + height / 2],
         width,
         height,
+      };
+    }
+
+    if (type === 'barchart') {
+      const box = drawBarChart(ctx, el, theme, (s, b, f) => this.getFontString(s, b, f));
+      return {
+        index,
+        element: el,
+        box,
+        center: [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2],
+        width: box[2] - box[0],
+        height: box[3] - box[1],
+      };
+    }
+
+    if (type === 'piechart') {
+      const box = drawPieChart(ctx, el, theme, (s, b, f) => this.getFontString(s, b, f));
+      return {
+        index,
+        element: el,
+        box,
+        center: [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2],
+        width: box[2] - box[0],
+        height: box[3] - box[1],
+      };
+    }
+
+    if (type === 'table') {
+      const box = drawTable(ctx, el, theme, (s, b, f) => this.getFontString(s, b, f));
+      return {
+        index,
+        element: el,
+        box,
+        center: [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2],
+        width: box[2] - box[0],
+        height: box[3] - box[1],
+      };
+    }
+
+    if (type === 'arrow') {
+      drawArrow(ctx, el);
+      const l = el.length || 100;
+      const down = (el.direction ?? 'down') === 'down' || el.direction === 'right';
+      const box = down
+        ? [el.x - 12, el.y - 12, el.x + l + 12, el.y + l + 12]
+        : [el.x - l - 12, el.y - l - 12, el.x + 12, el.y + 12];
+      return {
+        index,
+        element: el,
+        box,
+        center: [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2],
+        width: box[2] - box[0],
+        height: box[3] - box[1],
       };
     }
 

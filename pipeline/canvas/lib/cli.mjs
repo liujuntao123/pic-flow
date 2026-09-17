@@ -45,3 +45,28 @@ export function numFlag(flags, name, dflt, { min = -Infinity, max = Infinity } =
   if (!Number.isFinite(n)) return dflt;
   return Math.min(max, Math.max(min, n));
 }
+
+/**
+ * 机检脚本的通用参数解析（走统一 cli.mjs，顺序无关、未知参数会报错）。
+ * 无位置参数时返回空 files —— 调用方必须报用法并以非 0 退出，
+ * 否则 `node checks/lint.mjs`（漏了文件参数）会「静默通过」，把机检链变成摆设。
+ */
+export function parseArgs(argv, { allowMany = true } = {}) {
+  const { files, flags, errors } = parseCli(argv, { boolFlags: ['--debug'] });
+  return {
+    debug: Boolean(flags.debug),
+    files: allowMany ? files : files.slice(0, 1),
+    errors,
+    rest: files,
+  };
+}
+
+/** 机检脚本的统一入口守卫：参数不合法就打用法并非 0 退出。 */
+export function requireFiles(files, errors, usage) {
+  if (errors.length || !files.length) {
+    console.error(usage);
+    if (errors.length) console.error(`  ${errors.join('；')}`);
+    process.exit(2);
+  }
+}
+

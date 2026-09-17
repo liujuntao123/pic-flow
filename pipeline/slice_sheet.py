@@ -2,23 +2,22 @@
 """把「精灵图（sprite sheet）」按格切分成一张张独立素材。
 
 一次生图产出 N 张配图：模型被要求把 N 个互不相干的插图排在 cols×rows 的网格里，
-格与格之间留出宽阔纯白间隙。本脚本负责把它切回 N 张独立 PNG。
+格与格之间留出宽阔纯白间隙。本模块负责把它切回 N 张独立 PNG。
 
 切分算法（不依赖模型严格居中）：
 1. 算全图 ink mask（非白像素）。单元格边界不再用「宽/cols」硬切，
-   而是**吸附到最近的整条纯白行/列带**（允许 ±SEARCH 像素漂移），
+   而是吸附到最近的整条纯白行/列带（允许 ±SEARCH 像素漂移），
    保证任何墨迹都不会被一刀两断。
 2. 每格内再按 ink bbox 收紧裁边（外扩 PAD），得到干净素材。
 3. 若某格 bbox 贴到该格边界，判定为「溢格/串格」并告警——该 sheet 需要重生成。
 
-用法：
-    python3 scripts/slice_sheet.py sheets/sheetA.png --cols 2 --rows 2 \
-        --names a1_shangyang,a2_xiaogong,a3_gongshu,a4_weihui --outdir assets [--debug]
+提供深模块接口 `slice_sheet(...)` 与独立 CLI 适配器。
 """
 import argparse
 import json
 import sys
 from pathlib import Path
+from typing import List, Optional, Union
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -37,15 +36,13 @@ def ink_mask(arr: np.ndarray) -> np.ndarray:
     return lum < INK
 
 
-def snap_boundaries(white_lines: np.ndarray, expected: int, lo: int, hi: int) -> int:
+def snap_boundaries(white_lines: np.ndarray, expected: int, lo: int, hi: int, search: int = SEARCH) -> int:
     """把理论边界 expected 吸附到最近的「全白带」中心；找不到就退回 expected。"""
-    win_lo, win_hi = max(lo, expected - SEARCH), min(hi, expected + SEARCH)
+    win_lo, win_hi = max(lo, expected - search), min(hi, expected + search)
     band = white_lines[win_lo:win_hi]
     if not band.any():
         return expected
-    # 找包含/最接近 expected 的那一段连续白带
     idx = np.where(band)[0] + win_lo
-    # 按连续段分组
     groups, cur = [], [idx[0]]
     for v in idx[1:]:
         if v == cur[-1] + 1:
@@ -58,62 +55,89 @@ def snap_boundaries(white_lines: np.ndarray, expected: int, lo: int, hi: int) ->
     return int(round((best[0] + best[-1]) / 2))
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("sheet")
-    ap.add_argument("--cols", type=int, required=True)
-    ap.add_argument("--rows", type=int, required=True)
-    ap.add_argument("--names", required=True, help="逗号分隔，按行优先顺序")
-    ap.add_argument("--outdir", default="assets")
-    ap.add_argument("--debug", action="store_true", help="输出带切割线的调试图")
-    a = ap.parse_args()
+def slice_sheet(
+    sheet_input: Union[str, Path, Image.Image],
+    cols: int,
+    rows: int,
+    names: List[str],
+    outdir: Union[str, Path] = "assets",
+    debug: bool = False,
+    pad: int = PAD,
+    search: int = SEARCH,
+) -> dict:
+    """进程内深模块：把精灵图按网格切分为独立素材 PNG，返回结构化切分报告。
 
-    names = [n.strip() for n in a.names.split(",") if n.strip()]
-    if len(names) != a.cols * a.rows:
-        print(f"[error] names={len(names)} 与 {a.cols}x{a.rows}={a.cols * a.rows} 不符", file=sys.stderr)
-        return 2
+    :param sheet_input: 图像文件路径或已载入的 PIL Image
+    :param cols: 列数
+    :param rows: 行数
+    :param names: 行优先素材名称列表
+    :param outdir: 输出目标目录
+    :param debug: 是否输出带切割线的调试图
+    :param pad: 裁边外扩像素
+    :param search: 边界吸附搜索半径
+    :returns: {
+        "ok": bool,
+        "report": list[dict],
+        "problems": list[str],
+        "debug_path": Optional[Path],
+    }
+    """
+    if len(names) != cols * rows:
+        raise ValueError(f"names 数量 ({len(names)}) 与网格 {cols}x{rows}={cols * rows} 不符")
 
-    sheet_path = Path(a.sheet)
-    img = Image.open(sheet_path).convert("RGBA")
+    sheet_path: Optional[Path] = None
+    if isinstance(sheet_input, (str, Path)):
+        sheet_path = Path(sheet_input).resolve()
+        img = Image.open(sheet_path).convert("RGBA")
+    elif isinstance(sheet_input, Image.Image):
+        img = sheet_input.convert("RGBA")
+    else:
+        raise TypeError(f"不支持的 sheet_input 类型: {type(sheet_input)}")
+
     arr = np.array(img)
     W, H = img.size
     ink = ink_mask(arr)
 
-    # 整条全白行/列（横切要找全白行，纵切要找全白列）
+    # 整条全白行/列（横切找全白行，纵切找全白列）
     white_rows = ~ink.any(axis=1)
     white_cols = ~ink.any(axis=0)
 
     xs = [0]
-    for i in range(1, a.cols):
-        xs.append(snap_boundaries(white_cols, int(W * i / a.cols), xs[-1] + 20, W))
+    for i in range(1, cols):
+        xs.append(snap_boundaries(white_cols, int(W * i / cols), xs[-1] + 20, W, search=search))
     xs.append(W)
+
     ys = [0]
-    for i in range(1, a.rows):
-        ys.append(snap_boundaries(white_rows, int(H * i / a.rows), ys[-1] + 20, H))
+    for i in range(1, rows):
+        ys.append(snap_boundaries(white_rows, int(H * i / rows), ys[-1] + 20, H, search=search))
     ys.append(H)
 
-    outdir = Path(a.outdir)
-    outdir.mkdir(parents=True, exist_ok=True)
-    report, problems = [], []
-    dbg = img.copy()
-    dr = ImageDraw.Draw(dbg)
+    out_path = Path(outdir).resolve()
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    report = []
+    problems = []
+    dbg = img.copy() if debug else None
+    dr = ImageDraw.Draw(dbg) if dbg else None
 
     k = 0
-    for r in range(a.rows):
-        for c in range(a.cols):
+    for r in range(rows):
+        for c in range(cols):
             name = names[k]
             k += 1
             y0, y1, x0, x1 = ys[r], ys[r + 1], xs[c], xs[c + 1]
             sub = ink[y0:y1, x0:x1]
-            dr.rectangle([x0, y0, x1 - 1, y1 - 1], outline=(255, 0, 0), width=3)
+            if dr:
+                dr.rectangle([x0, y0, x1 - 1, y1 - 1], outline=(255, 0, 0), width=3)
             if not sub.any():
                 problems.append(f"{name}: 该格完全空白")
                 report.append({"name": name, "status": "empty"})
                 continue
+
             yy, xx = np.where(sub)
             by0, by1, bx0, bx1 = int(yy.min()), int(yy.max()), int(xx.min()), int(xx.max())
             cw, ch = x1 - x0, y1 - y0
-            # 溢格判定：内容贴到格子边界（留 4px 容差）
+
             touch = []
             if bx0 <= 3:
                 touch.append("left")
@@ -128,28 +152,69 @@ def main() -> int:
 
             gx0, gx1 = x0 + bx0, x0 + bx1
             gy0, gy1 = y0 + by0, y0 + by1
-            gx0, gy0 = max(gx0 - PAD, 0), max(gy0 - PAD, 0)
-            gx1, gy1 = min(gx1 + PAD, W - 1), min(gy1 + PAD, H - 1)
+            gx0, gy0 = max(gx0 - pad, 0), max(gy0 - pad, 0)
+            gx1, gy1 = min(gx1 + pad, W - 1), min(gy1 + pad, H - 1)
             crop = img.crop((gx0, gy0, gx1 + 1, gy1 + 1))
-            out = outdir / f"{name}.png"
-            crop.save(out)
-            dr.rectangle([gx0, gy0, gx1, gy1], outline=(0, 140, 255), width=2)
-            dr.text((x0 + 8, y0 + 6), name, fill=(200, 0, 0))
-            report.append({"name": name, "status": "ok", "size": [crop.width, crop.height],
-                           "cell": [cw, ch], "fill": round(float(sub.sum()) / (cw * ch), 3),
-                           "touch": touch})
-            print(f"[ok] {name}: {crop.width}x{crop.height} (格子 {cw}x{ch}, 墨迹占比 {report[-1]['fill']})")
+            dest = out_path / f"{name}.png"
+            crop.save(dest)
 
-    if a.debug:
-        dpath = sheet_path.with_name(sheet_path.stem + "_slice_debug.png")
-        dbg.save(dpath)
-        print(f"[debug] {dpath}")
+            if dr:
+                dr.rectangle([gx0, gy0, gx1, gy1], outline=(0, 140, 255), width=2)
+                dr.text((x0 + 8, y0 + 6), name, fill=(200, 0, 0))
 
-    (outdir / "_slice_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1))
-    if problems:
-        print("[warn] " + "；".join(problems), file=sys.stderr)
+            report.append({
+                "name": name,
+                "status": "ok",
+                "size": [crop.width, crop.height],
+                "cell": [cw, ch],
+                "fill": round(float(sub.sum()) / (cw * ch), 3),
+                "touch": touch,
+            })
+
+    debug_path = None
+    if debug and dbg and sheet_path:
+        debug_path = sheet_path.with_name(sheet_path.stem + "_slice_debug.png")
+        dbg.save(debug_path)
+
+    (out_path / "_slice_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    return {
+        "ok": len(problems) == 0,
+        "report": report,
+        "problems": problems,
+        "debug_path": debug_path,
+    }
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="把精灵图切分为独立素材 PNG")
+    ap.add_argument("sheet", help="精灵图路径")
+    ap.add_argument("--cols", type=int, required=True, help="列数")
+    ap.add_argument("--rows", type=int, required=True, help="行数")
+    ap.add_argument("--names", required=True, help="逗号分隔，按行优先顺序")
+    ap.add_argument("--outdir", default="assets", help="输出目录")
+    ap.add_argument("--debug", action="store_true", help="输出带切割线的调试图")
+    a = ap.parse_args()
+
+    names = [n.strip() for n in a.names.split(",") if n.strip()]
+    try:
+        res = slice_sheet(a.sheet, a.cols, a.rows, names, a.outdir, debug=a.debug)
+    except Exception as e:
+        print(f"[error] {e}", file=sys.stderr)
+        return 2
+
+    for item in res["report"]:
+        if item.get("status") == "ok":
+            print(f"[ok] {item['name']}: {item['size'][0]}x{item['size'][1]} (格子 {item['cell'][0]}x{item['cell'][1]}, 墨迹占比 {item['fill']})")
+
+    if res["debug_path"]:
+        print(f"[debug] {res['debug_path']}")
+
+    if res["problems"]:
+        print("[warn] " + "；".join(res["problems"]), file=sys.stderr)
         return 1
-    print(f"[slice] {len(names)} 张全部干净切出 → {outdir}/")
+
+    print(f"[slice] {len(names)} 张全部干净切出 → {a.outdir}/")
     return 0
 
 

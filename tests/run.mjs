@@ -17,13 +17,34 @@ const EXAMPLE = 'examples/huangchao-tang-collapse/layout/block1.json';
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:3100';
 const results = [];
 
+function findChrome() {
+  if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) return process.env.CHROME_PATH;
+  if (fs.existsSync('/usr/bin/google-chrome')) return '/usr/bin/google-chrome';
+  const pwDir = path.join(process.env.HOME || '', '.cache/ms-playwright');
+  if (fs.existsSync(pwDir)) {
+    try {
+      const matches = fs.readdirSync(pwDir, { recursive: true });
+      for (const m of matches) {
+        if (m.endsWith('/chrome') || m.endsWith('\\chrome.exe')) {
+          const p = path.join(pwDir, m);
+          if (fs.existsSync(p)) return p;
+        }
+      }
+    } catch {}
+  }
+  return null;
+}
+const detectedChrome = findChrome();
+
 function run(name, cmd, args, { skipIf } = {}) {
   if (skipIf) {
     results.push({ name, status: 'SKIP', note: skipIf });
     console.log(`[SKIP] ${name} — ${skipIf}`);
     return;
   }
-  const r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8' });
+  const env = { ...process.env };
+  if (detectedChrome) env.CHROME_PATH = detectedChrome;
+  const r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', env });
   const ok = r.status === 0;
   results.push({ name, status: ok ? 'PASS' : 'FAIL', note: ok ? '' : `exit ${r.status}` });
   console.log(`${ok ? '[PASS]' : '[FAIL]'} ${name}`);

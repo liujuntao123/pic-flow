@@ -7,11 +7,8 @@
 // 永远 exit 0），机检链就静默失效。这里把四条绑在同一个退出码上。
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { lint } from './lint.mjs';
-import { checkGeom } from './geom.mjs';
-import { occlusion } from './occlusion.mjs';
-import { clearance } from './clearance.mjs';
-import { parseArgs, requireFiles } from '../lib/geom.mjs';
+import { inspectLayout } from './inspect.mjs';
+import { parseArgs, requireFiles } from '../lib/cli.mjs';
 
 function isMain(metaUrl) {
   try {
@@ -25,10 +22,12 @@ function isMain(metaUrl) {
 export async function checkAll(files) {
   const totals = { lint: 0, geom: 0, occlusion: 0, clearance: 0 };
   for (const f of files) {
-    totals.lint += lint(f).hard ?? 0;
-    totals.geom += checkGeom(f);
-    totals.occlusion += await occlusion(f);
-    totals.clearance += await clearance(f);
+    const report = await inspectLayout(f, { verbose: true });
+    if (report.logs.length) console.log(report.logs.join('\n'));
+    totals.lint += report.summary.lint.hard;
+    totals.geom += report.summary.geom.problems;
+    totals.occlusion += report.summary.occlusion.bad;
+    totals.clearance += report.summary.clearance.bad;
   }
   const ok = Object.values(totals).every((v) => v === 0);
   console.log(`\n[checks] ${files.length} 块 · lint=${totals.lint} geom=${totals.geom} `
