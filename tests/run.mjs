@@ -100,9 +100,25 @@ function fontPreview() {
   run('全字体渲染预览', process.execPath, ['tests/test_fonts.mjs']);
 }
 
+const hasPython = spawnSync('python3', ['--version'], { encoding: 'utf8' }).status === 0;
+
+/** 生图链去重回归（python）：failover 不放大同一 prompt 的生图次数。 */
+function genDedup() {
+  run('生图链去重回归（failover 不重复生图）', 'python3', ['tests/test_genlib_dedup.py'],
+    { skipIf: hasPython ? null : '环境无 python3' });
+}
+
+/** 生图断点续跑并发锁回归（python）：双进程并发同一 sheet 只生图一次。 */
+function genRaceLock() {
+  run('生图并发锁回归（断点续跑互斥）', 'python3', ['tests/test_gen_race_lock.py'],
+    { skipIf: hasPython ? null : '环境无 python3' });
+}
+
 console.log('=== pic-flow 测试 ===\n');
 smokeRender();
 fontPreview();
+genDedup();
+genRaceLock();
 const online = serverOnline();
 if (!online) console.log(`[INFO] 未检测到 Web 服务（${BASE_URL}），跳过依赖它的两项\n`);
 previewParity(online);

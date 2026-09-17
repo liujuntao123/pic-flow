@@ -186,7 +186,7 @@ cd <skill 根> && npm run web                         # 启动 Web 可视化编�
 - **新切出来的素材必须先跑 `make_transparent.py` 再机检**：`checks/clearance.mjs` 的墨迹蒙版读 alpha 通道，
   不转透明的话整张素材会被当成"全是墨"，净空检查全部失真。
 - **透明背景是生图时直接要的**：generate() 请求自带 `background=transparent + output_format=png`，正规上游直接回透明 PNG；`make_transparent.py` 只为未认参数回白底的情况兜底。
-- **生图上游是用户自配的**：未配置时 gen 脚本会打印配置引导。配置源在 `~/.config/pic-flow/providers.json` 或 `PICFLOW_IMAGE_*` 环境变量。多上游按序容错、断点续跑。
+- **生图上游是用户自配的**：未配置时 gen 脚本会打印配置引导。配置源在 `~/.config/pic-flow/providers.json` 或 `PICFLOW_IMAGE_*` 环境变量。多上游按序容错、断点续跑；并发安全（同 sheet 原子锁互斥，多进程同跑不重复生图），重试按错误分类收敛、不放大生图次数。
 
 ## 内容与阅读质量验收
 

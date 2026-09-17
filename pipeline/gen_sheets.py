@@ -16,6 +16,8 @@ sheet 内所有配图天然共享同一套线条／墨色／比例，风格一�
     python3 scripts/gen_sheets.py --force    # 全部重来
     python3 scripts/gen_sheets.py --only sheetA
     GEN_PAR=2 python3 scripts/gen_sheets.py
+并发安全：生图前原子认领 sheets/<name>.png.lock，多个进程同时跑也只会生成一份
+（后来者打 [busy] 跳过；崩溃残留的锁按 pid/锁龄自动击破）。
 """
 import json
 import os
@@ -26,11 +28,15 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from genlib import STYLE_SUFFIX, generate  # noqa: E402
+from genlib import STYLE_SUFFIX, claim, generate, release  # noqa: E402
 from roots import find_root  # noqa: E402
 from slice_sheet import slice_sheet  # noqa: E402
 
 ROOT = find_root(Path.cwd())
+
+
+def _assets_ready(assets) -> bool:
+    return all(p.exists() and p.stat().st_size > 2000 for p in assets)
 
 
 def pos_label(i: int, cols: int, rows: int) -> str:
@@ -97,29 +103,43 @@ def run_sheet(sheet: dict, suffix: str, anchors: dict, force: bool) -> Tuple[str
     assets = [ROOT / "assets" / f"{n}.png" for n in names]
     sheet_png = ROOT / "sheets" / f"{name}.png"
 
-    if not force and all(p.exists() and p.stat().st_size > 2000 for p in assets):
+    if not force and _assets_ready(assets):
         print(f"[have] {name}: {len(names)} 张素材已在，跳过", flush=True)
         return name, True, "skipped"
 
-    if force or not sheet_png.exists() or sheet_png.stat().st_size < 2000:
-        ok = generate(build_prompt(sheet, suffix, anchors), sheet["size"], sheet_png,
-                      transparent=False, log=lambda m: print(f"  {m}", flush=True))
-        if not ok:
-            return name, False, "生图失败"
-    else:
-        print(f"[have] {name}: sheet 已在，只重切", flush=True)
-
-    # 进程内直接切分，消除子进程开销与参数序列化
+    # 断点续跑的「检查存在 → 生图」之间存在竞态窗口：并发的另一个进程
+    # （agent / 用户终端 / 重复触发的自动化）会同样判定「素材不在」而重复
+    # 生图。生图前先原子认领 sheets/<name>.png.lock，持锁者生成、后来者跳过。
+    lock = sheet_png.with_name(sheet_png.name + ".lock")
+    if not claim(lock):
+        print(f"[busy] {name}: 另一进程持有锁，跳过（确认无并发后可删 {lock.name}）", flush=True)
+        return name, True, "busy-locked"
     try:
-        res = slice_sheet(sheet_png, cols, rows, names, outdir=ROOT / "assets", debug=True)
-        for item in res["report"]:
-            if item.get("status") == "ok":
-                print(f"  [ok] {item['name']}: {item['size'][0]}x{item['size'][1]} (格子 {item['cell'][0]}x{item['cell'][1]}, 墨迹占比 {item['fill']})", flush=True)
-        if not res["ok"]:
-            return name, False, f"切分告警: {'; '.join(res['problems'])}"
-    except Exception as e:
-        return name, False, f"切分异常: {e}"
-    return name, True, "ok"
+        if not force and _assets_ready(assets):  # 双检：等锁期间对方可能刚完成
+            print(f"[have] {name}: {len(names)} 张素材已在，跳过", flush=True)
+            return name, True, "skipped"
+
+        if force or not sheet_png.exists() or sheet_png.stat().st_size < 2000:
+            ok = generate(build_prompt(sheet, suffix, anchors), sheet["size"], sheet_png,
+                          transparent=False, log=lambda m: print(f"  {m}", flush=True))
+            if not ok:
+                return name, False, "生图失败"
+        else:
+            print(f"[have] {name}: sheet 已在，只重切", flush=True)
+
+        # 进程内直接切分，消除子进程开销与参数序列化
+        try:
+            res = slice_sheet(sheet_png, cols, rows, names, outdir=ROOT / "assets", debug=True)
+            for item in res["report"]:
+                if item.get("status") == "ok":
+                    print(f"  [ok] {item['name']}: {item['size'][0]}x{item['size'][1]} (格子 {item['cell'][0]}x{item['cell'][1]}, 墨迹占比 {item['fill']})", flush=True)
+            if not res["ok"]:
+                return name, False, f"切分告警: {'; '.join(res['problems'])}"
+        except Exception as e:
+            return name, False, f"切分异常: {e}"
+        return name, True, "ok"
+    finally:
+        release(lock)
 
 
 def main() -> int:
@@ -139,6 +159,15 @@ def main() -> int:
         anchors, sheets = spec.get("anchors", {}), spec["sheets"]
     if only:
         sheets = [s for s in sheets if s["sheet"] == only]
+    # 重名防护：同名 sheet / 同名 cell 会让并发单元互相覆盖并重复生图
+    sheet_ids = [s["sheet"] for s in sheets]
+    cell_ids = [c["name"] for s in sheets for c in s["cells"]]
+    dup_sheets = {x for x in sheet_ids if sheet_ids.count(x) > 1}
+    dup_cells = {x for x in cell_ids if cell_ids.count(x) > 1}
+    if dup_sheets or dup_cells:
+        print(f"[error] spec 存在重名（会重复生图并互相覆盖）: "
+              f"sheet={sorted(dup_sheets)} cell={sorted(dup_cells)}", file=sys.stderr, flush=True)
+        return 2
     (ROOT / "sheets").mkdir(exist_ok=True)
     print(f"[gen_sheets] spec={spec_path.name}  {len(sheets)} 张 sheet, par={par}", flush=True)
 
