@@ -1,6 +1,7 @@
 /**
- * 项目详情与可视化 Canvas 编辑器组件
+ * 项目详情与可视化 Canvas 编辑器组件 (Canva 风格设计系统深度重构)
  */
+import { ICONS } from '../icons.mjs';
 
 export class ProjectDetailComponent {
   constructor(app, container) {
@@ -13,7 +14,9 @@ export class ProjectDetailComponent {
     this.selectedIndex = -1;
     this.zoom = 0.45; // 默认缩放比例以适配屏幕
     this.showGrid = true;
-    this.activeSidebarTab = 'layers'; // layers | assets | script
+    this.activeSidebarTab = 'layers'; // layers | assets | script | blocks | add
+    this.isDrawerOpen = true;
+    this.isFilmstripOpen = true;
     this.hasUnsavedChanges = false;
     this.lastSavedMtime = null;
     this.undoStack = [];
@@ -76,6 +79,7 @@ export class ProjectDetailComponent {
     this.redrawCanvas();
     this.renderSidebar();
     this.renderInspector();
+    this.renderContextToolbar();
   }
 
   /** Shift+点击切换多选 */
@@ -92,13 +96,59 @@ export class ProjectDetailComponent {
     this.refreshSelectionUI();
   }
 
+  getBlockIndex() {
+    return this.project?.blocks?.findIndex((b) => b.id === this.currentBlockId) ?? 0;
+  }
+
+  async switchBlock(bid) {
+    if (!bid || bid === this.currentBlockId) return;
+    if (this.hasUnsavedChanges && !confirm('当前分块有未保存的修改，切换将丢失，确定继续吗？')) return;
+    this.currentBlockId = bid;
+    this.app.syncRoute(this.project.id, bid);
+    await this.loadBlockLayout(bid);
+    this.render();
+  }
+
+  async goToPrevBlock() {
+    const idx = this.getBlockIndex();
+    if (idx > 0 && this.project?.blocks) {
+      await this.switchBlock(this.project.blocks[idx - 1].id);
+    }
+  }
+
+  async goToNextBlock() {
+    const idx = this.getBlockIndex();
+    if (this.project?.blocks && idx >= 0 && idx < this.project.blocks.length - 1) {
+      await this.switchBlock(this.project.blocks[idx + 1].id);
+    }
+  }
+
+  async addNewBlock() {
+    const maxNum = (this.project.blocks || []).reduce((m, b) => {
+      const n = Number(String(b.id).replace(/[^0-9]/g, ''));
+      return Number.isFinite(n) ? Math.max(m, n) : m;
+    }, 0);
+    const blockId = `block${maxNum + 1}`;
+    if (!confirm(`是否在工程中创建新分块 ${blockId}？`)) return;
+    try {
+      await this.app.api.createBlock(this.project.id, blockId);
+      this.app.toast(`分块 ${blockId} 创建成功！`, 'success');
+      this.project = await this.app.api.getProjectDetail(this.project.id);
+      await this.switchBlock(blockId);
+    } catch (err) {
+      this.app.toast(`创建分块失败: ${err.message}`, 'error');
+    }
+  }
+
   async load(projectId, blockId = null) {
     this.startPolling();
     this.project = await this.app.api.getProjectDetail(projectId);
     this.app.updateBreadcrumb(this.project.title || this.project.name);
 
     // 选中分块
-    if (!blockId && this.project.blocks.length > 0) {
+    if (blockId && this.project.blocks.some((b) => b.id === blockId)) {
+      this.currentBlockId = blockId;
+    } else if (this.project.blocks.length > 0) {
       this.currentBlockId = this.project.blocks[0].id;
     } else {
       this.currentBlockId = blockId || 'block1';
@@ -140,6 +190,11 @@ export class ProjectDetailComponent {
     if (this.hasUnsavedChanges) return;
     this.hasUnsavedChanges = true;
     this.app.updateStatus(false);
+    const chip = this.container.querySelector('#topbar-status-chip');
+    if (chip) {
+      chip.className = 'status-indicator-chip unsaved';
+      chip.innerHTML = '<span class="status-dot"></span><span>未保存</span>';
+    }
   }
 
   startPolling() {
@@ -172,16 +227,11 @@ export class ProjectDetailComponent {
     if (document.getElementById('agent-sync-banner')) return;
     const banner = document.createElement('div');
     banner.id = 'agent-sync-banner';
-    banner.style.cssText = `
-      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-      background: #1e3a8a; border: 1px solid #3b82f6; color: #fff;
-      padding: 8px 16px; border-radius: 8px; font-size: 13px; z-index: 100;
-      display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    `;
+    banner.className = 'agent-sync-banner';
     banner.innerHTML = `
       <span>⚡ 检测到 Agent 在外部修改了此文件</span>
       <button class="btn btn-primary btn-sm" id="btn-sync-reload">载入 Agent 最新修改</button>
-      <button class="btn btn-ghost btn-sm" id="btn-sync-dismiss">忽略</button>
+      <button class="btn btn-ghost btn-sm" id="btn-sync-dismiss">✕ 忽略</button>
     `;
     this.container.appendChild(banner);
 
@@ -260,6 +310,7 @@ export class ProjectDetailComponent {
     this.hasUnsavedChanges = true;
     this.app.updateStatus(false);
     this.refreshSelectionUI();
+    this.updateUndoRedoButtons();
   }
 
   redo() {
@@ -271,6 +322,14 @@ export class ProjectDetailComponent {
     this.hasUnsavedChanges = true;
     this.app.updateStatus(false);
     this.refreshSelectionUI();
+    this.updateUndoRedoButtons();
+  }
+
+  updateUndoRedoButtons() {
+    const uBtn = this.container.querySelector('#btn-undo');
+    const rBtn = this.container.querySelector('#btn-redo');
+    if (uBtn) uBtn.classList.toggle('disabled', this.undoStack.length === 0);
+    if (rBtn) rBtn.classList.toggle('disabled', this.redoStack.length === 0);
   }
 
   async saveLayout(autoRender = true) {
@@ -282,6 +341,11 @@ export class ProjectDetailComponent {
       this.lastSavedMtime = res.updatedAt;
       this.hasUnsavedChanges = false;
       this.app.updateStatus(true);
+      const chip = this.container.querySelector('#topbar-status-chip');
+      if (chip) {
+        chip.className = 'status-indicator-chip synced';
+        chip.innerHTML = '<span class="status-dot"></span><span>已同步</span>';
+      }
       if (res.renderError) {
         // 保存成功但渲染失败：不能报"已完成渲染"，否则用户会拿着上一版的切片去拼接
         this.app.toast(`已保存，但 Canvas 渲染失败：${res.renderError}`, 'error');
@@ -311,82 +375,150 @@ export class ProjectDetailComponent {
     this.marqueeEl = null;
     this.activeGuides = null;
 
+    const blockIdx = this.getBlockIndex();
+    const totalBlocks = this.project.blocks?.length || 1;
+
     this.container.innerHTML = `
       <div class="editor-view">
-        <!-- 二级工具栏 -->
-        <div class="editor-subbar">
-          <div class="block-tabs">
-            <button class="btn btn-ghost btn-sm" id="btn-back-to-list" style="margin-right: 6px;">
-              ← 全部项目
+        <!-- 顶部 Canva 风格控制台导航条 -->
+        <div class="editor-topbar">
+          <div class="topbar-left">
+            <button class="btn btn-ghost btn-icon btn-back-rail" id="btn-back-to-list" title="返回项目空间">
+              ${ICONS.chevronLeft(18)}
             </button>
-            ${this.project.blocks.map((b) => `
-              <div class="block-tab ${b.id === this.currentBlockId ? 'active' : ''}" data-block="${b.id}">
-                ${b.id}
-              </div>
-            `).join('')}
-            <button class="btn btn-ghost btn-sm" id="btn-add-block" title="新建分块">+</button>
-            <div class="block-tab block-tab-all" id="btn-view-stitched" title="长图预览与拼接">
-              📜 长图总览
+            <div class="topbar-divider"></div>
+            <div class="topbar-project-info" title="${this.project.title || this.project.name}">
+              <span class="topbar-title">${this.project.title || this.project.name}</span>
+            </div>
+            <div class="status-indicator-chip ${this.hasUnsavedChanges ? 'unsaved' : 'synced'}" id="topbar-status-chip">
+              <span class="status-dot"></span>
+              <span>${this.hasUnsavedChanges ? '未保存' : '已同步'}</span>
             </div>
           </div>
 
-          <div class="editor-controls">
-            <div class="zoom-controls">
-              <button class="btn btn-ghost btn-sm" id="zoom-out">-</button>
-              <span class="zoom-val" id="zoom-text">${Math.round(this.zoom * 100)}%</span>
-              <button class="btn btn-ghost btn-sm" id="zoom-in">+</button>
-              <button class="btn btn-ghost btn-sm" id="zoom-fit">自适应</button>
+          <div class="topbar-center">
+            <div class="block-nav-group">
+              <button class="btn btn-ghost btn-icon btn-sm ${blockIdx <= 0 ? 'disabled' : ''}" id="btn-prev-block" title="上一分块">
+                ${ICONS.chevronLeft(16)}
+              </button>
+              <button class="btn btn-ghost btn-sm topbar-block-badge" id="btn-block-selector" title="点击查看所有分块">
+                <span class="block-badge-id">${this.currentBlockId}</span>
+                <span class="block-badge-idx">第 ${blockIdx + 1} / ${totalBlocks} 屏</span>
+              </button>
+              <button class="btn btn-ghost btn-icon btn-sm ${blockIdx >= totalBlocks - 1 ? 'disabled' : ''}" id="btn-next-block" title="下一分块">
+                ${ICONS.chevronRight(16)}
+              </button>
+            </div>
+          </div>
+
+          <div class="topbar-right">
+            <div class="topbar-undo-group">
+              <button class="btn btn-ghost btn-icon btn-sm ${this.undoStack.length === 0 ? 'disabled' : ''}" id="btn-undo" title="撤销 (Ctrl+Z)">
+                ${ICONS.undo(16)}
+              </button>
+              <button class="btn btn-ghost btn-icon btn-sm ${this.redoStack.length === 0 ? 'disabled' : ''}" id="btn-redo" title="重做 (Ctrl+Shift+Z)">
+                ${ICONS.redo(16)}
+              </button>
             </div>
 
-            <button class="btn btn-secondary btn-sm" id="btn-toggle-grid" title="切换辅助线">
-              ${this.showGrid ? '⊞ 网格: 开' : '⊞ 网格: 关'}
+            <div class="topbar-divider"></div>
+
+            <button class="btn btn-secondary btn-sm" id="btn-toggle-grid" title="切换排版辅助网格">
+              ${ICONS.grid(15)} <span>${this.showGrid ? '网格' : '网格'}</span>
             </button>
 
-            <button class="btn btn-secondary btn-sm" id="btn-reload-block" title="从磁盘重载 (Agent 同步)">
-              🔄 重载
+            <button class="btn btn-secondary btn-sm" id="btn-reload-block" title="从磁盘重新载入 layout 文件">
+              ${ICONS.refresh(15)} <span>重载</span>
             </button>
 
-            <button class="btn btn-secondary btn-sm" id="btn-lint-block" title="运行机检检查">
-              ⚖ 机检
+            <button class="btn btn-secondary btn-sm" id="btn-lint-block" title="运行几何与排版机检">
+              ${ICONS.lint(15)} <span>机检</span>
             </button>
 
-            <button class="btn btn-secondary btn-sm" id="btn-render-block" title="重新执行 Node Canvas 渲染">
-              🎨 渲染切片
+            <button class="btn btn-magic btn-sm" id="btn-view-stitched" title="执行全局拼接与导出长图">
+              ${ICONS.sparkles(16)} <span>长图总览</span>
             </button>
 
-            <button class="btn btn-primary btn-sm" id="btn-save-layout" title="保存至 layout 文件 (Ctrl+S)">
-              💾 保存到文件
+            <button class="btn btn-primary btn-sm" id="btn-save-layout" title="保存分块并渲染 (Ctrl+S)">
+              ${ICONS.save(15)} <span>保存</span>
             </button>
           </div>
         </div>
 
+        <!-- 浮动上下文快捷属性条 -->
+        <div class="context-toolbar" id="context-toolbar">
+          <!-- 动态渲染 -->
+        </div>
+
         <!-- 编辑器主体三栏 -->
         <div class="editor-main">
-          <!-- 左侧栏：图层 / 素材库 / 剧本 -->
-          <div class="editor-sidebar-left">
-            <div class="sidebar-tabs">
-              <div class="sidebar-tab ${this.activeSidebarTab === 'layers' ? 'active' : ''}" data-tab="layers">
-                图层 (${(this.layout.elements || []).length})
-              </div>
-              <div class="sidebar-tab ${this.activeSidebarTab === 'assets' ? 'active' : ''}" data-tab="assets">
-                素材库 (${(this.project.assets || []).length})
-              </div>
-              <div class="sidebar-tab ${this.activeSidebarTab === 'script' ? 'active' : ''}" data-tab="script">
-                剧本分镜
-              </div>
+          <!-- Canva 风格左侧双层导航 (Rail + Drawer) -->
+          <div class="canva-sidebar">
+            <div class="canva-rail">
+              <button class="rail-item ${this.activeSidebarTab === 'blocks' ? 'active' : ''}" data-tab="blocks" title="分块序列">
+                ${ICONS.blocks(20)}
+                <span>分块</span>
+              </button>
+              <button class="rail-item ${this.activeSidebarTab === 'script' ? 'active' : ''}" data-tab="script" title="剧本分镜">
+                ${ICONS.script(20)}
+                <span>剧本</span>
+              </button>
+              <button class="rail-item ${this.activeSidebarTab === 'layers' ? 'active' : ''}" data-tab="layers" title="图层管理">
+                ${ICONS.layers(20)}
+                <span>图层</span>
+              </button>
+              <button class="rail-item ${this.activeSidebarTab === 'assets' ? 'active' : ''}" data-tab="assets" title="插画素材库">
+                ${ICONS.assets(20)}
+                <span>素材</span>
+              </button>
+              <button class="rail-item ${this.activeSidebarTab === 'add' ? 'active' : ''}" data-tab="add" title="添加新元素">
+                ${ICONS.addMenu(20)}
+                <span>添加</span>
+              </button>
             </div>
 
-            <div class="sidebar-panel" id="sidebar-panel-content">
-              <!-- 动态内容 -->
+            <div class="canva-drawer ${this.isDrawerOpen ? 'open' : 'collapsed'}" id="canva-drawer">
+              <div class="drawer-header">
+                <div class="drawer-title" id="drawer-title">
+                  图层 (${(this.layout.elements || []).length})
+                </div>
+                <button class="btn btn-ghost btn-icon btn-sm" id="drawer-close-btn" title="收起抽屉面板">
+                  ${ICONS.close(14)}
+                </button>
+              </div>
+              <div class="drawer-content" id="sidebar-panel-content">
+                <!-- 动态内容 -->
+              </div>
             </div>
           </div>
 
-          <!-- 中间画布视口 -->
-          <div class="canvas-viewport" id="canvas-viewport">
-            <canvas id="canvas-board" class="canvas-board"></canvas>
+          <!-- 中间主视口与画布工作台 -->
+          <div class="canvas-viewport-wrap">
+            <div class="canvas-viewport" id="canvas-viewport">
+              <canvas id="canvas-board" class="canvas-board"></canvas>
+            </div>
+
+            <!-- 悬浮缩放控制胶囊 -->
+            <div class="canva-floating-zoom">
+              <button class="btn btn-ghost btn-icon btn-sm" id="zoom-out" title="缩小 (Ctrl + -)">${ICONS.zoomOut(16)}</button>
+              <span class="zoom-val" id="zoom-text">${Math.round(this.zoom * 100)}%</span>
+              <button class="btn btn-ghost btn-icon btn-sm" id="zoom-in" title="放大 (Ctrl + +)">${ICONS.zoomIn(16)}</button>
+              <button class="btn btn-ghost btn-sm" id="zoom-fit" title="自适应窗口 (Ctrl + 0)">自适应</button>
+              <button class="btn btn-ghost btn-sm" id="zoom-100" title="100% 原始尺寸">1:1</button>
+            </div>
+
+            <!-- 底部胶卷缩略图切换条 -->
+            <div class="canva-filmstrip-bar ${this.isFilmstripOpen ? 'open' : 'collapsed'}" id="canva-filmstrip-bar">
+              <button class="filmstrip-toggle-btn" id="filmstrip-toggle-btn">
+                <span>${this.isFilmstripOpen ? '▼ 收起分块胶卷' : '▲ 展开分块胶卷 (' + totalBlocks + ' 屏)'}</span>
+              </button>
+              <div class="filmstrip-content" id="canva-filmstrip-strip">
+                <!-- 动态胶卷卡片 -->
+              </div>
+            </div>
           </div>
 
-          <!-- 右侧栏：属性检查器 -->
+          <!-- 右侧属性面板 -->
           <div class="editor-sidebar-right" id="inspector-panel">
             <!-- 动态属性编辑器 -->
           </div>
@@ -397,7 +529,31 @@ export class ProjectDetailComponent {
     this.bindEvents();
     this.renderSidebar();
     this.renderInspector();
+    this.renderContextToolbar();
+    this.renderFilmstrip();
     this.redrawCanvas();
+  }
+
+  updateDrawerState() {
+    const drawer = this.container.querySelector('#canva-drawer');
+    if (!drawer) return;
+    drawer.classList.toggle('open', this.isDrawerOpen);
+    drawer.classList.toggle('collapsed', !this.isDrawerOpen);
+    this.container.querySelectorAll('.rail-item').forEach((item) => {
+      item.classList.toggle('active', this.isDrawerOpen && item.dataset.tab === this.activeSidebarTab);
+    });
+  }
+
+  updateFilmstripState() {
+    const fs = this.container.querySelector('#canva-filmstrip-bar');
+    const toggle = this.container.querySelector('#filmstrip-toggle-btn');
+    if (!fs) return;
+    fs.classList.toggle('open', this.isFilmstripOpen);
+    fs.classList.toggle('collapsed', !this.isFilmstripOpen);
+    if (toggle) {
+      const totalBlocks = this.project?.blocks?.length || 1;
+      toggle.innerHTML = `<span>${this.isFilmstripOpen ? '▼ 收起分块胶卷' : '▲ 展开分块胶卷 (' + totalBlocks + ' 屏)'}</span>`;
+    }
   }
 
   bindEvents() {
@@ -408,34 +564,28 @@ export class ProjectDetailComponent {
       this.app.loadProjects();
     };
 
-    // 分块切换
-    this.container.querySelectorAll('.block-tab[data-block]').forEach((tab) => {
-      tab.onclick = async () => {
-        const bid = tab.dataset.block;
-        if (bid === this.currentBlockId) return;
-        if (this.hasUnsavedChanges && !confirm('当前分块有未保存的修改，切换将丢失，确定继续吗？')) return;
-        this.currentBlockId = bid;
-        await this.loadBlockLayout(bid);
-        this.render();
-      };
-    });
+    // 上一分块 / 下一分块
+    const prevBtn = this.container.querySelector('#btn-prev-block');
+    if (prevBtn) prevBtn.onclick = () => this.goToPrevBlock();
+    const nextBtn = this.container.querySelector('#btn-next-block');
+    if (nextBtn) nextBtn.onclick = () => this.goToNextBlock();
 
-    // 新增分块：用「已有最大编号 + 1」，数量法在 block1+block3 这种缺号工程里会撞车
-    this.container.querySelector('#btn-add-block').onclick = async () => {
-      const maxNum = this.project.blocks.reduce((m, b) => {
-        const n = Number(String(b.id).replace(/[^0-9]/g, ''));
-        return Number.isFinite(n) ? Math.max(m, n) : m;
-      }, 0);
-      const blockId = `block${maxNum + 1}`;
-      if (!confirm(`是否在工程中创建新分块 ${blockId}？`)) return;
-      try {
-        await this.app.api.createBlock(this.project.id, blockId);
-        this.app.toast(`分块 ${blockId} 创建成功！`, 'success');
-        this.load(this.project.id, blockId);
-      } catch (err) {
-        this.app.toast(`创建分块失败: ${err.message}`, 'error');
-      }
-    };
+    // 顶部中间分块下拉徽标 -> 打开分块序列抽屉
+    const blockSelector = this.container.querySelector('#btn-block-selector');
+    if (blockSelector) {
+      blockSelector.onclick = () => {
+        this.activeSidebarTab = 'blocks';
+        this.isDrawerOpen = true;
+        this.updateDrawerState();
+        this.renderSidebar();
+      };
+    }
+
+    // 撤销 / 重做
+    const uBtn = this.container.querySelector('#btn-undo');
+    if (uBtn) uBtn.onclick = () => this.undo();
+    const rBtn = this.container.querySelector('#btn-redo');
+    if (rBtn) rBtn.onclick = () => this.redo();
 
     // 长图总览与拼接
     this.container.querySelector('#btn-view-stitched').onclick = () => {
@@ -452,11 +602,13 @@ export class ProjectDetailComponent {
     this.container.querySelector('#zoom-fit').onclick = () => {
       this.autoFitZoom();
     };
+    const zoom100 = this.container.querySelector('#zoom-100');
+    if (zoom100) zoom100.onclick = () => this.setZoom(1.0);
 
     // 辅助网格切换
     this.container.querySelector('#btn-toggle-grid').onclick = () => {
       this.showGrid = !this.showGrid;
-      this.container.querySelector('#btn-toggle-grid').textContent = this.showGrid ? '⊞ 网格: 开' : '⊞ 网格: 关';
+      this.container.querySelector('#btn-toggle-grid').innerHTML = `${ICONS.grid(15)} <span>${this.showGrid ? '网格' : '网格'}</span>`;
       this.redrawCanvas();
     };
 
@@ -474,30 +626,41 @@ export class ProjectDetailComponent {
       this.showLintModal();
     };
 
-    // 重新渲染
-    this.container.querySelector('#btn-render-block').onclick = async () => {
-      this.app.toast('正在通过 Canvas 渲染切片...', 'info');
-      try {
-        await this.app.api.renderBlock(this.project.id, this.currentBlockId);
-        this.app.toast('切片渲染完成！', 'success');
-      } catch (err) {
-        this.app.toast(`渲染失败: ${err.message}`, 'error');
-      }
-    };
-
     // 保存
     this.container.querySelector('#btn-save-layout').onclick = () => {
       this.saveLayout(true);
     };
 
-    // 侧边栏 tab 切换
-    this.container.querySelectorAll('.sidebar-tab').forEach((tab) => {
+    // 侧边栏 Rail 图标切换
+    this.container.querySelectorAll('.rail-item[data-tab]').forEach((tab) => {
       tab.onclick = () => {
-        this.activeSidebarTab = tab.dataset.tab;
-        this.container.querySelectorAll('.sidebar-tab').forEach((t) => t.classList.toggle('active', t === tab));
+        const targetTab = tab.dataset.tab;
+        if (this.activeSidebarTab === targetTab && this.isDrawerOpen) {
+          this.isDrawerOpen = false;
+        } else {
+          this.activeSidebarTab = targetTab;
+          this.isDrawerOpen = true;
+        }
+        this.updateDrawerState();
         this.renderSidebar();
       };
     });
+
+    const drawerClose = this.container.querySelector('#drawer-close-btn');
+    if (drawerClose) {
+      drawerClose.onclick = () => {
+        this.isDrawerOpen = false;
+        this.updateDrawerState();
+      };
+    }
+
+    const fsToggle = this.container.querySelector('#filmstrip-toggle-btn');
+    if (fsToggle) {
+      fsToggle.onclick = () => {
+        this.isFilmstripOpen = !this.isFilmstripOpen;
+        this.updateFilmstripState();
+      };
+    }
 
     // 绑定画布交互
     this.bindCanvasInteraction();
@@ -508,7 +671,7 @@ export class ProjectDetailComponent {
 
   setZoom(val) {
     if (this.inlineEditing) this.commitInlineEdit();
-    this.zoom = Math.round(val * 100) / 100;
+    this.zoom = Math.max(0.1, Math.min(2.5, Math.round(val * 100) / 100));
     const txt = this.container.querySelector('#zoom-text');
     if (txt) txt.textContent = `${Math.round(this.zoom * 100)}%`;
     this.redrawCanvas();
@@ -1062,15 +1225,164 @@ export class ProjectDetailComponent {
 
   renderSidebar() {
     const panel = this.container.querySelector('#sidebar-panel-content');
+    const titleEl = this.container.querySelector('#drawer-title');
     if (!panel) return;
 
-    if (this.activeSidebarTab === 'layers') {
+    if (this.activeSidebarTab === 'blocks') {
+      if (titleEl) titleEl.innerHTML = `分块序列 (${this.project?.blocks?.length || 0} 屏)`;
+      this.renderBlocksTab(panel);
+    } else if (this.activeSidebarTab === 'layers') {
+      if (titleEl) titleEl.innerHTML = `图层顺序 (${(this.layout?.elements || []).length})`;
       this.renderLayersTab(panel);
     } else if (this.activeSidebarTab === 'assets') {
+      if (titleEl) titleEl.innerHTML = `素材库 (${(this.project?.assets || []).length})`;
       this.renderAssetsTab(panel);
     } else if (this.activeSidebarTab === 'script') {
+      if (titleEl) titleEl.innerHTML = `剧本分镜`;
       this.renderScriptTab(panel);
+    } else if (this.activeSidebarTab === 'add') {
+      if (titleEl) titleEl.innerHTML = `添加元素`;
+      this.renderAddTab(panel);
     }
+  }
+
+  renderBlocksTab(panel) {
+    const blocks = this.project?.blocks || [];
+    panel.innerHTML = `
+      <div class="drawer-header-row">
+        <span class="drawer-subtitle">长图分块序列 (${blocks.length} 屏)</span>
+        <button class="btn btn-primary btn-sm" id="drawer-btn-add-block">${ICONS.plus(14)} 新增分块</button>
+      </div>
+      <div class="block-cards-list">
+        ${blocks.map((b, idx) => {
+          const isActive = b.id === this.currentBlockId;
+          return `
+            <div class="block-card-item ${isActive ? 'active' : ''}" data-block="${b.id}">
+              <div class="block-card-num">${idx + 1}</div>
+              <div class="block-card-info">
+                <div class="block-card-title">${b.id}</div>
+                <div class="block-card-sub">${isActive ? '当前正在编辑' : '点击切换此分块'}</div>
+              </div>
+              ${isActive ? `<span class="chip chip-lavender">编辑中</span>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    panel.querySelectorAll('.block-card-item').forEach((item) => {
+      item.onclick = async () => {
+        const bid = item.dataset.block;
+        if (bid === this.currentBlockId) return;
+        await this.switchBlock(bid);
+      };
+    });
+
+    const addBtn = panel.querySelector('#drawer-btn-add-block');
+    if (addBtn) addBtn.onclick = () => this.addNewBlock();
+  }
+
+  renderAddTab(panel) {
+    panel.innerHTML = `
+      <div class="drawer-header-row">
+        <span class="drawer-subtitle">点击添加元素到当前分块中心</span>
+      </div>
+      <div class="add-elements-grid">
+        <div class="add-element-card" data-type="title-text">
+          <div class="add-element-icon">${ICONS.text(20)}</div>
+          <div class="add-element-label">主标题文本</div>
+          <div class="add-element-desc">快乐体 / 48px 大字号</div>
+        </div>
+        <div class="add-element-card" data-type="body-text">
+          <div class="add-element-icon">${ICONS.text(18)}</div>
+          <div class="add-element-label">正文叙事</div>
+          <div class="add-element-desc">文楷 / 30px 叙事正文</div>
+        </div>
+        <div class="add-element-card" data-type="bubble">
+          <div class="add-element-icon">${ICONS.bubble(20)}</div>
+          <div class="add-element-label">对话气泡</div>
+          <div class="add-element-desc">暖橙实底 / 指示尖角</div>
+        </div>
+        <div class="add-element-card" data-type="rule">
+          <div class="add-element-icon">${ICONS.rule(20)}</div>
+          <div class="add-element-label">水平分割线</div>
+          <div class="add-element-desc">用于章节分层</div>
+        </div>
+        <div class="add-element-card" data-type="card">
+          <div class="add-element-icon">${ICONS.card(20)}</div>
+          <div class="add-element-label">观点卡片</div>
+          <div class="add-element-desc">带圆角边框的高亮盒</div>
+        </div>
+      </div>
+    `;
+
+    panel.querySelectorAll('.add-element-card').forEach((card) => {
+      card.onclick = () => {
+        const type = card.dataset.type;
+        if (type === 'title-text') {
+          this.recordSnapshot();
+          this.layout.elements.push({
+            type: 'text',
+            content: '核心主标题',
+            x: 540,
+            y: 400,
+            size: 48,
+            align: 'center',
+            bold: true,
+            font: 'title',
+          });
+          this.selectElement(this.layout.elements.length - 1);
+        } else if (type === 'body-text') {
+          this.recordSnapshot();
+          this.layout.elements.push({
+            type: 'text',
+            content: '在此输入正文叙事内容，支持【橙色关键词】与『蓝色引语』。',
+            x: 540,
+            y: 450,
+            size: 30,
+            align: 'left',
+            font: 'body',
+            max_width: 920,
+          });
+          this.selectElement(this.layout.elements.length - 1);
+        } else if (type === 'bubble') {
+          this.recordSnapshot();
+          this.layout.elements.push({
+            type: 'text',
+            content: '『发话内容或重要台词』',
+            x: 540,
+            y: 450,
+            size: 28,
+            bold: true,
+            align: 'center',
+            box: { style: 'fill', bg: '#F6A83C', color: '#4A2800', pad: [12, 18], tail: 'bc' },
+          });
+          this.selectElement(this.layout.elements.length - 1);
+        } else if (type === 'rule') {
+          this.recordSnapshot();
+          this.layout.elements.push({
+            type: 'rule',
+            x1: 140,
+            x2: 940,
+            y: 500,
+            color: '#EFECE6',
+            thickness: 2,
+          });
+          this.selectElement(this.layout.elements.length - 1);
+        } else if (type === 'card') {
+          this.recordSnapshot();
+          this.layout.elements.push({
+            type: 'card',
+            x: 80,
+            y: 400,
+            width: 920,
+            height: 300,
+            label: '核心观点',
+          });
+          this.selectElement(this.layout.elements.length - 1);
+        }
+      };
+    });
   }
 
   renderLayersTab(panel) {
@@ -1079,40 +1391,40 @@ export class ProjectDetailComponent {
       <div class="layers-header">
         <div class="layers-title">图层顺序 (顶层在下)</div>
         <div style="display: flex; gap: 4px;">
-          <button class="btn btn-secondary btn-sm" id="btn-add-element-menu">+ 添加元素</button>
+          <button class="btn btn-secondary btn-sm" id="btn-add-element-menu">${ICONS.plus(14)} 添加元素</button>
         </div>
       </div>
 
       <div class="layer-list">
         ${elements.length === 0 ? `
-          <div style="text-align: center; color: var(--text-muted); padding: 40px 0;">
-            暂无元素
+          <div style="text-align: center; color: var(--muted); padding: 40px 0;">
+            暂无元素，点击上方添加
           </div>
         ` : elements.map((el, i) => {
           const isActive = this.isSelected(i);
-          let icon = 'T';
+          let iconSvg = ICONS.text(14);
           let label = el.content || '文本';
           if (el.type === 'asset') {
-            icon = '🖼';
+            iconSvg = ICONS.assets(14);
             label = el.file || '插画素材';
           } else if (el.type === 'rule') {
-            icon = '━';
+            iconSvg = ICONS.rule(14);
             label = el.vertical ? '垂直分割线' : '水平分割线';
           } else if (el.type === 'card') {
-            icon = '▭';
+            iconSvg = ICONS.card(14);
             label = el.label || '信息卡片';
           }
 
-          if (el.box) icon = '💬';
+          if (el.box) iconSvg = ICONS.bubble(14);
 
           return `
             <div class="layer-item ${isActive ? 'active' : ''}" data-index="${i}">
-              <div class="layer-icon">${icon}</div>
+              <div class="layer-icon">${iconSvg}</div>
               <div class="layer-name" title="${label}">${label}</div>
               <div class="layer-actions">
-                <button class="btn btn-ghost btn-icon btn-sm action-up" title="上移一层">▲</button>
-                <button class="btn btn-ghost btn-icon btn-sm action-down" title="下移一层">▼</button>
-                <button class="btn btn-ghost btn-icon btn-sm action-del" title="删除">✕</button>
+                <button class="btn btn-ghost btn-icon btn-sm action-up" title="上移一层">${ICONS.arrowUp(12)}</button>
+                <button class="btn btn-ghost btn-icon btn-sm action-down" title="下移一层">${ICONS.arrowDown(12)}</button>
+                <button class="btn btn-ghost btn-icon btn-sm action-del" title="删除">${ICONS.trash(12)}</button>
               </div>
             </div>
           `;
@@ -1150,25 +1462,27 @@ export class ProjectDetailComponent {
     });
 
     panel.querySelector('#btn-add-element-menu').onclick = () => {
-      this.showAddElementModal();
+      this.activeSidebarTab = 'add';
+      this.renderSidebar();
+      this.updateDrawerState();
     };
   }
 
   renderAssetsTab(panel) {
     const assets = this.project.assets || [];
     panel.innerHTML = `
-      <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
-        点击素材直接插入当前分块画布中心：
+      <div class="drawer-header-row">
+        <span class="drawer-subtitle">点击素材直接插入当前分块中心</span>
       </div>
       <div class="asset-grid">
         ${assets.length === 0 ? `
-          <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px 0;">
+          <div style="grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px 0;">
             assets/ 目录暂无素材图片
           </div>
         ` : assets.map((a) => `
           <div class="asset-thumb" data-file="${a.name}">
             <img src="${a.url}" alt="${a.name}" loading="lazy" />
-            <div class="asset-thumb-name">${a.name}</div>
+            <div class="asset-thumb-name" title="${a.name}">${a.name}</div>
           </div>
         `).join('')}
       </div>
@@ -1186,7 +1500,7 @@ export class ProjectDetailComponent {
     const md = this.project.contentMd || '';
     if (!md.trim()) {
       panel.innerHTML = `
-        <div style="text-align: center; color: var(--text-muted); padding: 40px 0;">
+        <div style="text-align: center; color: var(--muted); padding: 40px 0;">
           工程根目录暂无 CONTENT.md 剧本
         </div>
       `;
@@ -1194,9 +1508,8 @@ export class ProjectDetailComponent {
     }
 
     if (!window.marked || typeof window.marked.parse !== 'function') {
-      // vendor/marked.min.js 加载失败时回退纯文本，保证剧本仍可读
       panel.innerHTML = `
-        <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 6px; color: var(--text-secondary);">
+        <div style="background: var(--surface); padding: 12px; border-radius: 8px; color: var(--fg-2);">
           <pre style="white-space: pre-wrap; font-family: inherit;">${md}</pre>
         </div>
       `;
@@ -1205,7 +1518,6 @@ export class ProjectDetailComponent {
 
     panel.innerHTML = `<div class="md-body" id="script-md-body">${window.marked.parse(md)}</div>`;
 
-    // 剧本里的「Block N」标题可点击：直接切到对应分块编辑（人机共创的主工作流）
     panel.querySelectorAll('.md-body h1, .md-body h2, .md-body h3, .md-body h4').forEach((h) => {
       const match = h.textContent.match(/Block\s*(\d+)/i);
       if (!match) return;
@@ -1214,13 +1526,309 @@ export class ProjectDetailComponent {
       h.classList.add('md-block-link');
       h.title = `点击切换到 ${blockId} 编辑`;
       h.onclick = async () => {
-        if (blockId === this.currentBlockId) return;
-        if (this.hasUnsavedChanges && !confirm('当前分块有未保存的修改，切换将丢失，确定继续吗？')) return;
-        this.currentBlockId = blockId;
-        await this.loadBlockLayout(blockId);
-        this.render();
+        await this.switchBlock(blockId);
       };
     });
+  }
+
+  renderFilmstrip() {
+    const el = this.container.querySelector('#canva-filmstrip-strip');
+    if (!el) return;
+    const blocks = this.project?.blocks || [];
+    el.innerHTML = `
+      <div class="filmstrip-scroll-area">
+        ${blocks.map((b, idx) => {
+          const isActive = b.id === this.currentBlockId;
+          return `
+            <div class="filmstrip-card ${isActive ? 'active' : ''}" data-block="${b.id}" title="切换至 ${b.id}">
+              <div class="filmstrip-preview-box">
+                <span class="filmstrip-num-badge">${idx + 1}</span>
+                <span class="filmstrip-id-label">${b.id}</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+        <div class="filmstrip-card add-card" id="filmstrip-add-block" title="新建分块">
+          ${ICONS.plus(18)}
+          <span>新建分块</span>
+        </div>
+      </div>
+    `;
+
+    el.querySelectorAll('.filmstrip-card[data-block]').forEach((card) => {
+      card.onclick = async () => {
+        const bid = card.dataset.block;
+        if (bid === this.currentBlockId) return;
+        await this.switchBlock(bid);
+      };
+    });
+
+    const addBtn = el.querySelector('#filmstrip-add-block');
+    if (addBtn) addBtn.onclick = () => this.addNewBlock();
+  }
+
+  renderContextToolbar() {
+    const tb = this.container.querySelector('#context-toolbar');
+    if (!tb) return;
+
+    if (this._sel.length === 1 && this.selectedIndex >= 0) {
+      const el = this.layout?.elements?.[this.selectedIndex];
+      if (!el) return;
+
+      if (el.type === 'text') {
+        const hasBox = Boolean(el.box);
+        tb.innerHTML = `
+          <div class="ctx-group">
+            <span class="ctx-tag-badge">文字</span>
+            <select class="ctx-select" id="ctx-font">
+              <option value="body" ${el.font === 'body' || !el.font ? 'selected' : ''}>文楷</option>
+              <option value="title" ${el.font === 'title' ? 'selected' : ''}>快乐体</option>
+              <option value="butter" ${el.font === 'butter' ? 'selected' : ''}>黄油体</option>
+              <option value="xiaowei" ${el.font === 'xiaowei' ? 'selected' : ''}>小薇体</option>
+              <option value="handwriting" ${el.font === 'handwriting' ? 'selected' : ''}>小徕手写</option>
+              <option value="brush" ${el.font === 'brush' ? 'selected' : ''}>马善政毛笔</option>
+              <option value="running" ${el.font === 'running' ? 'selected' : ''}>志莽行书</option>
+              <option value="cursive" ${el.font === 'cursive' ? 'selected' : ''}>龙藏体</option>
+              <option value="sans" ${el.font === 'sans' ? 'selected' : ''}>思源黑体</option>
+              <option value="serif" ${el.font === 'serif' ? 'selected' : ''}>思源宋体</option>
+            </select>
+          </div>
+
+          <div class="ctx-divider"></div>
+
+          <div class="ctx-group">
+            <button class="ctx-btn" id="ctx-size-minus" title="减小字号">-</button>
+            <input type="number" class="ctx-size-input" id="ctx-size" value="${el.size || 32}" step="2" />
+            <button class="ctx-btn" id="ctx-size-plus" title="加大字号">+</button>
+          </div>
+
+          <div class="ctx-divider"></div>
+
+          <div class="ctx-group">
+            <button class="ctx-btn ${el.bold ? 'active' : ''}" id="ctx-bold" title="粗体">${ICONS.bold(14)}</button>
+            <button class="ctx-btn ${el.align === 'left' ? 'active' : ''}" id="ctx-align-left" title="左对齐">${ICONS.alignLeft(14)}</button>
+            <button class="ctx-btn ${el.align === 'center' || !el.align ? 'active' : ''}" id="ctx-align-center" title="居中对齐">${ICONS.alignCenter(14)}</button>
+            <button class="ctx-btn ${el.align === 'right' ? 'active' : ''}" id="ctx-align-right" title="右对齐">${ICONS.alignRight(14)}</button>
+          </div>
+
+          <div class="ctx-divider"></div>
+
+          <div class="ctx-group">
+            <button class="btn-tag btn-tag-orange" id="ctx-tag-orange" title="插入橙色关键词">+【橙】</button>
+            <button class="btn-tag btn-tag-blue" id="ctx-tag-blue" title="插入蓝色引语">+『蓝』</button>
+            <button class="btn-tag btn-tag-red" id="ctx-tag-red" title="插入红色强信息">+〖红〗</button>
+          </div>
+
+          <div class="ctx-divider"></div>
+
+          <div class="ctx-group">
+            <label class="ctx-checkbox-label">
+              <input type="checkbox" id="ctx-box-toggle" ${hasBox ? 'checked' : ''} />
+              <span>气泡底</span>
+            </label>
+            ${hasBox ? `
+              <select class="ctx-select" id="ctx-box-style">
+                <option value="fill" ${el.box.style === 'fill' ? 'selected' : ''}>实底 (fill)</option>
+                <option value="pill" ${el.box.style === 'pill' ? 'selected' : ''}>胶囊 (pill)</option>
+                <option value="outline" ${el.box.style === 'outline' ? 'selected' : ''}>白底 (outline)</option>
+                <option value="sketch" ${el.box.style === 'sketch' ? 'selected' : ''}>双线 (sketch)</option>
+                <option value="burst" ${el.box.style === 'burst' ? 'selected' : ''}>爆炸 (burst)</option>
+              </select>
+            ` : ''}
+          </div>
+
+          <div class="ctx-actions-right">
+            <button class="ctx-btn" id="ctx-dup" title="复制 (Ctrl+D)">${ICONS.duplicate(14)} 复制</button>
+            <button class="ctx-btn text-danger" id="ctx-del" title="删除 (Delete)">${ICONS.trash(14)} 删除</button>
+          </div>
+        `;
+
+        const fontSel = tb.querySelector('#ctx-font');
+        if (fontSel) fontSel.onchange = () => {
+          this.recordSnapshot();
+          el.font = fontSel.value;
+          this.redrawCanvas();
+          this.renderInspector();
+        };
+
+        const sizeInput = tb.querySelector('#ctx-size');
+        const updateSize = (newVal) => {
+          this.recordSnapshot();
+          el.size = Math.max(12, Number(newVal) || 32);
+          if (sizeInput) sizeInput.value = el.size;
+          this.redrawCanvas();
+          this.renderInspector();
+        };
+        if (sizeInput) sizeInput.onchange = () => updateSize(sizeInput.value);
+        const sizeMinus = tb.querySelector('#ctx-size-minus');
+        if (sizeMinus) sizeMinus.onclick = () => updateSize((el.size || 32) - 2);
+        const sizePlus = tb.querySelector('#ctx-size-plus');
+        if (sizePlus) sizePlus.onclick = () => updateSize((el.size || 32) + 2);
+
+        const boldBtn = tb.querySelector('#ctx-bold');
+        if (boldBtn) boldBtn.onclick = () => {
+          this.recordSnapshot();
+          el.bold = !el.bold;
+          this.refreshSelectionUI();
+        };
+
+        const bindAlign = (id, align) => {
+          const btn = tb.querySelector(id);
+          if (btn) btn.onclick = () => {
+            this.recordSnapshot();
+            el.align = align;
+            this.refreshSelectionUI();
+          };
+        };
+        bindAlign('#ctx-align-left', 'left');
+        bindAlign('#ctx-align-center', 'center');
+        bindAlign('#ctx-align-right', 'right');
+
+        const insertTag = (pre, post) => {
+          this.recordSnapshot();
+          el.content = `${el.content || ''}${pre}关键词${post}`;
+          this.markDirty();
+          this.refreshSelectionUI();
+        };
+        tb.querySelector('#ctx-tag-orange').onclick = () => insertTag('【', '】');
+        tb.querySelector('#ctx-tag-blue').onclick = () => insertTag('『', '』');
+        tb.querySelector('#ctx-tag-red').onclick = () => insertTag('〖', '〗');
+
+        const boxToggle = tb.querySelector('#ctx-box-toggle');
+        if (boxToggle) boxToggle.onchange = () => {
+          this.recordSnapshot();
+          if (boxToggle.checked) {
+            el.box = el.box || { style: 'fill', bg: '#F6A83C', color: '#4A2800', pad: [12, 18], tail: 'none' };
+          } else {
+            delete el.box;
+          }
+          this.refreshSelectionUI();
+        };
+
+        const boxStyle = tb.querySelector('#ctx-box-style');
+        if (boxStyle) boxStyle.onchange = () => {
+          this.recordSnapshot();
+          el.box.style = boxStyle.value;
+          this.redrawCanvas();
+          this.renderInspector();
+        };
+
+        tb.querySelector('#ctx-dup').onclick = () => this.duplicateSelected();
+        tb.querySelector('#ctx-del').onclick = () => this.deleteSelection();
+        return;
+      }
+
+      if (el.type === 'asset') {
+        tb.innerHTML = `
+          <div class="ctx-group">
+            <span class="ctx-tag-badge">插画素材</span>
+            <span class="ctx-item-name" title="${el.file}">${el.file}</span>
+          </div>
+
+          <div class="ctx-divider"></div>
+
+          <div class="ctx-group">
+            <span class="ctx-label">尺寸:</span>
+            <span class="ctx-val">${Math.round(el.width || 0)} × ${Math.round(el.height || 0)} px</span>
+          </div>
+
+          <div class="ctx-divider"></div>
+
+          <div class="ctx-group">
+            <button class="ctx-btn ${el.flip ? 'active' : ''}" id="ctx-flip" title="水平镜像翻转">
+              ${ICONS.flip(15)} <span>${el.flip ? '已翻转' : '水平翻转'}</span>
+            </button>
+          </div>
+
+          <div class="ctx-actions-right">
+            <button class="ctx-btn" id="ctx-dup" title="复制 (Ctrl+D)">${ICONS.duplicate(14)} 复制</button>
+            <button class="ctx-btn text-danger" id="ctx-del" title="删除 (Delete)">${ICONS.trash(14)} 删除</button>
+          </div>
+        `;
+
+        tb.querySelector('#ctx-flip').onclick = () => {
+          this.recordSnapshot();
+          el.flip = !el.flip;
+          this.refreshSelectionUI();
+        };
+        tb.querySelector('#ctx-dup').onclick = () => this.duplicateSelected();
+        tb.querySelector('#ctx-del').onclick = () => this.deleteSelection();
+        return;
+      }
+
+      tb.innerHTML = `
+        <div class="ctx-group">
+          <span class="ctx-tag-badge">${el.type.toUpperCase()}</span>
+          <span class="ctx-item-name">坐标 (${Math.round(el.x || 0)}, ${Math.round(el.y || 0)})</span>
+        </div>
+        <div class="ctx-actions-right">
+          <button class="ctx-btn" id="ctx-dup" title="复制 (Ctrl+D)">${ICONS.duplicate(14)} 复制</button>
+          <button class="ctx-btn text-danger" id="ctx-del" title="删除 (Delete)">${ICONS.trash(14)} 删除</button>
+        </div>
+      `;
+      tb.querySelector('#ctx-dup').onclick = () => this.duplicateSelected();
+      tb.querySelector('#ctx-del').onclick = () => this.deleteSelection();
+      return;
+    }
+
+    if (this._sel.length > 1) {
+      tb.innerHTML = `
+        <div class="ctx-group">
+          <span class="chip chip-lavender">已多选 ${this._sel.length} 个图层</span>
+        </div>
+
+        <div class="ctx-divider"></div>
+
+        <div class="ctx-group">
+          <span class="ctx-label">对齐:</span>
+          <button class="ctx-btn" id="ctx-align-l" title="左对齐">${ICONS.alignLeft(14)}</button>
+          <button class="ctx-btn" id="ctx-align-c" title="水平居中">${ICONS.alignCenter(14)}</button>
+          <button class="ctx-btn" id="ctx-align-r" title="右对齐">${ICONS.alignRight(14)}</button>
+        </div>
+
+        <div class="ctx-actions-right">
+          <button class="ctx-btn" id="ctx-dup" title="批量复制">${ICONS.duplicate(14)} 复制</button>
+          <button class="ctx-btn text-danger" id="ctx-del" title="批量删除">${ICONS.trash(14)} 删除</button>
+        </div>
+      `;
+      tb.querySelector('#ctx-align-l').onclick = () => this.alignSelection('left');
+      tb.querySelector('#ctx-align-c').onclick = () => this.alignSelection('centerH');
+      tb.querySelector('#ctx-align-r').onclick = () => this.alignSelection('right');
+      tb.querySelector('#ctx-dup').onclick = () => this.duplicateSelected();
+      tb.querySelector('#ctx-del').onclick = () => this.deleteSelection();
+      return;
+    }
+
+    // Nothing selected -> Canvas state
+    tb.innerHTML = `
+      <div class="ctx-group">
+        <span class="chip chip-mint">画布 ${this.layout?.width || 1080} × ${this.layout?.height || 2500} px</span>
+        <span class="ctx-meta-hint">当前分块包含 ${(this.layout?.elements || []).length} 个元素</span>
+      </div>
+
+      <div class="ctx-divider"></div>
+
+      <div class="ctx-group">
+        <span class="ctx-label">画布底色:</span>
+        <input type="color" class="ctx-color-input" id="ctx-canvas-bg" value="${this.layout?.bg || '#FFFFFF'}" />
+      </div>
+
+      <div class="ctx-actions-right">
+        <button class="ctx-btn" id="ctx-help-btn" title="查看键盘快捷键">${ICONS.help(14)} 快捷键</button>
+      </div>
+    `;
+
+    const bgInput = tb.querySelector('#ctx-canvas-bg');
+    if (bgInput) {
+      bgInput.onchange = () => {
+        this.recordSnapshot();
+        this.layout.bg = bgInput.value;
+        this.redrawCanvas();
+        this.renderInspector();
+      };
+    }
+    const helpBtn = tb.querySelector('#ctx-help-btn');
+    if (helpBtn) helpBtn.onclick = () => this.showHelpModal();
   }
 
   renderInspector() {
@@ -1557,10 +2165,10 @@ export class ProjectDetailComponent {
 
       <div class="prop-section">
         <div class="prop-title">分块指标概览</div>
-        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--text-secondary);">
-          <div>元素总数: <span style="color: #fff; font-weight: 600;">${elCount}</span> 个</div>
-          <div>插画素材: <span style="color: #fff; font-weight: 600;">${(this.layout.elements || []).filter((e) => e.type === 'asset').length}</span> 张</div>
-          <div>文字图层: <span style="color: #fff; font-weight: 600;">${(this.layout.elements || []).filter((e) => e.type === 'text').length}</span> 组</div>
+        <div class="prop-stat-card">
+          <div>元素总数: <span>${elCount}</span> 个</div>
+          <div>插画素材: <span>${(this.layout.elements || []).filter((e) => e.type === 'asset').length}</span> 张</div>
+          <div>文字图层: <span>${(this.layout.elements || []).filter((e) => e.type === 'text').length}</span> 组</div>
         </div>
       </div>
 
@@ -2030,10 +2638,13 @@ export class ProjectDetailComponent {
     modal.className = 'modal-overlay';
     modal.id = 'shortcut-help-modal';
     modal.innerHTML = `
-      <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-card" style="max-width: 500px;">
         <div class="modal-header">
-          <div class="modal-title">键盘快捷键</div>
-          <button class="btn btn-ghost btn-icon" id="help-modal-close">✕</button>
+          <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+            <span style="color: var(--accent);">${ICONS.help(18)}</span>
+            键盘快捷键
+          </div>
+          <button class="btn btn-ghost btn-icon" id="help-modal-close">${ICONS.close(16)}</button>
         </div>
         <div class="shortcut-table">
           ${rows.map(([k, d]) => `<div class="shortcut-row"><kbd>${k}</kbd><span>${d}</span></div>`).join('')}
@@ -2068,21 +2679,21 @@ export class ProjectDetailComponent {
           <div class="modal-title">添加新元素</div>
           <button class="btn btn-ghost btn-icon" id="add-modal-close">✕</button>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-          <button class="btn btn-secondary" style="padding: 16px; flex-direction: column;" id="add-btn-text">
-            <span style="font-size: 20px;">T</span>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+          <button class="add-element-card" id="add-btn-text">
+            <div class="add-element-icon">T</div>
             <span>添加普通文本</span>
           </button>
-          <button class="btn btn-secondary" style="padding: 16px; flex-direction: column;" id="add-btn-bubble">
-            <span style="font-size: 20px;">💬</span>
+          <button class="add-element-card" id="add-btn-bubble">
+            <div class="add-element-icon">💬</div>
             <span>添加手绘气泡</span>
           </button>
-          <button class="btn btn-secondary" style="padding: 16px; flex-direction: column;" id="add-btn-rule">
-            <span style="font-size: 20px;">━</span>
+          <button class="add-element-card" id="add-btn-rule">
+            <div class="add-element-icon">━</div>
             <span>添加水平分割线</span>
           </button>
-          <button class="btn btn-secondary" style="padding: 16px; flex-direction: column;" id="add-btn-card">
-            <span style="font-size: 20px;">▭</span>
+          <button class="add-element-card" id="add-btn-card">
+            <div class="add-element-icon">▭</div>
             <span>添加信息卡片</span>
           </button>
         </div>
@@ -2184,18 +2795,18 @@ export class ProjectDetailComponent {
 
       body.innerHTML = `
         <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-          <div style="flex: 1; background: ${isClean ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border: 1px solid ${isClean ? '#10b981' : '#ef4444'}; padding: 12px; border-radius: 8px;">
-            <div style="font-weight: 700; color: ${isClean ? '#34d399' : '#f87171'}; font-size: 16px;">
+          <div class="lint-status-box ${isClean ? 'passed' : 'failed'}">
+            <div style="font-weight: 700; color: ${isClean ? 'var(--success)' : 'var(--danger)'}; font-size: 16px;">
               ${isClean ? '✔ 机检通过（四项全绿）' : '✕ 存在未通过项'}
             </div>
-            <div style="font-size: 12px; margin-top: 4px;">
+            <div style="font-size: 12px; margin-top: 4px; color: var(--fg-2);">
               ${summary} · 提示 Warn ${res.lint?.warn ?? 0}
             </div>
           </div>
         </div>
 
-        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; max-height: 280px; overflow-y: auto;">
-          <pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px; color: #d4d4d8;">${JSON.stringify(res, null, 2)}</pre>
+        <div class="lint-json-box">
+          <pre style="white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; margin: 0;">${JSON.stringify(res, null, 2)}</pre>
         </div>
       `;
     } catch (err) {
@@ -2205,24 +2816,34 @@ export class ProjectDetailComponent {
   }
 
   async showStitchModal() {
+    const origOutput = (this.project.outputs || []).find((o) => !o.isPreview && /\.(png|jpe?g|webp)$/i.test(o.name));
+    const origUrl = origOutput ? origOutput.url : null;
+    const origName = origOutput ? origOutput.name : '长图原图.jpg';
+    const downloadHref = origUrl ? (origUrl + (origUrl.includes('?') ? '&' : '?') + 'download=1') : '#';
+
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.innerHTML = `
-      <div class="modal-card" style="max-width: 800px; max-height: 90vh;">
-        <div class="modal-header">
-          <div class="modal-title">长图总览与拼接</div>
-          <button class="btn btn-ghost btn-icon" id="stitch-modal-close">✕</button>
+      <div class="modal-card" style="width: 96vw; max-width: 1140px; height: 95vh; max-height: 95vh; padding: 16px 20px; display: flex; flex-direction: column;">
+        <div class="modal-header" style="padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+          <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+            📜 长图总览与拼接
+          </div>
+          <button class="btn btn-ghost btn-icon" id="stitch-modal-close" title="关闭 (Esc)">✕</button>
         </div>
-        <div id="stitch-modal-body" style="display: flex; flex-direction: column; align-items: center; gap: 16px; overflow-y: auto;">
-          <div style="display: flex; gap: 10px; width: 100%;">
-            <button class="btn btn-primary" id="btn-trigger-stitch" style="flex: 1;">
+        <div id="stitch-modal-body" style="flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; overflow-y: auto; padding: 12px 0 0 0; width: 100%;">
+          <div style="display: flex; gap: 12px; width: 100%; max-width: 1080px;">
+            <button class="btn btn-primary" id="btn-trigger-stitch" style="flex: 1; height: 38px; font-weight: 600;">
               ⚡ 立即执行所有分块拼接
             </button>
+            <a class="btn btn-secondary ${origUrl ? '' : 'disabled'}" id="btn-download-original" href="${downloadHref}" download="${origName}" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 0 20px; height: 38px; font-weight: 600; white-space: nowrap; ${origUrl ? '' : 'pointer-events: none; opacity: 0.5;'}">
+              📥 下载原图
+            </a>
           </div>
-          <div id="stitch-img-wrap" style="width: 100%; text-align: center;">
+          <div id="stitch-img-wrap" style="width: 100%; max-width: 1080px; text-align: center; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 0;">
             ${this.project.previewUrl ? `
-              <img src="${this.project.previewUrl}?t=${Date.now()}" style="max-width: 100%; border: 1px solid #333; border-radius: 6px;" />
-            ` : '<div style="padding: 40px; color: var(--text-muted);">暂无长图产物，点击上方按钮开始拼接</div>'}
+              <img src="${this.project.previewUrl}?t=${Date.now()}" style="width: 100%; max-width: 1080px; height: auto; display: block; border-radius: 6px; box-shadow: 0 12px 36px rgba(14, 19, 24, 0.12); border: 1px solid var(--border); margin: 0;" />
+            ` : '<div style="padding: 60px 20px; color: var(--text-muted); font-size: 14px;">暂无长图产物，点击上方按钮开始拼接</div>'}
           </div>
         </div>
       </div>
@@ -2232,23 +2853,34 @@ export class ProjectDetailComponent {
     modal.querySelector('#stitch-modal-close').onclick = () => modal.remove();
 
     const triggerBtn = modal.querySelector('#btn-trigger-stitch');
+    const downloadBtn = modal.querySelector('#btn-download-original');
+
     triggerBtn.onclick = async () => {
       triggerBtn.textContent = '正在通过 Canvas 拼接长图...';
       triggerBtn.disabled = true;
       try {
         const res = await this.app.api.stitchProject(this.project.id);
-        triggerBtn.textContent = '拼接完成！再次拼接';
+        triggerBtn.textContent = '⚡ 重新执行拼接';
         triggerBtn.disabled = false;
+
+        if (downloadBtn && res.outUrl) {
+          downloadBtn.href = res.outUrl + (res.outUrl.includes('?') ? '&' : '?') + 'download=1';
+          downloadBtn.download = res.outName || '长图.jpg';
+          downloadBtn.style.pointerEvents = 'auto';
+          downloadBtn.style.opacity = '1';
+          downloadBtn.classList.remove('disabled');
+        }
+
         modal.querySelector('#stitch-img-wrap').innerHTML = `
-          <div style="font-size: 13px; color: #34d399; margin-bottom: 8px;">
+          <div style="font-size: 13px; color: var(--success); margin-bottom: 10px; font-weight: 700; width: 100%; max-width: 1080px; text-align: left;">
             ✔ 拼接成功！尺寸: ${res.width} × ${res.height} px
           </div>
-          <img src="${res.prevUrl}" style="max-width: 100%; border: 1px solid #333; border-radius: 6px;" />
+          <img src="${res.prevUrl}" style="width: 100%; max-width: 1080px; height: auto; display: block; border-radius: 6px; box-shadow: 0 12px 36px rgba(14, 19, 24, 0.12); border: 1px solid var(--border); margin: 0;" />
         `;
         this.app.toast('长图拼接完成！', 'success');
       } catch (err) {
         alert(`拼接失败: ${err.message}`);
-        triggerBtn.textContent = '立即执行所有分块拼接';
+        triggerBtn.textContent = '⚡ 立即执行所有分块拼接';
         triggerBtn.disabled = false;
       }
     };

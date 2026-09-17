@@ -1,6 +1,7 @@
 /**
- * 项目管理列表组件
+ * 项目管理列表组件 (Canva 工作台风格)
  */
+import { ICONS } from '../icons.mjs';
 
 export class ProjectListComponent {
   constructor(app, container) {
@@ -28,36 +29,61 @@ export class ProjectListComponent {
 
     this.container.innerHTML = `
       <div class="project-management-view">
-        <div class="pm-header">
-          <div class="pm-title-group">
-            <h1>pic-flow 项目空间</h1>
-            <p>基于 Canvas 渲染引擎的黑白手绘长图流水线 · 人机共创控制台</p>
+        <!-- 一体化页面大标题区 (与页面自然融合，非卡片形制) -->
+        <div class="pm-page-header">
+          <div class="pm-header-intro">
+            <span class="eyebrow">人机共创长图工作台</span>
+            <h1 class="pm-page-title">pic-flow 项目空间</h1>
+            <p class="pm-page-subtitle">
+              基于 Canvas 渲染引擎的黑白手绘长图流水线，支持流式叙事排版、四图切片生图与高精度几何拼缝机检。
+            </p>
           </div>
-          <button class="btn btn-primary" id="btn-new-project">
-            <span>+</span> 新建长图项目
-          </button>
-        </div>
-
-        <div class="pm-toolbar">
-          <input
-            type="text"
-            class="search-input"
-            id="project-search"
-            placeholder="搜索项目名称、标题或故事核心..."
-            value="${this.filterText}"
-          />
-          <button class="btn btn-secondary btn-sm" id="btn-refresh-projects">
-            🔄 刷新
-          </button>
-          <div style="margin-left: auto; font-size: 13px; color: var(--text-muted);">
-            共找到 ${filtered.length} 个项目
+          <div class="pm-header-actions">
+            <button class="btn btn-primary" id="btn-new-project">
+              ${ICONS.plus(16)} <span>新建长图项目</span>
+            </button>
+            <button class="btn btn-secondary" id="btn-refresh-projects">
+              ${ICONS.refresh(15)} <span>刷新</span>
+            </button>
           </div>
         </div>
 
+        <!-- 搜索与统计栏 -->
+        <div class="pm-search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">${ICONS.search(16)}</span>
+            <input
+              type="text"
+              class="search-input"
+              id="project-search"
+              placeholder="搜索长图项目名称、标题或剧本核心..."
+              value="${this.filterText}"
+            />
+            ${this.filterText ? `<button class="search-clear-btn" id="search-clear">${ICONS.close(14)}</button>` : ''}
+          </div>
+          <div class="projects-count-indicator">
+            共 <strong>${filtered.length}</strong> 个长图工程
+          </div>
+        </div>
+
+        <!-- 项目卡片网格 -->
         <div class="projects-grid">
+          <!-- 快速新建卡片 -->
+          <div class="project-card new-project-card" id="card-create-new">
+            <div class="new-card-body">
+              <div class="new-card-icon-circle">
+                ${ICONS.plus(24)}
+              </div>
+              <div class="new-card-title">新建长图工程</div>
+              <p class="new-card-hint">选用预设模板骨架与黑白手绘风格，快速启动新长图</p>
+            </div>
+          </div>
+
           ${filtered.length === 0 ? `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: var(--text-muted);">
-              未找到匹配的项目
+            <div class="empty-projects-placeholder">
+              <div class="empty-icon">${ICONS.search(36)}</div>
+              <h3>未找到匹配的长图工程</h3>
+              <p>请尝试搜索其他关键字，或新建一个项目</p>
             </div>
           ` : filtered.map((p) => this.renderProjectCard(p)).join('')}
         </div>
@@ -73,6 +99,14 @@ export class ProjectListComponent {
       });
     }
 
+    const clearBtn = this.container.querySelector('#search-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        this.filterText = '';
+        this.render();
+      });
+    }
+
     const refreshBtn = this.container.querySelector('#btn-refresh-projects');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => this.app.loadProjects());
@@ -83,7 +117,25 @@ export class ProjectListComponent {
       newBtn.addEventListener('click', () => this.showNewProjectModal());
     }
 
-    this.container.querySelectorAll('.project-card').forEach((card) => {
+    const newCard = this.container.querySelector('#card-create-new');
+    if (newCard) {
+      newCard.addEventListener('click', () => this.showNewProjectModal());
+    }
+
+    // 删除项目按钮事件绑定（阻止向上冒泡进入详情）
+    this.container.querySelectorAll('.card-delete-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.deleteId;
+        const project = this.projects.find((p) => p.id === id);
+        if (project) {
+          this.showDeleteConfirmModal(project);
+        }
+      });
+    });
+
+    // 点击项目卡片打开项目
+    this.container.querySelectorAll('.project-card:not(.new-project-card)').forEach((card) => {
       card.addEventListener('click', () => {
         const id = card.dataset.id;
         this.app.openProject(id);
@@ -94,7 +146,7 @@ export class ProjectListComponent {
   renderProjectCard(p) {
     const previewHtml = p.previewUrl
       ? `<img src="${p.previewUrl}" alt="${p.title}" loading="lazy" />`
-      : `<div class="card-cover-empty"><span>🎨 暂无渲染图</span></div>`;
+      : `<div class="card-cover-empty"><span class="empty-cover-icon">🎨</span><span>暂无长图渲染</span></div>`;
 
     const updatedDate = new Date(p.updatedAt).toLocaleString('zh-CN', {
       month: 'numeric',
@@ -107,17 +159,87 @@ export class ProjectListComponent {
       <div class="project-card" data-id="${p.id}">
         <div class="card-cover">
           ${previewHtml}
+          <!-- 悬浮快捷删除按钮 -->
+          <button class="card-delete-btn" data-delete-id="${p.id}" title="删除此项目">
+            ${ICONS.trash(15)}
+          </button>
+          <div class="card-hover-overlay">
+            <button class="btn btn-primary btn-sm btn-open-project">
+              进入工作台 ${ICONS.chevronRight(14)}
+            </button>
+          </div>
         </div>
         <div class="card-body">
-          <div class="card-title" title="${p.title}">${p.title || p.name}</div>
+          <div class="card-title" title="${p.title || p.name}">${p.title || p.name}</div>
           <div class="card-desc">${p.description || p.name}</div>
           <div class="card-meta">
-            <span class="card-badge">${p.blockCount || 0} 个分块</span>
-            <span>更新于 ${updatedDate}</span>
+            <span class="chip chip-lavender">${p.blockCount || 0} 个分块</span>
+            <span class="card-update-time">更新于 ${updatedDate}</span>
           </div>
         </div>
       </div>
     `;
+  }
+
+  /**
+   * 自定义二次确认删除弹窗 (拒绝系统自带 confirm，完全符合 Canva 设计系统)
+   */
+  showDeleteConfirmModal(project) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-card delete-confirm-card">
+        <div class="modal-header">
+          <div class="modal-title" style="display: flex; align-items: center; gap: 8px; color: var(--danger);">
+            ${ICONS.trash(18)}
+            确认删除长图项目？
+          </div>
+          <button class="btn btn-ghost btn-icon" id="delete-modal-close">${ICONS.close(16)}</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="delete-target-preview">
+            <div class="delete-target-title">${project.title || project.name}</div>
+            <div class="delete-path-code">${project.path}</div>
+          </div>
+
+          <div class="delete-warning-banner">
+            ⚠️ 警告：此操作将彻底删除该项目所在的整个本地目录（含所有分块 JSON、插画切片素材与剧本），无法撤销与恢复！
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <button class="btn btn-secondary" id="delete-modal-cancel">取消</button>
+          <button class="btn" id="delete-modal-confirm" style="background: var(--danger); color: #ffffff; font-weight: 700;">
+            ${ICONS.trash(15)} 彻底删除
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const close = () => modal.remove();
+    modal.onclick = (e) => { if (e.target === modal) close(); };
+    modal.querySelector('#delete-modal-close').onclick = close;
+    modal.querySelector('#delete-modal-cancel').onclick = close;
+
+    const confirmBtn = modal.querySelector('#delete-modal-confirm');
+    confirmBtn.onclick = async () => {
+      confirmBtn.innerHTML = `<span>正在删除项目目录...</span>`;
+      confirmBtn.disabled = true;
+
+      try {
+        await this.app.api.deleteProject(project.id);
+        close();
+        this.app.toast(`已彻底删除项目: ${project.title || project.name}`, 'success');
+        await this.app.loadProjects();
+      } catch (err) {
+        alert(`删除失败: ${err.message}`);
+        confirmBtn.innerHTML = `${ICONS.trash(15)} 彻底删除`;
+        confirmBtn.disabled = false;
+      }
+    };
   }
 
   showNewProjectModal() {
@@ -126,35 +248,38 @@ export class ProjectListComponent {
     modal.innerHTML = `
       <div class="modal-card">
         <div class="modal-header">
-          <div class="modal-title">新建 pic-flow 长图工程</div>
-          <button class="btn btn-ghost btn-icon" id="modal-close">✕</button>
+          <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+            <span style="color: var(--accent);">${ICONS.sparkles(18)}</span>
+            新建 pic-flow 长图工程
+          </div>
+          <button class="btn btn-ghost btn-icon" id="modal-close">${ICONS.close(16)}</button>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
           <div class="prop-col">
-            <label class="prop-label">项目目录名 (英文/拼音字母)</label>
-            <input type="text" class="prop-input" id="new-dir" placeholder="e.g. tang-collapse-case" />
+            <label class="prop-label">项目目录名 (英文字母 / 连字符)</label>
+            <input type="text" class="prop-input" id="new-dir" placeholder="e.g. quantum-computing-story" autofocus />
           </div>
           <div class="prop-col">
             <label class="prop-label">长图主标题</label>
-            <input type="text" class="prop-input" id="new-title" placeholder="e.g. 乱局余音：大唐终章" />
+            <input type="text" class="prop-input" id="new-title" placeholder="e.g. 深入浅出：量子计算机如何工作" />
           </div>
           <div class="prop-row">
             <div class="prop-col">
               <label class="prop-label">模板骨架</label>
               <select class="prop-select" id="new-template">
-                <option value="story" selected>story (叙事故事)</option>
+                <option value="story" selected>story (流式叙事故事)</option>
               </select>
             </div>
             <div class="prop-col">
               <label class="prop-label">视觉风格包</label>
               <select class="prop-select" id="new-style">
-                <option value="bw-sketch" selected>bw-sketch (黑白手绘)</option>
+                <option value="bw-sketch" selected>bw-sketch (黑白手绘风格)</option>
               </select>
             </div>
             <div class="prop-col">
               <label class="prop-label">布局骨架</label>
               <select class="prop-select" id="new-layout">
-                <option value="story-flow" selected>story-flow (流式叙事)</option>
+                <option value="story-flow" selected>story-flow (流式连续长图)</option>
               </select>
             </div>
           </div>

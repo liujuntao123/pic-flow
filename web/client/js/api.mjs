@@ -39,6 +39,12 @@ export const api = {
     return readJson(await fetch(`/api/projects/${projectId}`), '获取项目详情失败');
   },
 
+  async deleteProject(projectId) {
+    return readJson(await fetch(`/api/projects/${encodeURIComponent(projectId)}`, {
+      method: 'DELETE',
+    }), '删除项目失败');
+  },
+
   async getBlockLayout(projectId, blockId) {
     return readJson(await fetch(`/api/projects/${projectId}/layout/${blockId}?t=${Date.now()}`), '获取分块布局失败');
   },

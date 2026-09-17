@@ -622,3 +622,29 @@ export async function createProject({ dirName, title, template = 'story', style 
 
   return getProjectSummary(targetDir);
 }
+
+/**
+ * 删除项目：安全校验后递归删除项目所在目录
+ */
+export async function deleteProject(projectId) {
+  const projectPath = assertProjectPath(projectId);
+  const homeDir = process.env.HOME || '/home/admin1';
+
+  // 安全防线：绝对禁止删除系统根目录、主目录、或者当前仓库目录
+  if (
+    projectPath === '/' ||
+    projectPath === REPO_ROOT ||
+    projectPath === homeDir ||
+    projectPath === path.resolve(REPO_ROOT, 'examples') ||
+    projectPath === path.resolve(homeDir, 'pic-flow-projects')
+  ) {
+    throw new HttpError(403, '禁止删除系统关键目录或项目根容器');
+  }
+
+  if (!fs.existsSync(projectPath)) {
+    throw new HttpError(404, '目标项目目录不存在');
+  }
+
+  fs.rmSync(projectPath, { recursive: true, force: true });
+  return { success: true, deletedPath: projectPath };
+}

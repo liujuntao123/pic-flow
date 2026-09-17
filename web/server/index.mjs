@@ -13,6 +13,7 @@ import {
   stitchProject,
   lintBlock,
   createProject,
+  deleteProject,
   listBlockFiles,
   blockNumber,
   HttpError,
@@ -98,11 +99,18 @@ function sendFile(req, res, filePath, contentType) {
 
     const ext = path.extname(filePath).toLowerCase();
     const type = contentType || MIME_TYPES[ext] || 'application/octet-stream';
-    res.writeHead(200, {
+    const parsedUrl = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`);
+    const isDownload = parsedUrl.searchParams.get('download') === '1';
+    const filename = path.basename(filePath);
+    const headers = {
       'Content-Type': type,
       'Content-Length': stat.size,
       'Cache-Control': ext === '.ttf' ? 'public, max-age=86400' : 'no-cache',
-    });
+    };
+    if (isDownload) {
+      headers['Content-Disposition'] = `attachment; filename="${encodeURIComponent(filename)}"`;
+    }
+    res.writeHead(200, headers);
     fs.createReadStream(filePath).pipe(res);
   } catch (err) {
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -208,6 +216,11 @@ const server = http.createServer(async (req, res) => {
           if (req.method === 'GET') {
             const detail = getProjectDetail(projectPath);
             return sendJson(req, res, 200, { ok: true, data: detail });
+          }
+          if (req.method === 'DELETE') {
+            assertTrustedMutation(req);
+            const result = await deleteProject(projectId);
+            return sendJson(req, res, 200, { ok: true, data: result });
           }
         }
 

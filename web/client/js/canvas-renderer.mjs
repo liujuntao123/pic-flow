@@ -551,8 +551,8 @@ export class CanvasRenderer {
         ctx.lineTo(W, gy);
         ctx.stroke();
       }
-      // 中轴线
-      ctx.strokeStyle = 'rgba(232, 132, 43, 0.35)';
+      // 中轴线 - Canva 紫色辅助线
+      ctx.strokeStyle = 'rgba(125, 42, 232, 0.4)';
       ctx.setLineDash([6, 6]);
       ctx.beginPath();
       ctx.moveTo(W / 2, 0);
@@ -623,7 +623,7 @@ export class CanvasRenderer {
   }
 
   /**
-   * 多选中非主选元素的轻量选中轮廓（区分于主选的蓝框+手柄）
+   * 多选中非主选元素的轻量选中轮廓（Canva 薰衣草紫轻量虚线轮廓）
    */
   drawSelectionOutline(ctx, target, scale = 1) {
     const [x0, y0, x1, y1] = target.frame || target.box;
@@ -633,8 +633,9 @@ export class CanvasRenderer {
       ctx.rotate((target.rot.deg * Math.PI) / 180);
       ctx.translate(-target.rot.cx, -target.rot.cy);
     }
-    ctx.strokeStyle = '#60A5FA';
+    ctx.strokeStyle = '#9B87F5';
     ctx.lineWidth = Math.max(1, 1.5 / scale);
+    ctx.setLineDash([4 / scale, 4 / scale]);
     ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
     ctx.restore();
   }
@@ -706,16 +707,16 @@ export class CanvasRenderer {
       ctx.translate(-target.rot.cx, -target.rot.cy);
     }
 
-    // 选中蓝框
-    ctx.strokeStyle = '#2563EB';
-    ctx.lineWidth = 2.5;
+    // 选中框 - Canva 标志性紫色 (#7D2AE8)
+    ctx.strokeStyle = '#7D2AE8';
+    ctx.lineWidth = 2;
     ctx.strokeRect(x0, y0, w, h);
 
-    // 绘制该类型可用的手柄
+    // 绘制该类型可用的手柄 (白色实体填充 + 紫色边框)
     const handleSize = 8;
     const positions = this.handlePositions(target);
     ctx.fillStyle = '#FFFFFF';
-    ctx.strokeStyle = '#2563EB';
+    ctx.strokeStyle = '#7D2AE8';
     ctx.lineWidth = 2;
     for (const id of this.handlesFor(el)) {
       const [hx, hy] = positions[id];
@@ -724,15 +725,24 @@ export class CanvasRenderer {
     }
     ctx.restore();
 
-    // 标签：显示类型与坐标（不随元素旋转，保持可读）
+    // 标签：显示类型与坐标（Canva 风格紫色圆角信息药丸）
     const info = `${el.type} (${Math.round(el.x ?? x0)}, ${Math.round(el.y ?? y0)}) ${Math.round(w)}×${Math.round(h)}`;
     ctx.save();
-    ctx.font = 'bold 12px sans-serif';
+    ctx.font = '600 11px system-ui, -apple-system, sans-serif';
     const tagW = ctx.measureText(info).width + 12;
-    ctx.fillStyle = '#2563EB';
-    ctx.fillRect(x0, y0 - 22, tagW, 20);
+    const tagH = 18;
+    const tagX = x0;
+    const tagY = y0 - 22;
+    ctx.fillStyle = '#7D2AE8';
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(tagX, tagY, tagW, tagH, 4);
+      ctx.fill();
+    } else {
+      ctx.fillRect(tagX, tagY, tagW, tagH);
+    }
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillText(info, x0 + 6, y0 - 7);
+    ctx.fillText(info, tagX + 6, tagY + 13);
     ctx.restore();
   }
 
